@@ -292,6 +292,9 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 .stars{color:#b8862b;font-size:12px;letter-spacing:1px;vertical-align:1px}
 .likebox{margin-top:14px;border-color:var(--ink)}
 [hidden]{display:none!important}
+.dupbox{display:contents}
+.warnline:empty{display:none}
+.warnline div{margin:4px 0}
 .mnav{position:sticky;top:calc(var(--top,56px) + 0px);z-index:5;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:8px 0;margin:0 0 8px;background:var(--paper)}
 .mnav::-webkit-scrollbar{display:none}
 .mnav a{flex:none;padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13.5px;font-weight:600;text-decoration:none;white-space:nowrap}
@@ -579,7 +582,8 @@ function toRow(table, d){
 function writeErr(e){
   console.warn(e);
   const m=(e&&(e.message||e.error_description))||"";
-  if(/row-level security|permission denied/i.test(m)){ toast("Your login isn't on the Munger team yet. Ask Rynhardt."); }
+  if((e&&e.code==="23505")||/duplicate key|unique/i.test(m)){ toast(/compan/i.test(m)?"A business or partner with that name is already in Munger":"Already in Munger: someone has that cell number or email"); }
+  else if(/row-level security|permission denied/i.test(m)){ toast("Your login isn't on the Munger team yet. Ask Rynhardt."); }
   else if(/JWT|session/i.test(m)){ toast("Your session expired – sign in again."); showLogin(true); }
   else toast("Couldn't save – check your connection and try again.");
 }
@@ -1225,8 +1229,8 @@ function dealRows(list){
 function contactRows(){ return [["Tag","Name","Firm","Type","Whose network","Cell","Email","Language","Province","Town","Businesses introduced","Notes"], ...contacts().map(k=>[`${tierOf(k)} – ${TIERS[tierOf(k)].label}`,k.name,k.firm,k.type,k.partner,k.cell,k.email,LANGS[k.language]||"",k.province,k.town,dealsFrom(k.id).length,k.notes])]; }
 
 /* ---------------- Import ---------------- */
-function existingKeys(){ const s=new Set(); contacts().forEach(k=>{ const p=phoneKey(k.cell); if(p) s.add("p"+p); if(k.email) s.add("e"+k.email.toLowerCase()); }); return s; }
-function markExisting(rows){ const s=existingKeys(); rows.forEach(r=>{ const p=phoneKey(r.cell); r.exists = (p&&s.has("p"+p)) || (r.email&&s.has("e"+r.email.toLowerCase())); }); return rows; }
+function existingKeys(){ const s=new Set(); contacts().forEach(k=>{ const p=phoneKey(k.cell); if(p) s.add("p"+p); if(k.email) s.add("e"+k.email.trim().toLowerCase()); const n=normName(k.name); if(n) s.add("n"+n); }); return s; }
+function markExisting(rows){ const s=existingKeys(); rows.forEach(r=>{ const p=phoneKey(r.cell); r.exists = (p&&s.has("p"+p)) || (r.email&&s.has("e"+r.email.trim().toLowerCase())) || (normName(r.name)&&s.has("n"+normName(r.name))); }); return rows; }
 function dedupeRows(rows){ const seen=new Set(); const out=[]; for(const r of rows){ r.name=(r.name||"").trim(); r.cell=(r.cell||"").trim(); r.email=(r.email||"").trim(); r.firm=(r.firm||"").trim(); if(!r.name && !r.cell && !r.email) continue; if(!r.name) r.name=r.cell||r.email; const key=phoneKey(r.cell)||r.email.toLowerCase()||r.name.toLowerCase(); if(seen.has(key)) continue; seen.add(key); out.push(r); } return out.sort((a,b)=>a.name.localeCompare(b.name,undefined,{sensitivity:"base"})).map((r,i)=>({...r,i})); }
 function loadImport(rows, source){ const I=S.imp; I.rows=markExisting(dedupeRows(rows)); I.tags={}; I.q=""; I.shown=60; I.source=source; I.partner=I.partner||defaultPartner(); if(!I.rows.length){ toast("No contacts found in that file"); } render(); window.scrollTo(0,0); }
 function decodeQP(s){ try{ const bytes=[]; s=s.replace(/=\r?\n/g,""); for(let i=0;i<s.length;i++){ if(s[i]==="="&&/^[0-9A-F]{2}$/i.test(s.substr(i+1,2))){ bytes.push(parseInt(s.substr(i+1,2),16)); i+=2; } else bytes.push(s.charCodeAt(i)); } return new TextDecoder().decode(new Uint8Array(bytes)); }catch(e){ return s; } }
@@ -1885,7 +1889,7 @@ async function submitDeal(){
 
 /* ---------- Import: also record how they know them ---------- */
 async function importSave(){
-  const I=S.imp; const rows=I.rows.filter(r=>I.tags[r.i]&&!r.exists);
+  const I=S.imp; const seen=new Set(); const rows=I.rows.filter(r=>I.tags[r.i]&&!r.exists).filter(r=>{ const keys=[phoneKey(r.cell)&&"p"+phoneKey(r.cell), r.email&&"e"+r.email.trim().toLowerCase()].filter(Boolean); if(keys.some(x=>seen.has(x))) return false; keys.forEach(x=>seen.add(x)); return true; });
   if(!rows.length) return;
   const typeFor={A:"Business owner",B:"",C:""};
   const recs=rows.map(r=>({id:newId(), ...toRow("contacts",{name:r.name, tier:I.tags[r.i], type:typeFor[I.tags[r.i]], firm:r.firm||"", partner:I.partner, cell:r.cell||"", email:r.email||"", language:I.lang, country:"South Africa"})}));
@@ -3209,6 +3213,80 @@ document.addEventListener("change",async e=>{
     if(currentView()==="meeting") for(const [id,o] of Object.entries(keep)){ const el=document.getElementById(id); if(!el) continue; if(el.value!==o.v) el.value=o.v; if(o.f){ el.focus(); try{ el.setSelectionRange(o.s,o.s); }catch(_){} } }
   };
 }
+
+/* ================= Phase 7: no duplicates ================= */
+function normName(s){ return String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9 ]+/g," ").replace(/\s+/g," ").trim(); }
+function nameKeyLoose(s){ const t=normName(s).split(" ").filter(Boolean); return t.length>=2? t[0]+" "+t[t.length-1] : t.join(" "); }
+function dupPeople(d, exceptId){
+  const out=[]; const p=phoneKey(d.cell), em=String(d.email||"").trim().toLowerCase(), nk=normName(d.name), nl=nameKeyLoose(d.name);
+  contacts().forEach(k=>{ if(k.id===exceptId) return; const why=[];
+    if(p && phoneKey(k.cell)===p) why.push("same cell number");
+    if(em && String(k.email||"").trim().toLowerCase()===em) why.push("same email");
+    if(nk && (normName(k.name)===nk || (nl.includes(" ") && nameKeyLoose(k.name)===nl))) why.push("same name");
+    if(why.length) out.push({k, why, strong:why.some(w=>w!=="same name")}); });
+  return out.sort((a,b)=>b.strong-a.strong);
+}
+function dupCompany(name, exceptId){ const n=normName(name); return n? companies().find(c=>c.id!==exceptId && normName(c.name)===n) : null; }
+function contactDupCheck(){
+  const w=$("#kDup"); if(!w) return;
+  const hits=dupPeople({name:$("#kName").value, cell:$("#kCell").value, email:$("#kEmail")?.value}, FORM.id);
+  w.innerHTML=hits.length? hits.slice(0,3).map(h=>`<div>${h.strong?"⚠ ":""}Already in Munger: <a href="#" data-act="open-dup-contact" data-id="${esc(h.k.id)}">${esc(h.k.name)}</a> (${esc(h.why.join(", "))}${h.k.companyId&&S.companies.get(h.k.companyId)?` · ${esc(S.companies.get(h.k.companyId).name)}`:""})</div>`).join("") : "";
+}
+function dupCheck(){
+  const w=$("#dupWarn"); if(!w) return; const hit=dupCompany($("#cName").value, FORM.id);
+  w.innerHTML = hit? `⚠ Already in Munger: <a href="#" data-act="open-dup" data-id="${esc(hit.id)}">${esc(hit.name)}</a> · ${esc(isPartnerCo(hit)?"Partner · "+(PKINDS[hit.kind]||""):(STAGE[hit.status]?.label||""))}` : "";
+}
+function dupModal(hits, onNew){
+  const strong=hits.some(h=>h.strong);
+  FORM.dupHits=hits; FORM.dupNew=onNew;
+  const formEl=$("#contactForm"); if(formEl) formEl.style.display="none";
+  const box=document.createElement("div"); box.className="dupbox"; box.id="dupBox";
+  box.innerHTML=`${ovHead("Already in Munger?",`<button class="hbtn" data-act="dup-back">Back</button>`)}<div class="ovb">
+   <p style="margin:0 2px 12px;font-size:15.5px">${strong?"This person is already in the network.":"Someone with this name is already in the network."} Update them instead of adding a duplicate.</p>
+   <div class="group">${hits.slice(0,4).map(h=>`<div class="rowi" style="flex-wrap:wrap;gap:8px">${avatarP(h.k)}<span class="main" style="min-width:150px"><span class="t1" style="display:block">${esc(h.k.name)}</span><span class="t2" style="display:block">${esc([h.why.join(", "), workLine(h.k), h.k.cell, knowsTxt(h.k)].filter(Boolean).join(" · "))}</span></span><span style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm primary" data-act="dup-merge" data-id="${esc(h.k.id)}">Add my details to them</button><button class="btn sm" data-act="dup-open" data-id="${esc(h.k.id)}">Open</button></span></div>`).join("")}</div>
+   ${strong?`<p class="tag" style="margin:12px 2px">The same cell number or email can't be saved twice.</p>`:`<div style="margin-top:14px"><button class="btn block" data-act="dup-new">It's a different person – add them</button></div>`}
+  </div>`;
+  formEl.parentNode.appendChild(box);
+}
+function closeDupBox(){ $("#dupBox")?.remove(); const f=$("#contactForm"); if(f) f.style.display="contents"; }
+async function mergeIntoExisting(id){
+  const k=S.contacts.get(id); if(!k) return; const d=kFormRead(); const by=await myName();
+  const patch={}; const fill=(f,v)=>{ if(v && !k[f]) patch[f]=v; };
+  ["cell","email","town","province","title","industry","expertise","linkedin","type","companyRole","wealthSource"].forEach(f=>fill(f,d[f]));
+  if(d.companyId && !k.companyId){ patch.companyId=d.companyId; patch.firm=""; if(OWNER_ROLES.includes(d.companyRole)) patch.ownsCompanyId=d.companyId; } else if(!k.companyId && !k.firm && d.firm) patch.firm=d.firm;
+  if(d.tier && d.tier!=="D" && (!k.tier || k.tier==="D")) patch.tier=d.tier;
+  if(d.influence>(k.influence||0)) patch.influence=d.influence;
+  if(d.hnwi && !k.hnwi) patch.hnwi=true;
+  if(d.talent?.on && !(k.talent||{}).on) patch.talent=d.talent;
+  const ci=ciRead(); if(ci.nextCheckIn && !k.nextCheckIn) Object.assign(patch,ci);
+  if(d.notes && !(k.notes||"").includes(d.notes)) patch.notes=[k.notes,d.notes].filter(Boolean).join("\n\n");
+  patch.log=[...(k.log||[]),{d:today(),by,text:"Details added (duplicate prevented)"}].slice(-200);
+  const ok=await dbUpdate("contacts/"+id,patch); if(!ok) return;
+  const have=knowers(k).map(x=>({partner:x.partner,relation:x.relation})); const add=d.conns.filter(c=>!have.some(h=>h.partner===c.partner));
+  if(add.length) await saveConns(id,[...have,...add]);
+  closeModal(); toast(`Updated ${k.name} – no duplicate created`); openSheet("contact",id,true);
+}
+{ const base=submitContact;
+  submitContact=async function(){
+    const d=kFormRead(); if(!d.name){ return base(); }
+    if(!FORM.dupOk){ const hits=dupPeople(d, FORM.id); if(hits.length){ dupModal(hits); return; } }
+    FORM.dupOk=false; return base();
+  };
+}
+{ const base=submitDeal;
+  submitDeal=async function(){
+    const hit=dupCompany($("#cName")?.value, FORM.id);
+    if(hit){ toast(`${hit.name} is already in Munger`); dupCheck(); $("#dupWarn")?.scrollIntoView({block:"center"}); return; }
+    return base();
+  };
+}
+document.addEventListener("click",async e=>{
+  const t=e.target.closest("[data-act]"); if(!t) return; const a=t.dataset.act, id=t.dataset.id;
+  if(a==="dup-back") closeDupBox();
+  if(a==="dup-new"){ closeDupBox(); FORM.dupOk=true; submitContact(); }
+  if(a==="dup-open"){ closeModal(); openSheet("contact",id,true); }
+  if(a==="dup-merge"){ t.disabled=true; await mergeIntoExisting(id); }
+});
 
 
 function vNetwork(){
