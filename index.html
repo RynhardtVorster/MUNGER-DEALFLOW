@@ -292,29 +292,42 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 .stars{color:#b8862b;font-size:12px;letter-spacing:1px;vertical-align:1px}
 .likebox{margin-top:14px;border-color:var(--ink)}
 [hidden]{display:none!important}
+.checklist{background:var(--surface);border:1px solid var(--line);border-radius:var(--r,16px);overflow:hidden}
+.checklist label{display:flex;align-items:center;gap:14px;min-height:54px;padding:10px 16px;border-bottom:1px solid var(--line);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.checklist label:last-child{border-bottom:0}
+.checklist input{position:absolute;opacity:0;pointer-events:none}
+.checklist .box{flex:none;width:26px;height:26px;border-radius:7px;border:2px solid var(--muted);display:flex;align-items:center;justify-content:center;background:var(--surface)}
+.checklist .txt{font-size:16px;color:var(--ink);line-height:1.3}
+.checklist input:checked~.box{background:var(--warn,#b7791f);border-color:var(--warn,#b7791f)}
+.checklist input:checked~.box::after{content:"✓";color:#fff;font-weight:800;font-size:18px;line-height:1}
+.checklist input:checked~.txt{font-weight:600}
+.checklist label:has(input:checked){background:color-mix(in srgb,var(--warn,#b7791f) 12%,var(--surface))}
 .tiers3{grid-template-columns:1fr 1fr!important}
 .seg3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
 .seg3 label{cursor:pointer}.seg3 input{position:absolute;opacity:0;pointer-events:none}
-.seg3 span{display:flex;align-items:center;justify-content:center;text-align:center;min-height:44px;padding:4px 6px;border-radius:12px;border:1px solid var(--line);background:#fff;font-size:14px;font-weight:600;line-height:1.2}
-.seg3 input:checked+span{background:var(--ink);color:var(--paper,#fff);border-color:var(--ink)}
+.seg3 span{display:flex;align-items:center;justify-content:center;text-align:center;min-height:44px;padding:4px 6px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:14px;font-weight:600;line-height:1.2}
+.seg3 input:checked+span{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.seg3.where span{gap:6px;font-size:13.5px}
+.seg3.where{margin-top:2px}
 .newco .fld{margin-top:10px}
 .fldh{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.mic{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line,#d8d2c6);background:#fff;border-radius:999px;padding:4px 10px;font:600 13px var(--sans,sans-serif);color:var(--ink,#0b0b0b);min-height:32px}
+.mic{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line,#d8d2c6);background:var(--surface);color:var(--ink);border-radius:999px;padding:4px 10px;font:600 13px var(--sans,sans-serif);color:var(--ink,#0b0b0b);min-height:32px}
 .mic.rec{background:#b3261e;color:#fff;border-color:#b3261e;animation:pulse 1.2s infinite}
 .mic.rec span::after{content:" · Stop"}
 @keyframes pulse{50%{opacity:.6}}
 .quick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 4px}
 .quick .act{justify-content:center}
 .nearform{display:grid;grid-template-columns:1fr auto;gap:8px}
-.nearform input{min-height:48px;border-radius:12px;border:1px solid var(--line,#d8d2c6);padding:0 14px;font-size:16px;background:#fff}
+.nearform input{min-height:48px;border-radius:12px;border:1px solid var(--line,#d8d2c6);padding:0 14px;font-size:16px;background:var(--surface);color:var(--ink)}
 .chrow{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;padding:10px 12px;align-items:center;border-bottom:1px solid var(--line,#e6e0d4)}
 .chrow:last-child{border-bottom:0}.chrow.off input{color:#9a948a;text-decoration:line-through}
-.chrow input,.chrow select{min-height:40px;border:1px solid var(--line,#d8d2c6);border-radius:10px;padding:0 10px;font-size:15px;background:#fff;min-width:0}
+.chrow input,.chrow select{min-height:40px;border:1px solid var(--line,#d8d2c6);border-radius:10px;padding:0 10px;font-size:15px;background:var(--surface);color:var(--ink);min-width:0}
 .chon{display:flex;align-items:center;gap:4px;font-size:14px;white-space:nowrap}
 .rolechips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .rolechips label{cursor:pointer}.rolechips input{position:absolute;opacity:0;pointer-events:none}
-.rolechips span{display:inline-block;padding:8px 12px;border-radius:999px;border:1px solid var(--line,#d8d2c6);background:#fff;font-size:14px}
-.rolechips input:checked+span{background:var(--ink,#0b0b0b);color:#fff;border-color:var(--ink,#0b0b0b)}
+.rolechips span{display:inline-block;padding:8px 12px;border-radius:999px;border:1px solid var(--line,#d8d2c6);background:var(--surface);color:var(--ink);font-size:14px}
+.rolechips input:checked+span{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.rolechips input:checked+span::before{content:"✓ "}
 .sigs{display:flex;flex-wrap:wrap;gap:6px}
 .histd summary{cursor:pointer;display:flex;align-items:center;gap:6px;margin-top:10px;font-weight:600;font-size:14.5px;list-style:none}
 .route a{color:inherit;text-decoration:underline}
@@ -1764,7 +1777,7 @@ function ownerDealForm(contactId){
   const kk=S.contacts.get(contactId); const t=tierOf(kk); const owner=t==="A"||OWNER_ROLES.includes(kk.companyRole);
   const map={"Accountant / auditor":"accounting","Attorney":"law","Tax advisor":"tax","Banker / financier":"bank","Business broker":"broker","Well-connected friend":"friend"};
   const preset={source:{channel:owner?"whatsapp":(map[kk?.type]||"connector"),contactId}, partner:kk?.partner||defaultPartner()};
-  if(owner){ preset.name=kk.firm||""; preset.province=kk.province||""; preset.town=kk.town||""; preset.industry=kk.industry||""; preset.owners=[{name:kk.name,cell:kk.cell||"",email:kk.email||"",language:kk.language||"af",role:kk.companyRole||"Owner"}]; }
+  preset.name=kk.firm||""; if(owner){ preset.province=kk.province||""; preset.town=kk.town||""; preset.industry=kk.industry||""; preset.owners=[{name:kk.name,cell:kk.cell||"",email:kk.email||"",language:kk.language||"af",role:kk.companyRole||"Owner"}]; }
   dealForm(null,preset); FORM.fromOwner = owner? contactId : null; FORM.fromRole = kk.companyRole||"Owner";
 }
 
@@ -2507,6 +2520,7 @@ function contactForm(id, preset){
   const tier=id? tierOf(k) : (k.tier||"D");
   FORM={kind:"contact", id};
   const co=k.companyId? S.companies.get(k.companyId) : null; const tal=k.talent||{};
+  const whereInit= co? (isPartnerCo(co)?"partner":"business") : k.firm? "other" : tier==="B"? "partner" : tier==="A"? "business" : "other"; FORM.coInit=co?co.id:"";
   const rel={}; (id? knowers(k) : [{partner:defaultPartner(),relation:""}]).forEach(x=>rel[x.partner]=x.relation||"business");
   showModal(`<form id="contactForm" novalidate style="display:contents">${formHead(id?"Edit person":"New person","contactForm")}<div class="ovb">
   <div class="scorebar" id="kScore"></div>
@@ -2521,9 +2535,13 @@ function contactForm(id, preset){
    <div class="fld"><label for="kTown">Town / city</label><input id="kTown" list="townList" value="${esc(k.town)}" autocomplete="off" placeholder="e.g. Pretoria, Stellenbosch">${townList()}</div>
    <div class="fld"><label for="kCountry">Country</label><select id="kCountry">${opts(COUNTRIES,k.country||"South Africa")}</select></div>
   </div><div id="kDup" class="warnline"></div>
-  <div class="fsec">Work</div>
-  <div class="fields">
-   <div class="fld"><label for="kCompany">Works at</label><input id="kCompany" list="companyList" value="${esc(co?co.name:k.firm)}" autocomplete="off" placeholder="Type or pick a partner firm or business"><datalist id="companyList">${companies().map(c=>`<option value="${esc(c.name)}">${isPartnerCo(c)?"Partner · "+esc(PKINDS[c.kind]||""):"Business"}</option>`).join("")}</datalist></div>
+  <div class="fsec">Where do they work?</div>
+  <div class="seg3 where" role="radiogroup" aria-label="Where do they work?"><label><input type="radio" name="kWhere" value="partner" ${whereInit==="partner"?"checked":""}><span>${ic("bank",18)} At a partner</span></label><label><input type="radio" name="kWhere" value="business" ${whereInit==="business"?"checked":""}><span>${ic("biz",18)} At a business</span></label><label><input type="radio" name="kWhere" value="other" ${whereInit==="other"?"checked":""}><span>Elsewhere / none</span></label></div>
+  <div class="fields" style="margin-top:10px">
+   <div class="fld" id="kCoPickW"><label for="kCoPick" id="kCoPickL">Which partner?</label><select id="kCoPick"></select></div>
+   <div class="fld" id="kCoNewW" hidden><label for="kCoNew" id="kCoNewL">Name of the new partner firm</label><input id="kCoNew" autocomplete="off" autocapitalize="words" value="${esc(!co&&k.firm&&whereInit!=="other"?k.firm:"")}"></div>
+   <div class="fld" id="kNewCoKindW" hidden><label for="kNewCoKind">What kind of partner?</label><select id="kNewCoKind">${opts(Object.entries(PKINDS).map(([v,l])=>({v,l})),"")}</select></div>
+   <div class="fld" id="kFirmW" hidden><label for="kFirm">Company (optional)</label><input id="kFirm" autocomplete="off" value="${esc(!co&&whereInit==="other"?k.firm:"")}" placeholder="Where they work, if anywhere"></div>
    <div class="fld"><label for="kRole">Role at the company</label><select id="kRole">${opts(ROLES,k.companyRole,"Choose…")}</select></div>
    <div class="fld"><label for="kTitle">Job title</label><input id="kTitle" value="${esc(k.title)}" placeholder="e.g. Head of leveraged finance, Videographer"></div>
    <div class="fld"><label for="kIndustry">Industry</label><select id="kIndustry">${industryOpts(k.industry)}</select></div>
@@ -2545,7 +2563,7 @@ function contactForm(id, preset){
     ${fldNote("kTalWhy","Why we rate them",tal.why,"How they think, what they've built…",2)}
    </div>
   </div>
-  <div id="kNewCoWrap" hidden class="card box newco"><div class="lbl" id="kNewCoLbl"></div><div class="seg3" role="radiogroup"><label><input type="radio" name="kNewCo" value="partner"><span>Partner firm</span></label><label><input type="radio" name="kNewCo" value="business"><span>Business to buy</span></label><label><input type="radio" name="kNewCo" value="none"><span>Neither</span></label></div><div class="fld" id="kNewCoKindW" hidden><label for="kNewCoKind">What kind of partner?</label><select id="kNewCoKind">${opts(Object.entries(PKINDS).filter(([k])=>k!=="other").map(([v,l])=>({v,l})),"")}</select></div></div>
+  
   <details class="more" ${id?"open":""}><summary>${ic("plus",18)} More details</summary>
    <div class="fsec">More</div>
    <div class="fields">
@@ -2565,7 +2583,7 @@ function contactForm(id, preset){
 }
 function kFormRead(){
   const tier=(document.querySelector('input[name=kTier]:checked')||{}).value||"";
-  const cname=($("#kCompany")?.value||"").trim(); const co=companies().find(c=>c.name.toLowerCase()===cname.toLowerCase());
+  const W=whereRead(); const cname=W.coName; const co=W.co;
   const conns=[...document.querySelectorAll("[data-partner]")].filter(s=>s.value).map(s=>({partner:s.dataset.partner, relation:s.value}));
   const town=$("#kTown").value.trim(); const g=gazFind(town);
   return {tier, name:$("#kName").value.trim(), cell:$("#kCell").value.trim(), email:$("#kEmail").value.trim(), country:$("#kCountry").value, companyId:co?co.id:"", firm: co? "" : cname, companyRole:$("#kRole").value, title:$("#kTitle").value.trim(), industry:$("#kIndustry").value, expertise:$("#kExpertise").value.trim(), type:$("#kType").value, language:$("#kLang").value, province:autoProvince(town,$("#kProv").value), town: g? g.name : town, linkedin:$("#kLinkedin").value.trim(), notes:$("#kNotes").value.trim(), influence:Number($("#kInfl").value)||0, conns, coName:cname, coFound:!!co,
@@ -2632,7 +2650,7 @@ function dealForm(id, preset){
   <div class="fields" style="margin-top:12px">${fldNote("cNotes","Why are we adding it?",c.notes,"Type or speak: succession situation, culture, why it's interesting…",3)}</div>
   <details class="more" ${id?"open":""}><summary>${ic("plus",18)} Size, sale signals and more</summary>
    <div class="nofin"><div class="fsec">Sale signals</div>
-   <div class="rolechips">${SIGNALS.map(([s,l])=>`<label><input type="checkbox" name="cSig" value="${s}" ${sig[s]?"checked":""}><span>${esc(l)}</span></label>`).join("")}</div>
+   <p class="tag" style="margin:0 2px 8px">Tick what you know. Two or more puts it on the Likely sellers list.</p><div class="checklist">${SIGNALS.map(([s,l])=>`<label><input type="checkbox" name="cSig" value="${s}" ${sig[s]?"checked":""}><span class="box" aria-hidden="true"></span><span class="txt">${esc(l)}</span></label>`).join("")}</div>
    <div class="fsec">How big is it?</div>
    <div class="fields">
     <div class="fld"><label for="cEbit">EBIT – our estimate</label><select id="cEbit">${opts(EBIT,c.ebit)}</select></div>
@@ -2844,14 +2862,35 @@ function vBusinesses(){
 /* ---------- Person form: new company → partner firm or business ---------- */
 function guessPKind(d){ const t=[d.type,d.title,d.expertise,d.coName].join(" ").toLowerCase();
   if(/bank|financ|credit|lend|capital|fund/.test(t)) return "financier"; if(/account|audit|tax|chartered/.test(t)) return "accounting"; if(/attorney|lawyer|legal|advocate|incorporated|\binc\b/.test(t)) return "legal"; return "advisory"; }
-function newCoUpdate(d){
-  const w=$("#kNewCoWrap"); if(!w) return; const show=!!(d.coName && !d.coFound); w.hidden=!show; if(!show) return;
-  $("#kNewCoLbl").innerHTML=`<b>${esc(d.coName)}</b> isn't in Munger yet. Add it as…`;
-  if(!FORM.ncTouched){ const def=(d.tier==="A"||OWNER_ROLES.includes(d.companyRole))? "business" : d.tier==="B"? "partner" : "none"; const r=document.querySelector(`input[name=kNewCo][value=${def}]`); if(r) r.checked=true; }
-  if(!FORM.nkTouched) $("#kNewCoKind").value=guessPKind(d);
-  $("#kNewCoKindW").hidden=(document.querySelector("input[name=kNewCo]:checked")||{}).value!=="partner";
+const PROLES=["Partner / director","Relationship manager / banker","Credit / deal team","Head of region / branch","Senior manager","Associate / analyst","Other"];
+function whereVal(){ return (document.querySelector("input[name=kWhere]:checked")||{}).value||"other"; }
+function fillCoPick(){
+  const w=whereVal(), sel=$("#kCoPick"); if(!sel) return; const cur=sel.value||FORM.coInit||"";
+  const list=companies().filter(c=> w==="partner"? isPartnerCo(c) : !isPartnerCo(c)).sort((a,b)=>a.name.localeCompare(b.name));
+  sel.innerHTML=`<option value="">Choose…</option>${list.map(c=>`<option value="${esc(c.id)}"${c.id===cur?" selected":""}>${esc(c.name)}${w==="partner"?` · ${esc(PKINDS[c.kind]||"")}`:""}</option>`).join("")}<option value="__new"${cur==="__new"?" selected":""}>+ New ${w==="partner"?"partner firm":"business"}…</option>`;
+  if(!list.some(c=>c.id===cur) && cur!=="__new" && $("#kCoNew")?.value) sel.value="__new";
+  $("#kCoPickL").textContent= w==="partner"? "Which partner?" : "Which business?";
+  $("#kCoNewL").textContent= w==="partner"? "Name of the new partner firm" : "Name of the business";
+  const role=$("#kRole"); if(role){ const rv=role.value; const L=w==="partner"? PROLES : ROLES; role.innerHTML=opts(L.includes(rv)||!rv? L : [rv,...L], rv, "Choose…"); }
 }
-function newCoChoice(d){ const w=$("#kNewCoWrap"); if(!w||w.hidden||!d.coName) return {what:"none"}; return {what:(document.querySelector("input[name=kNewCo]:checked")||{}).value||"none", kind:$("#kNewCoKind").value||"advisory"}; }
+function whereRead(){
+  const w=whereVal();
+  if(w==="other"){ const f=($("#kFirm")?.value||"").trim(); const co=f? companies().find(c=>c.name.toLowerCase()===f.toLowerCase()) : null; return {where:w, co, coName:co?co.name:f, isNew:false}; }
+  const v=$("#kCoPick")?.value||"";
+  if(v==="__new"){ const nm=($("#kCoNew")?.value||"").trim(); const ex=nm? companies().find(c=>c.name.toLowerCase()===nm.toLowerCase()) : null; return {where:w, co:ex, coName:ex?ex.name:nm, isNew:!ex && !!nm}; }
+  const co=v? S.companies.get(v) : null; return {where:w, co, coName:co?co.name:"", isNew:false};
+}
+function newCoUpdate(d){
+  if(!$("#kCoPick")) return;
+  if(!FORM.whereTouched && !FORM.id){ const want=(d.tier==="A"||OWNER_ROLES.includes(d.companyRole))? "business" : d.tier==="B"? "partner" : null; if(want && !FORM.coInit && whereVal()!==want){ const r=document.querySelector(`input[name=kWhere][value=${want}]`); if(r){ r.checked=true; fillCoPick(); } } }
+  if(!$("#kCoPick").options.length) fillCoPick();
+  const w=whereVal(), v=$("#kCoPick").value;
+  $("#kCoPickW").hidden= w==="other"; $("#kFirmW").hidden= w!=="other";
+  $("#kCoNewW").hidden= !(w!=="other" && v==="__new");
+  const kw=$("#kNewCoKindW"), was=kw.hidden; kw.hidden= !(w==="partner" && v==="__new");
+  if(was && !kw.hidden && !FORM.nkTouched) $("#kNewCoKind").value=guessPKind(d);
+}
+function newCoChoice(d){ const W=whereRead(); if(!W.isNew) return {what:"none"}; return {what:W.where==="partner"?"partner":"business", kind:$("#kNewCoKind")?.value||"advisory"}; }
 
 /* ---------- Events ---------- */
 document.addEventListener("click",e=>{
@@ -2860,8 +2899,8 @@ document.addEventListener("click",e=>{
   if(a==="new-partner" && !S.readOnly){ dealForm(null,{kind:S.pf.kind? (S.pf.kind==="other"?"service":S.pf.kind) : "financier", status:"network"}); }
 });
 document.addEventListener("change",e=>{
-  if(e.target.name==="kNewCo"){ FORM.ncTouched=true; $("#kNewCoKindW").hidden=e.target.value!=="partner"; }
-  if(e.target.id==="kNewCoKind") FORM.nkTouched=true;
+  if(e.target.name==="kWhere"){ FORM.whereTouched=true; $("#kCoPick").value=""; fillCoPick(); kFormUpdate(); }
+  if(e.target.id==="kCoPick"){ kFormUpdate(); if(e.target.value==="__new") setTimeout(()=>$("#kCoNew")?.focus(),50); }
   if(e.target.id==="cKind"){ const h=document.querySelector("#modal .ovh h2, #modal .ovhead b"); }
 });
 document.addEventListener("input",e=>{ if(e.target.id==="pfq"){ S.pf.q=e.target.value; const pos=e.target.selectionStart; render(); const i=$("#pfq"); if(i){ i.focus(); try{ i.setSelectionRange(pos,pos); }catch(_){} } } });
@@ -2881,6 +2920,8 @@ async function syncOwnersToPeople(cid, owners, biz, skipId){
   if(made) toast(`${made} owner${made>1?"s":""} added to People`);
 }
 document.addEventListener("change",e=>{ if(e.target.name==="kTier" && e.target.value==="C"){ const c=$("#kTal"); if(c&&!c.checked){ c.checked=true; kFormUpdate(); } } });
+
+document.addEventListener("change",e=>{ if(e.target.id==="kNewCoKind") FORM.nkTouched=true; if(e.target.name==="kWhere") FORM.whereTouched=true; },true);
 
 
 function vNetwork(){
