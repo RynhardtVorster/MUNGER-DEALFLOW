@@ -455,9 +455,9 @@ let CHANNELS = [
 let CHANNEL = Object.fromEntries(CHANNELS.map(c=>[c.id,c]));
 const TIERS = {
   A:{label:"Owner", desc:"Owns or runs a business that could fit the mandate", action:"Personal call or coffee", types:["Business owner","Managing director / CEO","Family shareholder"]},
-  B:{label:"Connector", desc:"Accountants, attorneys, bankers, auditors, brokers and consultants who see owners' exit plans first", action:"Referral conversation", types:["Accountant / auditor","Attorney","Banker / financier","Business broker","Consultant","Tax advisor","Wealth / financial adviser"]},
+  B:{label:"Employee", desc:"Works at a business or partner firm we know: a 2IC, manager, banker, accountant or attorney", action:"Stay in touch: they see what happens inside first", types:["2IC / right hand","Senior manager","Banker / financier","Accountant / auditor","Attorney","Tax advisor","Business broker","Consultant","Wealth / financial adviser","Employee"]},
   C:{label:"Potential hire", desc:"Potential employee: a CEO, CFO, C-suite or hit-squad person we'd love to work with", action:"Keep warm and know when they're open to a move", types:["CEO / MD","CFO / Finance","COO / Operations","Sales & marketing lead","CTO / Tech","Turnaround / hit squad","Board / NED","Specialist / technical expert"]},
-  D:{label:"Great contact", desc:"Not an owner, connector or hire, but someone we want in our network: influential, well connected, or great to know", action:"Ask for introductions", types:["Well-connected friend","Sector insider","Community / town figure","Industry body / association","Investor","Creative / media","Service provider","Other"]}
+  D:{label:"Great contact", desc:"Not an owner, employee or hire, but someone we want in our network: influential, well connected, or great to know", action:"Ask for introductions", types:["Well-connected friend","Sector insider","Community / town figure","Industry body / association","Investor","Creative / media","Service provider","Other"]}
 };
 const CONTACT_TYPES = [...TIERS.A.types,...TIERS.B.types,...TIERS.C.types];
 const LEGACY_TIER = {"Accounting firm":"B","Law firm":"B","Tax advisor":"B","Bank / financier":"B","Business broker":"B","Connector / intermediary":"B","Friend":"D","Business owner":"A","Industry body":"D","Investor":"D","Other":"D"};
@@ -817,7 +817,7 @@ function vPeople(){
     flush(); body=parts.join(""); }
   return `<div class="ph"><div><h1>People</h1><p>${all.length} in the network · A ${cnt("A")} · B ${cnt("B")} · C ${cnt("C")}</p></div><a class="btn sm" href="#import">${ic("upload",18)} Import</a></div>
   <div class="search">${ic("search",20)}<input id="kq" type="search" placeholder="Search name, firm, number…" value="${esc(k.q)}" autocomplete="off" aria-label="Search people"></div>
-  <div class="chips">${chip("","All",all.length)}${chip("A","A · Owners",cnt("A"))}${chip("B","B · Connectors",cnt("B"))}${chip("C","C · Potential hires",cnt("C"))}${chip("D","D · Great contacts",cnt("D"))}${me?`<button class="chip ${k.mine?"on":""}" data-act="k-mine">My network</button>`:""}</div>
+  <div class="chips">${chip("","All",all.length)}${chip("A","A · Owners",cnt("A"))}${chip("B","B · Employees",cnt("B"))}${chip("C","C · Potential hires",cnt("C"))}${chip("D","D · Great contacts",cnt("D"))}${me?`<button class="chip ${k.mine?"on":""}" data-act="k-mine">My network</button>`:""}</div>
   ${body}`;
 }
 
@@ -976,7 +976,7 @@ function renderSheet(){
       <a class="bigact" ${k.email?`href="mailto:${esc(k.email)}"`:'aria-disabled="true"'}>${ic("mail",22)}Email</a>
       <button class="bigact" data-act="new-deal-from" data-id="${esc(k.id)}" ${ro?'aria-disabled="true"':""}>${ic("bizplus",22)}${t==="A"?"Their business":"Add lead"}</button>
     </div>
-    <div class="card box" style="margin-top:14px"><div class="lbl">Next step for ${t==="A"?"an owner":t==="B"?"a connector":"a potential hire"}</div><div class="next">${esc(TIERS[t].action)}</div>${own?`<div>Owns <a href="#" data-open="${esc(own.id)}">${esc(own.name)}</a> ${stagePill(own.status)}</div>`:""}</div>
+    <div class="card box" style="margin-top:14px"><div class="lbl">Next step for ${({A:"an owner",B:"an employee",C:"a potential hire",D:"a great contact"})[t]||"a contact"}</div><div class="next">${esc(TIERS[t].action)}</div>${own?`<div>Owns <a href="#" data-open="${esc(own.id)}">${esc(own.name)}</a> ${stagePill(own.status)}</div>`:""}</div>
     <div class="fsec">Contact details</div>
     <div class="card kv"><div class="k">Cell</div><div class="v">${esc(k.cell||"—")}</div><div class="k">Email</div><div class="v">${esc(k.email||"—")}</div><div class="k">Firm</div><div class="v">${esc(k.firm||"—")}</div><div class="k">Location</div><div class="v">${esc([k.town,k.province].filter(Boolean).join(", ")||"—")}</div><div class="k">Speaks</div><div class="v">${esc(LANGS[k.language]||"—")}</div></div>
     ${k.notes?`<div class="fsec">Notes</div><div class="card box" style="white-space:pre-wrap">${esc(k.notes)}</div>`:""}
@@ -1174,7 +1174,7 @@ function ownerDealForm(contactId){
 function captureChooser(){
   if(S.readOnly) return;
   showModal(`${ovHead("Capture",`<button class="hbtn" data-act="close-modal">Close</button>`)}<div class="ovb"><div class="choice">
-   <button type="button" data-act="new-contact"><span class="ci">${ic("userplus",24)}</span><span><b>A person</b><span>An owner, a connector, a potential hire, or an influential person we want in our network.</span></span></button>
+   <button type="button" data-act="new-contact"><span class="ci">${ic("userplus",24)}</span><span><b>A person</b><span>An owner, an employee, a potential hire, or an influential person we want in our network.</span></span></button>
    <button type="button" data-act="new-deal"><span class="ci">${ic("bizplus",24)}</span><span><b>A business</b><span>A company we might want to buy.</span></span></button>
    <button type="button" data-act="new-partner"><span class="ci">${ic("bank",24)}</span><span><b>A partner</b><span>A bank, funder, accounting or law firm, or advisor that helps us do deals.</span></span></button>
    <button type="button" data-act="goto-import"><span class="ci">${ic("upload",24)}</span><span><b>Import contacts</b><span>Many people at once, from your phone or a file.</span></span></button>
@@ -1597,7 +1597,7 @@ function vPeople(){
     flush(); body=parts.join(""); }
   return `<div class="ph"><div><h1>People</h1><p>${all.length} in the network · A ${cnt("A")} · B ${cnt("B")} · C ${cnt("C")}</p></div><a class="btn sm" href="#import">${ic("upload",18)} Import</a></div>
   <div class="search">${ic("search",20)}<input id="kq" type="search" placeholder="Search name, company, skill, town…" value="${esc(k.q)}" autocomplete="off" aria-label="Search people"></div>
-  <div class="chips">${chip("","All",all.length)}${chip("A","A · Owners",cnt("A"))}${chip("B","B · Connectors",cnt("B"))}${chip("C","C · Potential hires",cnt("C"))}${chip("D","D · Great contacts",cnt("D"))}<button class="chip ${k.tier==="top"?"on":""}" data-act="k-tier" data-k="top">★ Most influential</button>${me?`<button class="chip ${k.mine?"on":""}" data-act="k-mine">People I know</button>`:""}</div>
+  <div class="chips">${chip("","All",all.length)}${chip("A","A · Owners",cnt("A"))}${chip("B","B · Employees",cnt("B"))}${chip("C","C · Potential hires",cnt("C"))}${chip("D","D · Great contacts",cnt("D"))}<button class="chip ${k.tier==="top"?"on":""}" data-act="k-tier" data-k="top">★ Most influential</button>${me?`<button class="chip ${k.mine?"on":""}" data-act="k-mine">People I know</button>`:""}</div>
   ${k.tier==="top"?`<p class="tag" style="margin:-4px 2px 10px">Ranked by your influence rating, how many partners know them, friendships and the leads they've brought in.</p>`:""}
   ${body}`;
 }
@@ -1682,7 +1682,7 @@ function renderSheet(){
     ${knowers(k).length?`<div class="group">${knowers(k).map(x=>`<div class="rowi" style="min-height:52px"><span class="avatar biz" style="width:34px;height:34px;font-size:13px">${esc(initials(x.partner))}</span><span class="main"><span class="t1" style="display:block">${esc(x.partner)}</span></span><span class="pill ${x.relation==="friend"?"won":x.relation==="family"?"A":""}">${esc(RELS[x.relation]||"Not set")}</span></div>`).join("")}</div>`:`<div class="card empty">No partner linked yet.</div>`}
     <div class="fsec">Work</div>
     <div class="card kv">${co?`<div class="k">Works at</div><div class="v"><a href="#" data-open="${esc(co.id)}">${esc(co.name)}</a></div><div class="k">Role there</div><div class="v">${esc(k.companyRole||"—")}</div>`:`<div class="k">Company</div><div class="v">${esc(k.firm||"—")}</div>`}<div class="k">Title</div><div class="v">${esc(k.title||k.type||"—")}</div><div class="k">Industry</div><div class="v">${esc(k.industry||"—")}</div><div class="k">Can help with</div><div class="v">${esc(k.expertise||"—")}</div></div>
-    <div class="card box" style="margin-top:12px"><div class="lbl">Next step for ${t==="A"?"an owner":t==="B"?"a connector":"a potential hire"}</div><div class="next">${esc(TIERS[t].action)}</div></div>
+    <div class="card box" style="margin-top:12px"><div class="lbl">Next step for ${({A:"an owner",B:"an employee",C:"a potential hire",D:"a great contact"})[t]||"a contact"}</div><div class="next">${esc(TIERS[t].action)}</div></div>
     <div class="fsec">Contact details</div>
     <div class="card kv"><div class="k">Cell</div><div class="v">${linkTel(k.cell)}</div><div class="k">Email</div><div class="v">${linkMail(k.email)}</div>${k.linkedin?`<div class="k">LinkedIn</div><div class="v"><a href="${esc(/^https?:/i.test(k.linkedin)?k.linkedin:"https://"+k.linkedin)}" target="_blank" rel="noopener">Profile</a></div>`:""}<div class="k">Location</div><div class="v">${esc([k.town,k.province,k.country].filter(Boolean).join(", ")||"—")}</div><div class="k">Speaks</div><div class="v">${esc(LANGS[k.language]||"—")}</div></div>
     ${k.notes?`<div class="fsec">Notes</div><div class="card box" style="white-space:pre-wrap">${esc(k.notes)}</div>`:""}
@@ -2279,7 +2279,7 @@ function vPeople(){
     flush(); body=parts.join(""); }
   return `<div class="ph"><div><h1>People</h1><p>${all.length} in the network · A ${cnt("A")} · B ${cnt("B")} · C ${cnt("C")} · D ${cnt("D")}</p></div><a class="btn sm" href="#import">${ic("upload",18)} Import</a></div>
   <div class="search">${ic("search",20)}<input id="kq" type="search" placeholder="Search name, company, skill, town…" value="${esc(k.q)}" autocomplete="off" aria-label="Search people"></div>
-  <div class="chips">${chip("","All",all.length)}${chip("A","A · Owners",cnt("A"))}${chip("B","B · Connectors",cnt("B"))}${chip("C","C · Potential hires",cnt("C"))}${chip("D","D · Great contacts",cnt("D"))}${chip("top","★ Most influential")}${chip("talent","Talent",all.filter(isTalent).length)}${chip("hnwi","HNWI",all.filter(x=>x.hnwi).length)}${me?`<button class="chip ${k.mine?"on":""}" data-act="k-mine">People I know</button>`:""}</div>
+  <div class="chips">${chip("","All",all.length)}${chip("A","A · Owners",cnt("A"))}${chip("B","B · Employees",cnt("B"))}${chip("C","C · Potential hires",cnt("C"))}${chip("D","D · Great contacts",cnt("D"))}${chip("top","★ Most influential")}${chip("talent","Talent",all.filter(isTalent).length)}${chip("hnwi","HNWI",all.filter(x=>x.hnwi).length)}${me?`<button class="chip ${k.mine?"on":""}" data-act="k-mine">People I know</button>`:""}</div>
   ${k.tier==="top"?`<p class="tag" style="margin:-4px 2px 10px">Ranked by your influence rating, how many of our team know them, friendships and the leads they've brought in.</p>`:""}
   ${body}`;
 }
@@ -2437,7 +2437,7 @@ function wayIn(c){
 }
 function wayInHTML(c){
   const r=wayIn(c);
-  if(!r.length) return `<div class="card box tag">No way in yet. Add the people we know here, or ask the B connectors near ${esc(c.town||"this business")} for an introduction.</div>`;
+  if(!r.length) return `<div class="card box tag">No way in yet. Add the people we know here, or ask the people we know near ${esc(c.town||"this business")} for an introduction.</div>`;
   return `<div class="group">${r.map(x=>`<div class="rowi" style="min-height:54px"><span class="main"><span class="t1 route" style="display:block;white-space:normal">${esc(x.partner)} → ${x.via?`<a href="#" data-contact="${esc(x.via.id)}">${esc(x.via.name)}</a>${x.to?" → ":""}`:""}${x.to?`<a href="#" data-contact="${esc(x.to.id)}">${esc(x.to.name)}</a>`:x.via?"":""}${!x.via&&!x.to?"":""}${!x.via&&x.to?"":""}${x.via&&!x.to?` → ${esc(c.name)}`:""}</span><span class="t2" style="display:block">${esc(x.to?`${x.to.companyRole||"works here"} · ${x.txt}`:x.txt)}</span></span>${x.possible?`<span class="pill">Possible</span>`:`<span class="pill ${x.w>=6?"won":"soon"}">${x.w>=6?"Warm":"OK"}</span>`}</div>`).join("")}</div>`;
 }
 
@@ -2510,7 +2510,7 @@ function renderSheet(){
     <div class="card kv">${co?`<div class="k">Works at</div><div class="v"><a href="#" data-open="${esc(co.id)}">${esc(co.name)}</a></div><div class="k">Role there</div><div class="v">${esc(k.companyRole||"—")}</div>`:`<div class="k">Company</div><div class="v">${esc(k.firm||"—")}</div>`}<div class="k">Title</div><div class="v">${esc(k.title||k.type||"—")}</div><div class="k">Industry</div><div class="v">${esc(k.industry||"—")}</div><div class="k">Can help with</div><div class="v">${esc(k.expertise||"—")}</div></div>
     ${(co||k.firm)&&!ro?`<button class="linkbtn" data-act="left-company" data-id="${esc(k.id)}">No longer works there</button>`:""}
     ${(k.pastRoles||[]).length?`<div class="tag" style="margin:4px 2px 0">Previously: ${esc(k.pastRoles.map(r=>`${r.role?r.role+" at ":""}${r.company} (until ${fmtD(r.until)})`).join("; "))}</div>`:""}
-    <div class="card box" style="margin-top:12px"><div class="lbl">Next step for ${t==="A"?"an owner":t==="B"?"a connector":"a potential hire"}</div><div class="next">${esc(TIERS[t].action)}</div></div>
+    <div class="card box" style="margin-top:12px"><div class="lbl">Next step for ${({A:"an owner",B:"an employee",C:"a potential hire",D:"a great contact"})[t]||"a contact"}</div><div class="next">${esc(TIERS[t].action)}</div></div>
     ${deals.length||t==="B"?`<div class="fsec">Leads they brought in (${deals.length})</div>${deals.length?`<div class="group">${deals.map(bizRow).join("")}</div>`:`<div class="card empty">None yet.</div>`}
     <div class="card box" style="margin-top:10px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div><div class="lbl">Thank-yous</div><div>${(k.thanks||[]).length?`${k.thanks.length} logged · last ${esc(fmtD(lastThx))}`:"Not thanked yet"}</div></div>${ro?"":`<button class="btn sm" data-act="thank" data-id="${esc(k.id)}">Log a thank-you</button>`}</div>${(k.thanks||[]).slice(-3).reverse().map(x=>`<div class="tag">${esc(fmtD(x.d))} · ${esc(x.what)}${x.by?` · ${esc(x.by)}`:""}</div>`).join("")}</div>`:""}
     <div class="fsec">Contact details</div>
@@ -2609,7 +2609,7 @@ function kFormUpdate(){
   const known=d.conns.some(c=>c.relation); const ch=[[d.name,"name"],[d.cell,"cell"],[d.email,"email"],[d.coName,"company"],[d.companyRole||d.title||d.type,"role or title"],[d.industry,"industry"],[d.expertise,"what they're great at"],[d.town||d.province,"town"],[known,"who knows them"]];
   const miss=ch.filter(c=>!c[0]).map(c=>c[1]); const pct=Math.round((ch.length-miss.length)/ch.length*100);
   $("#kScore").innerHTML=`<div style="display:flex;justify-content:space-between;gap:10px;font-size:14px"><b>Profile ${pct}%</b><span class="tag">${miss.length?`Next: ${esc(miss.slice(0,3).join(", "))}${miss.length>3?"…":""}`:"Complete. Great work."}</span></div><div class="meter"><span style="width:${pct}%"></span></div>`;
-  $("#kTierHint").textContent = d.tier? TIERS[d.tier].desc : "Optional. A owns a business we might buy, B is a connector who sees exits first, C is a potential hire, D is an influential person or great contact to have.";
+  $("#kTierHint").textContent = d.tier? TIERS[d.tier].desc : "Optional. A owns a business we might buy, B is an employee at a business or partner we know, C is a potential hire, D is an influential person or great contact to have.";
   $("#kCoHint").innerHTML = d.coName&&d.coFound? (()=>{ const co=companies().find(c=>c.name.toLowerCase()===d.coName.toLowerCase()); return isPartnerCo(co)? `Linked to <b>${esc(co.name)}</b> in Partners (${esc(PKINDS[co.kind]||"")}).` : `Linked to <b>${esc(co.name)}</b> in Businesses.`; })() : "";
   newCoUpdate(d);
   $("#kTalWrap").hidden=!$("#kTal").checked; $("#kWealthWrap").hidden=!$("#kHnwi").checked;
@@ -3215,7 +3215,7 @@ function vNetwork(){
   return `<div class="ph"><div><h1>Network map</h1><p>Every partner, everyone they know, and the businesses those people own, work at or brought in. Tap a dot.</p></div></div>
   <div class="chips"><button class="chip on" data-net="p">Partners</button><button class="chip on" data-net="k">People</button><button class="chip on" data-net="c">Businesses</button><button class="chip" data-net="reset">Re-centre</button></div>
   <div class="netwrap"><canvas id="net" aria-label="Network map of partners, people and businesses"></canvas>
-  <div class="legend"><span><i style="background:var(--ink)"></i>Partner</span><span><i style="background:var(--tierA)"></i>A · Owner</span><span><i style="background:var(--tierB)"></i>B · Connector</span><span><i style="background:var(--tierC)"></i>C · Potential hire</span><span><i style="background:var(--tierD)"></i>D · Great contact</span><span><i class="sq" style="background:var(--ok)"></i>Business</span></div>
+  <div class="legend"><span><i style="background:var(--ink)"></i>Partner</span><span><i style="background:var(--tierA)"></i>A · Owner</span><span><i style="background:var(--tierB)"></i>B · Employee</span><span><i style="background:var(--tierC)"></i>C · Potential hire</span><span><i style="background:var(--tierD)"></i>D · Great contact</span><span><i class="sq" style="background:var(--ok)"></i>Business</span></div>
   <div class="netinfo" id="netinfo"></div></div>`;
 }
 
@@ -3226,7 +3226,7 @@ function vNetwork(){
   <div class="netwrap" id="netwrap"><canvas id="net" aria-label="Network map of partners, people and businesses"></canvas>
   <div class="netctl"><button data-netz="in" aria-label="Zoom in">+</button><button data-netz="out" aria-label="Zoom out">−</button><button data-netz="fit" aria-label="Show the whole network">${ic("net",18)}</button><button data-netz="full" aria-label="Full screen">⤢</button></div>
   <div class="netcount" id="netcount"></div>
-  <div class="legend"><span><i style="background:var(--ink)"></i>Our team</span><span><i style="background:var(--tierA)"></i>A · Owner</span><span><i style="background:var(--tierB)"></i>B · Connector</span><span><i style="background:var(--tierC)"></i>C · Potential hire</span><span><i style="background:var(--tierD)"></i>D · Great contact</span><span><i class="sq" style="background:var(--ok)"></i>Business</span><span><i class="sq" style="background:var(--tierB)"></i>Partner firm</span></div>
+  <div class="legend"><span><i style="background:var(--ink)"></i>Our team</span><span><i style="background:var(--tierA)"></i>A · Owner</span><span><i style="background:var(--tierB)"></i>B · Employee</span><span><i style="background:var(--tierC)"></i>C · Potential hire</span><span><i style="background:var(--tierD)"></i>D · Great contact</span><span><i class="sq" style="background:var(--ok)"></i>Business</span><span><i class="sq" style="background:var(--tierB)"></i>Partner firm</span></div>
   <div class="netinfo" id="netinfo"></div></div>`;
 }
 const NET_KMIN=0.04, NET_KMAX=5;
