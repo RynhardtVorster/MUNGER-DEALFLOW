@@ -22,7 +22,7 @@
   --paper:#f4f1eb; --surface:#ffffff; --ink:#0b0b0b; --muted:#6c675d; --faint:#9b9487; --line:#e5e0d6; --soft:#ece8df;
   --accent:#0b0b0b; --accent-ink:#f4f1eb; --chrome:#0b0b0b; --chrome-ink:#e9e5dc; --chrome-muted:#8a8478;
   --ok:#2f6b47; --ok-soft:#e2ede5; --warn:#9a6413; --warn-soft:#f5e9d4; --bad:#a83c2c; --bad-soft:#f4e0db; --info:#3d5f78; --info-soft:#e2e9ef; --grey-soft:#ebe8e1;
-  --tierA:#9a5b2e; --tierA-soft:#f3e4d8; --tierB:#3d5f78; --tierB-soft:#dfe8ef; --tierC:#5f6b3a; --tierC-soft:#e7ead9;
+  --tierA:#9a5b2e; --tierA-soft:#f3e4d8; --tierB:#3d5f78; --tierB-soft:#dfe8ef; --tierC:#5f6b3a; --tierC-soft:#e7ead9; --tierD:#6e5f86; --tierD-soft:#ebe5f2;
   --bar:#2e3a34;
   --display:"Cinzel", Georgia, serif; --serif:"Source Serif 4", Georgia, serif; --ui:"Source Sans 3", -apple-system, "Segoe UI", Roboto, sans-serif;
   --r:14px; --shadow:0 10px 40px rgba(11,11,11,.16);
@@ -33,12 +33,12 @@
   --paper:#0b0b0b; --surface:#161614; --ink:#ece8df; --muted:#a39c90; --faint:#7d776d; --line:#2a2925; --soft:#1e1d1a;
   --accent:#e9e5dc; --accent-ink:#0b0b0b; --chrome:#000; --chrome-ink:#e9e5dc; --chrome-muted:#7d776d;
   --ok:#7fbf95; --ok-soft:#18281e; --warn:#d9a552; --warn-soft:#30250f; --bad:#e08a78; --bad-soft:#341c17; --info:#8fb1cc; --info-soft:#18232c; --grey-soft:#24231f;
-  --tierA:#d0915e; --tierA-soft:#33241a; --tierB:#8fb1cc; --tierB-soft:#1b2630; --tierC:#a9b77a; --tierC-soft:#232718; --bar:#9b9487; --shadow:0 10px 40px rgba(0,0,0,.6); color-scheme:dark; } }
+  --tierA:#d0915e; --tierA-soft:#33241a; --tierB:#8fb1cc; --tierB-soft:#1b2630; --tierC:#a9b77a; --tierC-soft:#232718; --tierD:#b9a6d6; --tierD-soft:#272132; --bar:#9b9487; --shadow:0 10px 40px rgba(0,0,0,.6); color-scheme:dark; } }
 :root[data-theme="dark"]{
   --paper:#0b0b0b; --surface:#161614; --ink:#ece8df; --muted:#a39c90; --faint:#7d776d; --line:#2a2925; --soft:#1e1d1a;
   --accent:#e9e5dc; --accent-ink:#0b0b0b; --chrome:#000; --chrome-ink:#e9e5dc; --chrome-muted:#7d776d;
   --ok:#7fbf95; --ok-soft:#18281e; --warn:#d9a552; --warn-soft:#30250f; --bad:#e08a78; --bad-soft:#341c17; --info:#8fb1cc; --info-soft:#18232c; --grey-soft:#24231f;
-  --tierA:#d0915e; --tierA-soft:#33241a; --tierB:#8fb1cc; --tierB-soft:#1b2630; --tierC:#a9b77a; --tierC-soft:#232718; --bar:#9b9487; --shadow:0 10px 40px rgba(0,0,0,.6); color-scheme:dark; }
+  --tierA:#d0915e; --tierA-soft:#33241a; --tierB:#8fb1cc; --tierB-soft:#1b2630; --tierC:#a9b77a; --tierC-soft:#232718; --tierD:#b9a6d6; --tierD-soft:#272132; --bar:#9b9487; --shadow:0 10px 40px rgba(0,0,0,.6); color-scheme:dark; }
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{scrollbar-width:none;-ms-overflow-style:none;-webkit-text-size-adjust:100%;height:100%}
@@ -96,10 +96,10 @@ main{padding:16px 16px calc(var(--tab) + 28px);max-width:880px;margin:0 auto}
 .rowi .chev{color:var(--faint)}
 .letter{padding:14px 16px 6px;font-family:var(--display);font-size:12px;letter-spacing:.14em;color:var(--muted);background:var(--paper);position:sticky;top:var(--top);z-index:2}
 .avatar{width:42px;height:42px;border-radius:21px;display:grid;place-items:center;font-weight:600;font-size:15px;flex:none;position:relative;letter-spacing:.02em}
-.avatar.A{background:var(--tierA-soft);color:var(--tierA)}.avatar.B{background:var(--tierB-soft);color:var(--tierB)}.avatar.C{background:var(--tierC-soft);color:var(--tierC)}
+.avatar.A{background:var(--tierA-soft);color:var(--tierA)}.avatar.B{background:var(--tierB-soft);color:var(--tierB)}.avatar.C{background:var(--tierC-soft);color:var(--tierC)}.avatar.D{background:var(--tierD-soft);color:var(--tierD)}
 .avatar.biz{border-radius:10px;background:var(--soft);color:var(--ink)}
 .avatar .tg{position:absolute;right:-3px;bottom:-3px;width:18px;height:18px;border-radius:9px;font-family:var(--display);font-size:10.5px;display:grid;place-items:center;color:#fff;border:2px solid var(--surface)}
-.avatar.A .tg{background:var(--tierA)}.avatar.B .tg{background:var(--tierB)}.avatar.C .tg{background:var(--tierC)}
+.avatar.A .tg{background:var(--tierA)}.avatar.B .tg{background:var(--tierB)}.avatar.C .tg{background:var(--tierC)}.avatar.D .tg{background:var(--tierD)}
 .avatar.lg{width:64px;height:64px;border-radius:32px;font-size:22px}
 .avatar.biz.lg{border-radius:16px}
 .avatar.lg .tg{width:24px;height:24px;border-radius:12px;font-size:13px}
@@ -108,7 +108,7 @@ main{padding:16px 16px calc(var(--tab) + 28px);max-width:880px;margin:0 auto}
 .pill{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;padding:2px 9px;border-radius:20px;font-weight:600;white-space:nowrap;background:var(--grey-soft);color:var(--muted)}
 .pill.active{background:var(--info-soft);color:var(--info)}.pill.nurture{background:var(--warn-soft);color:var(--warn)}.pill.won{background:var(--ok-soft);color:var(--ok)}.pill.closed{background:var(--grey-soft);color:var(--muted)}
 .pill.late{background:var(--bad-soft);color:var(--bad)}.pill.soon{background:var(--warn-soft);color:var(--warn)}.pill.ok{background:var(--ok-soft);color:var(--ok)}
-.pill.A{background:var(--tierA-soft);color:var(--tierA)}.pill.B{background:var(--tierB-soft);color:var(--tierB)}.pill.C{background:var(--tierC-soft);color:var(--tierC)}
+.pill.A{background:var(--tierA-soft);color:var(--tierA)}.pill.B{background:var(--tierB-soft);color:var(--tierB)}.pill.C{background:var(--tierC-soft);color:var(--tierC)}.pill.D{background:var(--tierD-soft);color:var(--tierD)}
 .lang{font-size:11px;font-weight:700;letter-spacing:.06em;border:1px solid var(--line);border-radius:5px;padding:0 5px;color:var(--muted)}
 
 /* Search & chips */
@@ -233,7 +233,7 @@ details.more[open] summary{display:none}
 .imp-row .t2{font-size:13.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tagbtns{display:flex;gap:6px;flex:none}
 .tagbtns button{width:38px;height:38px;border-radius:19px;border:1px solid var(--line);background:var(--surface);font-family:var(--display);font-weight:600;font-size:14px;color:var(--muted)}
-.tagbtns button.on.A{background:var(--tierA);border-color:var(--tierA);color:#fff}.tagbtns button.on.B{background:var(--tierB);border-color:var(--tierB);color:#fff}.tagbtns button.on.C{background:var(--tierC);border-color:var(--tierC);color:#fff}
+.tagbtns button.on.A{background:var(--tierA);border-color:var(--tierA);color:#fff}.tagbtns button.on.B{background:var(--tierB);border-color:var(--tierB);color:#fff}.tagbtns button.on.C{background:var(--tierC);border-color:var(--tierC);color:#fff}.tagbtns button.on.D{background:var(--tierD);border-color:var(--tierD);color:#fff}
 .imp-row.exists{opacity:.5}
 .impbar{position:fixed;left:0;right:0;bottom:var(--tab);z-index:15;padding:10px 16px;background:var(--paper);border-top:1px solid var(--line);display:flex;gap:10px;align-items:center}
 .impbar .btn{flex:1}
@@ -435,11 +435,11 @@ const TIERS = {
   A:{label:"Owner", desc:"Owns or runs a business that could fit the mandate", action:"Personal call or coffee", types:["Business owner","Managing director / CEO","Family shareholder"]},
   B:{label:"Connector", desc:"Accountants, attorneys, bankers, auditors, brokers and consultants who see owners' exit plans first", action:"Referral conversation", types:["Accountant / auditor","Attorney","Banker / financier","Business broker","Consultant","Tax advisor","Wealth / financial adviser"]},
   C:{label:"Potential hire", desc:"Potential employee: a CEO, CFO, C-suite or hit-squad person we'd love to work with", action:"Keep warm and know when they're open to a move", types:["CEO / MD","CFO / Finance","COO / Operations","Sales & marketing lead","CTO / Tech","Turnaround / hit squad","Board / NED","Specialist / technical expert"]},
-  "":{label:"Not tagged", desc:"Anyone else worth knowing: a creative, a sector insider, a friend of the network", action:"Ask for introductions", types:["Well-connected friend","Sector insider","Community / town figure","Industry body / association","Investor","Creative / media","Service provider","Other"]}
+  D:{label:"Good contact", desc:"A good contact to have: a creative, a sector insider, a friend of the network", action:"Ask for introductions", types:["Well-connected friend","Sector insider","Community / town figure","Industry body / association","Investor","Creative / media","Service provider","Other"]}
 };
 const CONTACT_TYPES = [...TIERS.A.types,...TIERS.B.types,...TIERS.C.types];
-const LEGACY_TIER = {"Accounting firm":"B","Law firm":"B","Tax advisor":"B","Bank / financier":"B","Business broker":"B","Connector / intermediary":"C","Friend":"C","Business owner":"A","Industry body":"C","Investor":"C","Other":"C"};
-function tierOf(k){ return (k&&k.tier&&TIERS[k.tier])? k.tier : (TIERS.A.types.includes(k?.type)?"A":TIERS.B.types.includes(k?.type)?"B":LEGACY_TIER[k?.type]||""); }
+const LEGACY_TIER = {"Accounting firm":"B","Law firm":"B","Tax advisor":"B","Bank / financier":"B","Business broker":"B","Connector / intermediary":"B","Friend":"D","Business owner":"A","Industry body":"D","Investor":"D","Other":"D"};
+function tierOf(k){ return (k&&k.tier&&TIERS[k.tier])? k.tier : (TIERS.A.types.includes(k?.type)?"A":TIERS.B.types.includes(k?.type)?"B":LEGACY_TIER[k?.type]||"D"); }
 function tierBadge(t){ return `<span class="tier ${t}" title="${t} – ${esc(TIERS[t].label)}">${t}</span>`; }
 const CHANNEL_TO_TYPE = {accounting:"Accountant / auditor",law:"Attorney",tax:"Tax advisor",friend:"Well-connected friend",connector:"Sector insider",bank:"Banker / financier",broker:"Business broker",hatstone:"Attorney",whatsapp:"Business owner"};
 const CHANNEL_TO_TIER = {accounting:"B",law:"B",tax:"B",bank:"B",broker:"B",hatstone:"B",friend:"C",connector:"C",whatsapp:"A"};
@@ -476,7 +476,7 @@ const S = {
   f:{q:"", group:"target", sector:"", partner:"", province:"", lang:"", channel:"", mine:false},
   k:{q:"", tier:"", mine:false},
   scope:null,
-  lists:{lang:"af", groups:["network","target","active"], sector:"", includeContacts:true, tiers:["A","B","C"]},
+  lists:{lang:"af", groups:["network","target","active"], sector:"", includeContacts:true, tiers:["A","B","C","D"]},
   imp:{rows:[], tags:{}, partner:"", lang:"af", rel:"business", q:"", shown:60, hideExisting:true, source:""},
   sheet:null
 };
@@ -795,7 +795,7 @@ function vPeople(){
     flush(); body=parts.join(""); }
   return `<div class="ph"><div><h1>People</h1><p>${all.length} in the network · A ${cnt("A")} · B ${cnt("B")} · C ${cnt("C")}</p></div><a class="btn sm" href="#import">${ic("upload",18)} Import</a></div>
   <div class="search">${ic("search",20)}<input id="kq" type="search" placeholder="Search name, firm, number…" value="${esc(k.q)}" autocomplete="off" aria-label="Search people"></div>
-  <div class="chips">${chip("","All",all.length)}${chip("A","A · Owners",cnt("A"))}${chip("B","B · Connectors",cnt("B"))}${chip("C","C · Potential hires",cnt("C"))}${me?`<button class="chip ${k.mine?"on":""}" data-act="k-mine">My network</button>`:""}</div>
+  <div class="chips">${chip("","All",all.length)}${chip("A","A · Owners",cnt("A"))}${chip("B","B · Connectors",cnt("B"))}${chip("C","C · Potential hires",cnt("C"))}${chip("D","D · Good contacts",cnt("D"))}${me?`<button class="chip ${k.mine?"on":""}" data-act="k-mine">My network</button>`:""}</div>
   ${body}`;
 }
 
@@ -882,7 +882,7 @@ function vLists(){
   <div class="sec" style="margin-top:6px"><h2>Business owners of</h2></div>
   <div class="chips">${gchip("network","In our network")}${gchip("target","Targets")}${gchip("active","Active deals")}${gchip("won","Acquired")}${gchip("closed","Not for us")}</div>
   <div class="sec" style="margin-top:0"><h2>People tagged</h2></div>
-  <div class="chips">${["A","B","C"].map(t=>`<button class="chip ${L.includeContacts&&L.tiers.includes(t)?"on":""}" data-act="l-tier" data-k="${t}">${t} · ${esc(TIERS[t].label)}s</button>`).join("")}</div>
+  <div class="chips">${["A","B","C","D"].map(t=>`<button class="chip ${L.includeContacts&&L.tiers.includes(t)?"on":""}" data-act="l-tier" data-k="${t}">${t} · ${esc(TIERS[t].label)}s</button>`).join("")}</div>
   <div class="stats"><div class="stat"><span class="n">${rows.length}</span><span class="l">Recipients</span></div><div class="stat"><span class="n">${emails.length}</span><span class="l">With email</span></div><div class="stat"><span class="n">${rows.filter(r=>r.cell).length}</span><span class="l">With cell</span></div></div>
   <div class="acts" style="margin-top:12px"><button class="act" data-act="copy-emails" ${emails.length?"":"disabled"}>${ic("mail",18)}Emails</button><button class="act" data-act="copy-cells">${ic("phone",18)}Cells</button><button class="act dark" data-act="export-list">${ic("dl",18)}CSV</button></div>
   <div class="sec"><h2>Recipients</h2></div>
@@ -1023,7 +1023,7 @@ function drawSrcExtra(src){
   if(!ch){ box.innerHTML=""; $("#newContact").innerHTML=""; return; }
   if(ch.contact){
     const pool=contacts().sort((a,b)=>(a.name||"").localeCompare(b.name||""));
-    box.innerHTML=`<div class="fld"><label for="sContact">${ch.id==="whatsapp"?"Which contact?":"Who referred it?"}</label><select id="sContact"><option value="">Choose a person…</option><option value="__new"${!src.contactId&&!pool.length?" selected":""}>+ Someone new</option>${["A","B","C"].map(t=>{const g=pool.filter(k=>tierOf(k)===t); return g.length?`<optgroup label="${t} · ${esc(TIERS[t].label)}s">${g.map(k=>`<option value="${esc(k.id)}"${k.id===src.contactId?" selected":""}>${esc(k.name)}${k.firm?` – ${esc(k.firm)}`:""}</option>`).join("")}</optgroup>`:"";}).join("")}</select></div><div class="fld"><label for="sDetail">Detail</label><input id="sDetail" value="${esc(src.detail)}" placeholder="e.g. met at golf day"></div>`;
+    box.innerHTML=`<div class="fld"><label for="sContact">${ch.id==="whatsapp"?"Which contact?":"Who referred it?"}</label><select id="sContact"><option value="">Choose a person…</option><option value="__new"${!src.contactId&&!pool.length?" selected":""}>+ Someone new</option>${["A","B","C","D"].map(t=>{const g=pool.filter(k=>tierOf(k)===t); return g.length?`<optgroup label="${t} · ${esc(TIERS[t].label)}s">${g.map(k=>`<option value="${esc(k.id)}"${k.id===src.contactId?" selected":""}>${esc(k.name)}${k.firm?` – ${esc(k.firm)}`:""}</option>`).join("")}</optgroup>`:"";}).join("")}</select></div><div class="fld"><label for="sDetail">Detail</label><input id="sDetail" value="${esc(src.detail)}" placeholder="e.g. met at golf day"></div>`;
     drawNewContact(ch);
   } else if(ch.partner){
     box.innerHTML=`<div class="fld"><label for="sPartner">Whose network?</label><select id="sPartner">${opts(S.partners,src.partner||defaultPartner(),"Choose…")}</select></div><div class="fld"><label for="sDetail">Detail</label><input id="sDetail" value="${esc(src.detail)}"></div>`;
@@ -1041,7 +1041,7 @@ function drawNewContact(ch){
    <div class="fld"><label for="nkName">Name *</label><input id="nkName" autocapitalize="words"></div>
    <div class="fld"><label for="nkCell">Cell</label><input id="nkCell" type="tel" inputmode="tel"></div>
    <div class="fld"><label for="nkFirm">Firm / company</label><input id="nkFirm"></div>
-   <div class="fld"><label for="nkTier">Tag</label><select id="nkTier">${opts(["A","B","C"].map(x=>({v:x,l:`${x} · ${TIERS[x].label}`})),t)}</select></div>
+   <div class="fld"><label for="nkTier">Tag</label><select id="nkTier">${opts(["A","B","C","D"].map(x=>({v:x,l:`${x} · ${TIERS[x].label}`})),t)}</select></div>
    <div class="fld"><label for="nkType">Type</label><select id="nkType">${opts(TIERS[t].types,CHANNEL_TO_TYPE[ch.id])}</select></div>
    <div class="fld"><label for="nkPartner">Whose network</label><select id="nkPartner">${opts(S.partners,$("#cPartner")?.value||defaultPartner(),"—")}</select></div>
    <div class="fld"><label for="nkEmail">Email</label><input id="nkEmail" type="email" autocapitalize="off"></div>
@@ -1099,7 +1099,7 @@ function contactForm(id, preset){
   const comps=companies().sort((a,b)=>(a.name||"").localeCompare(b.name||""));
   showModal(`<form id="contactForm" novalidate style="display:contents">${formHead(id?"Edit person":"New person","contactForm")}<div class="ovb">
   <div class="fsec">Who is this?</div>
-  <div class="tierpick" role="radiogroup">${["A","B","C",""].map(t=>`<label><input type="radio" name="kTier" value="${t}" ${tier===t?"checked":""}><span class="avatar ${t}" style="width:38px;height:38px;font-family:var(--display)">${t}</span><span class="tt"><b>${esc(TIERS[t].label)}</b><span>${esc(TIERS[t].desc)}</span></span></label>`).join("")}</div>
+  <div class="tierpick" role="radiogroup">${["A","B","C","D"].map(t=>`<label><input type="radio" name="kTier" value="${t}" ${tier===t?"checked":""}><span class="avatar ${t}" style="width:38px;height:38px;font-family:var(--display)">${t}</span><span class="tt"><b>${esc(TIERS[t].label)}</b><span>${esc(TIERS[t].desc)}</span></span></label>`).join("")}</div>
   <div class="fsec">Details</div>
   <div class="fields">
    <div class="fld"><label for="kName">Name *</label><input id="kName" value="${esc(k.name)}" autocomplete="off" autocapitalize="words"></div>
@@ -1152,7 +1152,7 @@ function ownerDealForm(contactId){
 function captureChooser(){
   if(S.readOnly) return;
   showModal(`${ovHead("Capture",`<button class="hbtn" data-act="close-modal">Close</button>`)}<div class="ovb"><div class="choice">
-   <button type="button" data-act="new-contact"><span class="ci">${ic("userplus",24)}</span><span><b>A person</b><span>An owner, a connector, a potential hire, or anyone worth knowing.</span></span></button>
+   <button type="button" data-act="new-contact"><span class="ci">${ic("userplus",24)}</span><span><b>A person</b><span>An owner, a connector, a potential hire or a good contact.</span></span></button>
    <button type="button" data-act="new-deal"><span class="ci">${ic("bizplus",24)}</span><span><b>A business</b><span>A company we might want to buy.</span></span></button>
    <button type="button" data-act="new-partner"><span class="ci">${ic("bank",24)}</span><span><b>A partner</b><span>A bank, funder, accounting or law firm, or advisor that helps us do deals.</span></span></button>
    <button type="button" data-act="goto-import"><span class="ci">${ic("upload",24)}</span><span><b>Import contacts</b><span>Many people at once, from your phone or a file.</span></span></button>
@@ -1264,7 +1264,7 @@ async function importFromPhone(){
   catch(e){ toast("Couldn't open your contacts"); }
 }
 function impVisible(){ const I=S.imp; const q=I.q.trim().toLowerCase(); return I.rows.filter(r=>(!I.hideExisting||!r.exists) && (!q || [r.name,r.cell,r.email,r.firm].join(" ").toLowerCase().includes(q))); }
-function impRow(r){ const t=S.imp.tags[r.i]||""; return `<div class="imp-row ${r.exists?"exists":""}" data-row="${r.i}"><div class="main"><div class="t1">${esc(r.name)}</div><div class="t2">${esc(r.exists?"Already in Munger":[r.firm,r.cell,r.email].filter(Boolean).join(" · ")||"No number")}</div></div>${r.exists?"":`<div class="tagbtns">${["A","B","C"].map(x=>`<button class="${x}${t===x?" on":""}" data-act="imp-tag" data-i="${r.i}" data-k="${x}" aria-label="Tag ${esc(r.name)} as ${x}">${x}</button>`).join("")}</div>`}</div>`; }
+function impRow(r){ const t=S.imp.tags[r.i]||""; return `<div class="imp-row ${r.exists?"exists":""}" data-row="${r.i}"><div class="main"><div class="t1">${esc(r.name)}</div><div class="t2">${esc(r.exists?"Already in Munger":[r.firm,r.cell,r.email].filter(Boolean).join(" · ")||"No number")}</div></div>${r.exists?"":`<div class="tagbtns">${["A","B","C","D"].map(x=>`<button class="${x}${t===x?" on":""}" data-act="imp-tag" data-i="${r.i}" data-k="${x}" aria-label="Tag ${esc(r.name)} as ${x}">${x}</button>`).join("")}</div>`}</div>`; }
 function impCount(){ return Object.values(S.imp.tags).filter(Boolean).length; }
 function impListHTML(){ const vis=impVisible(); const shown=vis.slice(0,S.imp.shown); return shown.length? `<div class="group">${shown.map(impRow).join("")}</div>${vis.length>shown.length?`<div style="text-align:center;margin:14px 0"><button class="btn sm" data-act="imp-more">Show more (${vis.length-shown.length} left)</button></div>`:""}` : `<div class="card empty">No contacts match.</div>`; }
 function vImport(){
@@ -1286,7 +1286,7 @@ function vImport(){
   </div>`;
   const tagged=impCount(); const vis=impVisible(); const ex=I.rows.filter(r=>r.exists).length;
   return `<div class="ph"><div><h1>Tag who matters</h1><p>${I.rows.length} contacts from ${esc(I.source)}${ex?` · ${ex} already in Munger`:""}. Tap A, B or C; skip everyone else.</p></div></div>
-  <div class="card box" style="margin-bottom:12px;gap:6px"><div style="display:flex;gap:14px;flex-wrap:wrap">${["A","B","C"].map(t=>`<span style="display:flex;gap:8px;align-items:center;font-size:14px"><span class="avatar ${t}" style="width:26px;height:26px;font-size:12px;font-family:var(--display)">${t}</span>${esc(TIERS[t].label)}</span>`).join("")}</div></div>
+  <div class="card box" style="margin-bottom:12px;gap:6px"><div style="display:flex;gap:14px;flex-wrap:wrap">${["A","B","C","D"].map(t=>`<span style="display:flex;gap:8px;align-items:center;font-size:14px"><span class="avatar ${t}" style="width:26px;height:26px;font-size:12px;font-family:var(--display)">${t}</span>${esc(TIERS[t].label)}</span>`).join("")}</div></div>
   <div class="fields" style="margin-bottom:12px"><div class="fld"><label for="impPartner">Whose network are they in (our team)?</label><select id="impPartner">${opts(S.partners,I.partner)}</select></div><div class="fld"><label for="impRel">How do you know most of them?</label><select id="impRel">${opts(Object.entries(RELS).map(([v,l])=>({v,l})),I.rel||"business")}</select></div><div class="fld"><label for="impLang">Most of them speak</label><select id="impLang">${opts(LANG_OPTS,I.lang)}</select></div></div>
   <div class="search">${ic("search",20)}<input id="impQ" type="search" placeholder="Search ${I.rows.length} contacts…" value="${esc(I.q)}" autocomplete="off" aria-label="Search imported contacts"></div>
   <div id="impList">${impListHTML()}</div>
@@ -1459,7 +1459,7 @@ function netTick(){
 function netDraw(){
   const cv=$("#net"); if(!cv) return; const ctx=cv.getContext("2d");
   ctx.clearRect(0,0,G.w,G.h);
-  const col={"":cssVar("--faint"),pfirm:cssVar("--tierB"),p:cssVar("--line"),A:cssVar("--tierA"),B:cssVar("--tierB"),C:cssVar("--tierC"),active:cssVar("--ok"),target:cssVar("--warn"),network:cssVar("--faint"),nurture:cssVar("--warn"),won:cssVar("--ok"),closed:cssVar("--muted"),line:cssVar("--line"),ink:cssVar("--ink"),muted:cssVar("--muted"),surface:cssVar("--surface")};
+  const col={D:cssVar("--tierD"),"":cssVar("--tierD"),pfirm:cssVar("--tierB"),p:cssVar("--line"),A:cssVar("--tierA"),B:cssVar("--tierB"),C:cssVar("--tierC"),active:cssVar("--ok"),target:cssVar("--warn"),network:cssVar("--faint"),nurture:cssVar("--warn"),won:cssVar("--ok"),closed:cssVar("--muted"),line:cssVar("--line"),ink:cssVar("--ink"),muted:cssVar("--muted"),surface:cssVar("--surface")};
   ctx.save(); ctx.translate(G.w/2+G.t.x, G.h/2+G.t.y); ctx.scale(G.t.k,G.t.k);
   const focus=G.sel||G.hover; const nb=new Set(); if(focus){ nb.add(focus); G.edges.forEach(e=>{ if(e.a===focus) nb.add(e.b); if(e.b===focus) nb.add(e.a); }); }
   for(const e of G.edges){ const on=focus&&(e.a===focus||e.b===focus); ctx.globalAlpha=focus?(on?1:.12):.8; ctx.strokeStyle=on?col.ink:col.line; ctx.lineWidth=(on?1.6:1)/G.t.k; if(e.kind==="lead") ctx.setLineDash([4/G.t.k,4/G.t.k]); else ctx.setLineDash([]); ctx.beginPath(); ctx.moveTo(e.a.x,e.a.y); ctx.lineTo(e.b.x,e.b.y); ctx.stroke(); }
@@ -1575,7 +1575,7 @@ function vPeople(){
     flush(); body=parts.join(""); }
   return `<div class="ph"><div><h1>People</h1><p>${all.length} in the network · A ${cnt("A")} · B ${cnt("B")} · C ${cnt("C")}</p></div><a class="btn sm" href="#import">${ic("upload",18)} Import</a></div>
   <div class="search">${ic("search",20)}<input id="kq" type="search" placeholder="Search name, company, skill, town…" value="${esc(k.q)}" autocomplete="off" aria-label="Search people"></div>
-  <div class="chips">${chip("","All",all.length)}${chip("A","A · Owners",cnt("A"))}${chip("B","B · Connectors",cnt("B"))}${chip("C","C · Potential hires",cnt("C"))}<button class="chip ${k.tier==="top"?"on":""}" data-act="k-tier" data-k="top">★ Most influential</button>${me?`<button class="chip ${k.mine?"on":""}" data-act="k-mine">People I know</button>`:""}</div>
+  <div class="chips">${chip("","All",all.length)}${chip("A","A · Owners",cnt("A"))}${chip("B","B · Connectors",cnt("B"))}${chip("C","C · Potential hires",cnt("C"))}${chip("D","D · Good contacts",cnt("D"))}<button class="chip ${k.tier==="top"?"on":""}" data-act="k-tier" data-k="top">★ Most influential</button>${me?`<button class="chip ${k.mine?"on":""}" data-act="k-mine">People I know</button>`:""}</div>
   ${k.tier==="top"?`<p class="tag" style="margin:-4px 2px 10px">Ranked by your influence rating, how many partners know them, friendships and the leads they've brought in.</p>`:""}
   ${body}`;
 }
@@ -1683,7 +1683,7 @@ function contactForm(id, preset){
   showModal(`<form id="contactForm" novalidate style="display:contents">${formHead(id?"Edit person":"New person","contactForm")}<div class="ovb">
   <div class="scorebar" id="kScore"></div>
   <div class="fsec">Who is this?</div>
-  <div class="tiers3" role="radiogroup">${["A","B","C",""].map(t=>`<label><input type="radio" name="kTier" value="${t}" ${tier===t?"checked":""}><span class="avatar ${t}" style="width:34px;height:34px;font-family:var(--display)">${t}</span><b>${esc(TIERS[t].label)}</b></label>`).join("")}</div>
+  <div class="tiers3" role="radiogroup">${["A","B","C","D"].map(t=>`<label><input type="radio" name="kTier" value="${t}" ${tier===t?"checked":""}><span class="avatar ${t}" style="width:34px;height:34px;font-family:var(--display)">${t}</span><b>${esc(TIERS[t].label)}</b></label>`).join("")}</div>
   <div class="hint" id="kTierHint">${tier?esc(TIERS[tier].desc):"A owns a business that could fit. B is a professional who sees exits first. C is a good contact to have."}</div>
   <div class="fsec">Contact</div>
   <div class="fields">
@@ -2253,9 +2253,9 @@ function vPeople(){
   else { let last=""; const parts=[]; let buf=[]; const flush=()=>{ if(buf.length){ parts.push(`<div class="group">${buf.join("")}</div>`); buf=[]; } };
     for(const c of arr){ const L=(c.name||"#")[0].toUpperCase(); const letter=/[A-Z]/.test(L)?L:"#"; if(!special[k.tier] && letter!==last && arr.length>12){ flush(); parts.push(`<div class="letter">${letter}</div>`); last=letter; } buf.push(personRow(c)); }
     flush(); body=parts.join(""); }
-  return `<div class="ph"><div><h1>People</h1><p>${all.length} in the network · A ${cnt("A")} · B ${cnt("B")} · C ${cnt("C")}</p></div><a class="btn sm" href="#import">${ic("upload",18)} Import</a></div>
+  return `<div class="ph"><div><h1>People</h1><p>${all.length} in the network · A ${cnt("A")} · B ${cnt("B")} · C ${cnt("C")} · D ${cnt("D")}</p></div><a class="btn sm" href="#import">${ic("upload",18)} Import</a></div>
   <div class="search">${ic("search",20)}<input id="kq" type="search" placeholder="Search name, company, skill, town…" value="${esc(k.q)}" autocomplete="off" aria-label="Search people"></div>
-  <div class="chips">${chip("","All",all.length)}${chip("A","A · Owners",cnt("A"))}${chip("B","B · Connectors",cnt("B"))}${chip("C","C · Potential hires",cnt("C"))}${chip("top","★ Most influential")}${chip("talent","Talent",all.filter(isTalent).length)}${chip("hnwi","HNWI",all.filter(x=>x.hnwi).length)}${me?`<button class="chip ${k.mine?"on":""}" data-act="k-mine">People I know</button>`:""}</div>
+  <div class="chips">${chip("","All",all.length)}${chip("A","A · Owners",cnt("A"))}${chip("B","B · Connectors",cnt("B"))}${chip("C","C · Potential hires",cnt("C"))}${chip("D","D · Good contacts",cnt("D"))}${chip("top","★ Most influential")}${chip("talent","Talent",all.filter(isTalent).length)}${chip("hnwi","HNWI",all.filter(x=>x.hnwi).length)}${me?`<button class="chip ${k.mine?"on":""}" data-act="k-mine">People I know</button>`:""}</div>
   ${k.tier==="top"?`<p class="tag" style="margin:-4px 2px 10px">Ranked by your influence rating, how many of our team know them, friendships and the leads they've brought in.</p>`:""}
   ${body}`;
 }
@@ -2504,14 +2504,14 @@ function renderSheet(){
 /* ---------- Person form (adds town list, talent, HNWI, do-not-contact, voice) ---------- */
 function contactForm(id, preset){
   const k=id? {...S.contacts.get(id)} : {language:"af", country:"South Africa", tier:"", ...(preset||{})};
-  const tier=id? tierOf(k) : (k.tier||"");
+  const tier=id? tierOf(k) : (k.tier||"D");
   FORM={kind:"contact", id};
   const co=k.companyId? S.companies.get(k.companyId) : null; const tal=k.talent||{};
   const rel={}; (id? knowers(k) : [{partner:defaultPartner(),relation:""}]).forEach(x=>rel[x.partner]=x.relation||"business");
   showModal(`<form id="contactForm" novalidate style="display:contents">${formHead(id?"Edit person":"New person","contactForm")}<div class="ovb">
   <div class="scorebar" id="kScore"></div>
   <div class="fsec">Who is this?</div>
-  <div class="tiers3" role="radiogroup">${["A","B","C",""].map(t=>`<label><input type="radio" name="kTier" value="${t}" ${tier===t?"checked":""}><span class="avatar ${t}" style="width:34px;height:34px;font-family:var(--display)">${t||"–"}</span><b>${esc(TIERS[t].label)}</b></label>`).join("")}</div>
+  <div class="tiers3" role="radiogroup">${["A","B","C","D"].map(t=>`<label><input type="radio" name="kTier" value="${t}" ${tier===t?"checked":""}><span class="avatar ${t}" style="width:34px;height:34px;font-family:var(--display)">${t}</span><b>${esc(TIERS[t].label)}</b></label>`).join("")}</div>
   <div class="hint" id="kTierHint"></div>
   <div class="fsec">Contact</div>
   <div class="fields">
@@ -2577,7 +2577,7 @@ function kFormUpdate(){
   const known=d.conns.some(c=>c.relation); const ch=[[d.name,"name"],[d.cell,"cell"],[d.email,"email"],[d.coName,"company"],[d.companyRole||d.title||d.type,"role or title"],[d.industry,"industry"],[d.expertise,"what they're great at"],[d.town||d.province,"town"],[known,"who knows them"]];
   const miss=ch.filter(c=>!c[0]).map(c=>c[1]); const pct=Math.round((ch.length-miss.length)/ch.length*100);
   $("#kScore").innerHTML=`<div style="display:flex;justify-content:space-between;gap:10px;font-size:14px"><b>Profile ${pct}%</b><span class="tag">${miss.length?`Next: ${esc(miss.slice(0,3).join(", "))}${miss.length>3?"…":""}`:"Complete. Great work."}</span></div><div class="meter"><span style="width:${pct}%"></span></div>`;
-  $("#kTierHint").textContent = d.tier? TIERS[d.tier].desc : "Optional. A owns a business we might buy, B is a connector who sees exits first, C is a potential hire. Leave it untagged for anyone else.";
+  $("#kTierHint").textContent = d.tier? TIERS[d.tier].desc : "Optional. A owns a business we might buy, B is a connector who sees exits first, C is a potential hire, D is a good contact to have.";
   $("#kCoHint").innerHTML = d.coName&&d.coFound? (()=>{ const co=companies().find(c=>c.name.toLowerCase()===d.coName.toLowerCase()); return isPartnerCo(co)? `Linked to <b>${esc(co.name)}</b> in Partners (${esc(PKINDS[co.kind]||"")}).` : `Linked to <b>${esc(co.name)}</b> in Businesses.`; })() : "";
   newCoUpdate(d);
   $("#kTalWrap").hidden=!$("#kTal").checked; $("#kWealthWrap").hidden=!$("#kHnwi").checked;
@@ -2585,7 +2585,7 @@ function kFormUpdate(){
 async function submitContact(){
   const d=kFormRead();
   if(!d.name){ toast("Add a name"); $("#kName").focus(); return; }
-  const tier=d.tier || (OWNER_ROLES.includes(d.companyRole)?"A":"");
+  const tier=d.tier || (OWNER_ROLES.includes(d.companyRole)?"A":"D");
   const me=myPartner(); const primary=(d.conns.find(c=>c.partner===me)||d.conns[0]||{}).partner||"";
   const prev=FORM.id? S.contacts.get(FORM.id):null;
   const data={name:d.name, tier, firm:d.firm, type:d.type, partner:primary, companyId:d.companyId, companyRole:d.companyRole, ownsCompanyId: OWNER_ROLES.includes(d.companyRole)? d.companyId : "", title:d.title, country:d.country, industry:d.industry, expertise:d.expertise, linkedin:d.linkedin, cell:d.cell, email:d.email, language:d.language, province:d.province, town:d.town, notes:d.notes, influence:d.influence, hnwi:d.hnwi, wealthSource:d.hnwi?d.wealthSource:"", doNotContact:d.doNotContact, talent:d.talent, example:prev?.example||false};
@@ -2883,7 +2883,7 @@ function vNetwork(){
   return `<div class="ph"><div><h1>Network map</h1><p>Every partner, everyone they know, and the businesses those people own, work at or brought in. Tap a dot.</p></div></div>
   <div class="chips"><button class="chip on" data-net="p">Partners</button><button class="chip on" data-net="k">People</button><button class="chip on" data-net="c">Businesses</button><button class="chip" data-net="reset">Re-centre</button></div>
   <div class="netwrap"><canvas id="net" aria-label="Network map of partners, people and businesses"></canvas>
-  <div class="legend"><span><i style="background:var(--ink)"></i>Partner</span><span><i style="background:var(--tierA)"></i>A · Owner</span><span><i style="background:var(--tierB)"></i>B · Connector</span><span><i style="background:var(--tierC)"></i>C · Potential hire</span><span><i style="background:var(--faint)"></i>Not tagged</span><span><i class="sq" style="background:var(--ok)"></i>Business</span></div>
+  <div class="legend"><span><i style="background:var(--ink)"></i>Partner</span><span><i style="background:var(--tierA)"></i>A · Owner</span><span><i style="background:var(--tierB)"></i>B · Connector</span><span><i style="background:var(--tierC)"></i>C · Potential hire</span><span><i style="background:var(--tierD)"></i>D · Good contact</span><span><i class="sq" style="background:var(--ok)"></i>Business</span></div>
   <div class="netinfo" id="netinfo"></div></div>`;
 }
 
@@ -2894,7 +2894,7 @@ function vNetwork(){
   <div class="netwrap" id="netwrap"><canvas id="net" aria-label="Network map of partners, people and businesses"></canvas>
   <div class="netctl"><button data-netz="in" aria-label="Zoom in">+</button><button data-netz="out" aria-label="Zoom out">−</button><button data-netz="fit" aria-label="Show the whole network">${ic("net",18)}</button><button data-netz="full" aria-label="Full screen">⤢</button></div>
   <div class="netcount" id="netcount"></div>
-  <div class="legend"><span><i style="background:var(--ink)"></i>Our team</span><span><i style="background:var(--tierA)"></i>A · Owner</span><span><i style="background:var(--tierB)"></i>B · Connector</span><span><i style="background:var(--tierC)"></i>C · Potential hire</span><span><i style="background:var(--faint)"></i>Not tagged</span><span><i class="sq" style="background:var(--ok)"></i>Business</span><span><i class="sq" style="background:var(--tierB)"></i>Partner firm</span></div>
+  <div class="legend"><span><i style="background:var(--ink)"></i>Our team</span><span><i style="background:var(--tierA)"></i>A · Owner</span><span><i style="background:var(--tierB)"></i>B · Connector</span><span><i style="background:var(--tierC)"></i>C · Potential hire</span><span><i style="background:var(--tierD)"></i>D · Good contact</span><span><i class="sq" style="background:var(--ok)"></i>Business</span><span><i class="sq" style="background:var(--tierB)"></i>Partner firm</span></div>
   <div class="netinfo" id="netinfo"></div></div>`;
 }
 const NET_KMIN=0.04, NET_KMAX=5;
