@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Munger">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Munger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+/* Layout: black rail carrying the Munger mark, bone paper working surface; drawers slide from the right. Palette and type from the Target Meeting Playbook. */
+:root{
+  --paper:#f4f1eb; --surface:#ffffff; --ink:#0b0b0b; --muted:#6c675d; --line:#e0dbd0; --soft:#ece8df;
+  --accent:#0b0b0b; --accent-ink:#f4f1eb; --accent-soft:#e9e5dc; --bar:#2e3a34; --forest:#2e3a34;
+  --rail:#0b0b0b; --rail-ink:#e9e5dc; --rail-muted:#9b9487;
+  --ok:#2f6b47; --ok-soft:#e2ede5; --warn:#9a6413; --warn-soft:#f5e9d4; --bad:#a83c2c; --bad-soft:#f4e0db;
+  --info:#3d5f78; --info-soft:#e2e9ef; --grey-soft:#e9e6df;
+  --tierA:#9a5b2e; --tierB:#3d5f78; --tierC:#5f6b3a;
+  --display:"Cinzel", "Trajan Pro", Georgia, serif;
+  --body:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --mono:"Source Serif 4", Georgia, serif;
+  --radius:4px; --shadow:0 12px 40px rgba(11,11,11,.18);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0b0b0b; --surface:#151513; --ink:#e9e5dc; --muted:#9b9487; --line:#2b2a26; --soft:#1c1b18;
+    --accent:#e9e5dc; --accent-ink:#0b0b0b; --accent-soft:#2b2a26; --bar:#9b9487; --forest:#4a5a52;
+    --rail:#000000; --rail-ink:#e9e5dc; --rail-muted:#8a8478;
+    --ok:#7fbf95; --ok-soft:#18281e; --warn:#d9a552; --warn-soft:#30250f; --bad:#e08a78; --bad-soft:#341c17;
+    --info:#8fb1cc; --info-soft:#18232c; --grey-soft:#22211d;
+    --tierA:#d0915e; --tierB:#8fb1cc; --tierC:#a9b77a; --shadow:0 12px 40px rgba(0,0,0,.6);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0b0b0b; --surface:#151513; --ink:#e9e5dc; --muted:#9b9487; --line:#2b2a26; --soft:#1c1b18;
+  --accent:#e9e5dc; --accent-ink:#0b0b0b; --accent-soft:#2b2a26; --bar:#9b9487; --forest:#4a5a52;
+  --rail:#000000; --rail-ink:#e9e5dc; --rail-muted:#8a8478;
+  --ok:#7fbf95; --ok-soft:#18281e; --warn:#d9a552; --warn-soft:#30250f; --bad:#e08a78; --bad-soft:#341c17;
+  --info:#8fb1cc; --info-soft:#18232c; --grey-soft:#22211d;
+  --tierA:#d0915e; --tierB:#8fb1cc; --tierC:#a9b77a; --shadow:0 12px 40px rgba(0,0,0,.6);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--paper);color:var(--ink);font:15px/1.5 var(--body);display:flex;min-height:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{margin:0;text-wrap:balance}
+h1{font-family:var(--display);font-weight:500;font-size:26px;line-height:1.2;letter-spacing:.08em;text-transform:uppercase}
+h2{font-family:var(--body);font-weight:600;font-size:19px}
+h3{font-family:var(--body);font-weight:600;font-size:16px}
+.num,.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+a{color:var(--ink);text-underline-offset:3px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Rail */
+.rail{width:220px;flex:0 0 220px;background:var(--rail);color:var(--rail-ink);display:flex;flex-direction:column;padding:20px 12px;gap:4px;position:sticky;top:0;height:100vh}
+.brand{padding:6px 10px 22px;display:flex;flex-direction:column;align-items:flex-start;gap:8px;border-bottom:1px solid #2a2926;margin-bottom:10px}
+.brand svg{width:38px;height:auto;fill:var(--rail-ink)}
+.brand b{font-family:var(--display);font-size:20px;font-weight:500;letter-spacing:.32em}
+.brand span{font-size:13px;color:var(--rail-muted);font-style:italic}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav a{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:6px;color:var(--rail-ink);text-decoration:none;font-weight:500}
+.nav a:hover{background:rgba(255,255,255,.06)}
+.nav a.on{background:rgba(233,229,220,.08);box-shadow:inset 2px 0 0 var(--rail-ink)}
+.nav .badge{font-size:11px;background:var(--rail-ink);color:#0b0b0b;border-radius:10px;padding:0 7px;min-width:20px;text-align:center}
+.rail .add{margin-top:14px}
+.rail-foot{margin-top:auto;font-size:12px;color:var(--rail-muted);padding:10px}
+
+main{flex:1;min-width:0;padding:28px 32px calc(90px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:22px}
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.head p{margin:4px 0 0;color:var(--muted)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+/* Buttons */
+.btn{border:1px solid var(--line);background:var(--surface);padding:7px 13px;border-radius:6px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.rail .btn.primary{background:var(--rail-ink);border-color:var(--rail-ink);color:#0b0b0b}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent;border-color:transparent}
+.btn.ghost:hover{background:var(--soft)}
+.btn.danger{color:var(--bad)}
+.btn.sm{padding:4px 9px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* Cards & tiles */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;display:flex;flex-direction:column;gap:2px;cursor:pointer;text-align:left}
+.tile:hover{border-color:var(--muted)}
+.tile .n{font-size:30px;font-weight:500;font-variant-numeric:tabular-nums;line-height:1.2}
+.tile .l{color:var(--muted);font-size:13px}
+.tile.alert{border-left:4px solid var(--bad)}
+.tile.warn{border-left:4px solid var(--warn)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.panel-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.panel-h small{color:var(--muted)}
+.empty{color:var(--muted);padding:18px 4px;text-align:center}
+.notice{background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--radius);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.notice.err{background:var(--bad-soft);border-color:var(--bad)}
+
+/* Bars */
+.bars{display:flex;flex-direction:column;gap:7px}
+.bar{display:grid;grid-template-columns:minmax(110px,190px) 1fr 34px;gap:10px;align-items:center;font-size:13px;cursor:pointer}
+.bar .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .track{display:block;height:10px;background:var(--soft);border-radius:5px;overflow:hidden}
+.bar .fill{display:block;height:100%;background:var(--bar);border-radius:5px}
+.bar .c{font-family:var(--mono);text-align:right}
+
+/* Lists */
+.list{display:flex;flex-direction:column}
+.li{display:grid;grid-template-columns:1fr auto;gap:10px;padding:9px 4px;border-top:1px solid var(--line);cursor:pointer;align-items:center}
+.li:first-child{border-top:0}
+.li:hover{background:var(--soft)}
+.li .sub{color:var(--muted);font-size:12.5px}
+
+/* Pills */
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:1px 9px;border-radius:20px;font-weight:500;white-space:nowrap;background:var(--grey-soft);color:var(--muted)}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.pill.active{background:var(--info-soft);color:var(--info)}
+.pill.nurture{background:var(--warn-soft);color:var(--warn)}
+.pill.won{background:var(--ok-soft);color:var(--ok)}
+.pill.closed{background:var(--grey-soft);color:var(--muted)}
+.pill.late{background:var(--bad-soft);color:var(--bad)}
+.pill.soon{background:var(--warn-soft);color:var(--warn)}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.lang{font-family:var(--display);font-size:10.5px;letter-spacing:.06em;border:1px solid var(--line);border-radius:4px;padding:0 5px;color:var(--muted)}
+.tag{font-size:12px;color:var(--muted)}
+
+/* Toolbar & filters */
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.toolbar input[type=search]{flex:1 1 220px;min-width:180px}
+input,select,textarea{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:7px 10px;min-width:0}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+textarea{resize:vertical;min-height:70px;width:100%}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{border:0;background:var(--surface);padding:6px 12px;cursor:pointer}
+.seg button.on{background:var(--ink);color:var(--paper)}
+.tier{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;font-family:var(--display);font-weight:600;font-size:12px;color:#fff;flex:none}
+.tier.A{background:var(--tierA)}.tier.B{background:var(--tierB)}.tier.C{background:var(--tierC)}
+:root[data-theme="dark"] .tier{color:#0b0b0b}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .tier{color:#0b0b0b}}
+.tierpick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.tierpick label{border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);padding:12px;cursor:pointer;display:flex;flex-direction:column;gap:4px}
+.tierpick label:has(input:checked){border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.tierpick input{position:absolute;opacity:0;pointer-events:none}
+.tierpick b{display:flex;gap:8px;align-items:center;font-size:15px}
+.tierpick label>span{font-size:12.5px;color:var(--muted)}
+.sweep{width:100%;border-collapse:collapse;min-width:0}
+.sweep th,.sweep td{padding:7px 8px;text-align:center;cursor:default;background:none;position:static}
+.sweep th:first-child,.sweep td:first-child{text-align:left}
+.sweep td{font-variant-numeric:tabular-nums;font-size:16px}
+.sweep tbody tr{cursor:default}
+.sweep tfoot td{font-weight:600;border-top:1px solid var(--ink);border-bottom:0}
+
+/* Table */
+.tablewrap{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:860px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-family:var(--display);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;background:var(--soft);position:sticky;top:0;cursor:pointer;user-select:none;white-space:nowrap}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--soft)}
+tbody tr:last-child td{border-bottom:0}
+td .nm{font-weight:600}
+td .sub{color:var(--muted);font-size:12.5px}
+
+/* Board */
+.board{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(220px,1fr);gap:10px;overflow-x:auto;padding-bottom:6px}
+.col{background:var(--soft);border-radius:var(--radius);padding:10px;display:flex;flex-direction:column;gap:8px;min-height:120px}
+.col-h{display:flex;justify-content:space-between;font-weight:600;font-size:13px;padding:0 2px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:9px 10px;cursor:pointer;display:flex;flex-direction:column;gap:3px}
+.card:hover{border-color:var(--muted)}
+.card .sub{font-size:12px;color:var(--muted)}
+
+/* Drawer & modal */
+.scrim{position:fixed;inset:0;background:rgba(8,15,12,.42);z-index:20;display:none}
+.scrim.on{display:block}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);background:var(--paper);z-index:21;box-shadow:var(--shadow);transform:translateX(105%);transition:transform .22s ease;display:flex;flex-direction:column}
+.drawer.on{transform:none}
+.drawer-h{padding:18px 22px 14px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.drawer-b{padding:18px 22px 40px;overflow-y:auto;display:flex;flex-direction:column;gap:18px}
+.kv{display:grid;grid-template-columns:130px 1fr;gap:6px 12px;font-size:13.5px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;word-break:break-word}
+.owner{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px 12px;display:flex;flex-direction:column;gap:3px}
+.owner .ctl{display:flex;gap:6px;flex-wrap:wrap;font-size:13px}
+.log{display:flex;flex-direction:column;gap:0}
+.log .e{border-left:2px solid var(--line);padding:2px 0 12px 14px;position:relative}
+.log .e::before{content:"";position:absolute;left:-5px;top:7px;width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.log .e small{color:var(--muted)}
+.section-t{font-family:var(--display);font-size:11.5px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}
+.fu{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:10px}
+
+.modal{position:fixed;inset:0;z-index:30;display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto;background:rgba(8,15,12,.5)}
+.modal.on{display:flex}
+.sheet{background:var(--paper);border-radius:10px;box-shadow:var(--shadow);width:min(780px,100%);display:flex;flex-direction:column}
+.sheet-h{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;background:var(--surface);border-radius:10px 10px 0 0}
+.sheet-b{padding:20px 22px;display:flex;flex-direction:column;gap:22px}
+.sheet-f{padding:14px 22px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px;background:var(--surface);border-radius:0 0 10px 10px;position:sticky;bottom:0}
+fieldset{border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+legend{font-family:var(--display);font-size:15px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;padding:0;display:flex;align-items:center;gap:8px}
+legend .step{font-size:11px;letter-spacing:0;background:var(--rail);color:var(--rail-ink);border-radius:4px;padding:1px 6px}
+.fgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.fgrid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.f{display:flex;flex-direction:column;gap:4px}
+.f.full{grid-column:1/-1}
+.f label{font-size:12.5px;font-weight:500;color:var(--muted)}
+.f input,.f select{width:100%}
+.ownerbox{border:1px dashed var(--line);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.ownerbox-h{display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:13px}
+.hint{font-size:12.5px;color:var(--muted)}
+.warnline{font-size:12.5px;color:var(--warn)}
+
+/* Network */
+.netwrap{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);height:min(70vh,680px);min-height:420px;overflow:hidden}
+#net{width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+.legend{position:absolute;left:12px;top:12px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-size:12px;display:flex;flex-direction:column;gap:3px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.legend i.sq{border-radius:2px}
+.netinfo{position:absolute;right:12px;top:12px;width:260px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px;font-size:13px;display:none;flex-direction:column;gap:6px;box-shadow:var(--shadow)}
+.netinfo.on{display:flex}
+
+.how{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.step-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;display:flex;flex-direction:column;gap:4px;text-decoration:none;color:var(--ink)}
+.step-card:hover{border-color:var(--muted)}
+.step-card span:last-child{color:var(--muted);font-size:13.5px}
+.stepn{font-family:var(--display);font-size:12px;letter-spacing:.1em;color:var(--muted)}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.choice button{border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);padding:18px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:6px}
+.choice button:hover{border-color:var(--ink)}
+.choice b{font-size:17px}
+.choice span{color:var(--muted);font-size:13.5px}
+.fab{display:none}
+.login{position:fixed;inset:0;z-index:60;background:#0b0b0b;color:#e9e5dc;display:flex;align-items:center;justify-content:center;padding:24px;padding-top:max(24px,env(safe-area-inset-top))}
+.login[hidden]{display:none}
+.login form{width:min(360px,100%);display:flex;flex-direction:column;gap:14px}
+.login svg{width:64px;fill:#e9e5dc;align-self:center}
+.login .wm{font-family:var(--display);letter-spacing:.32em;font-size:24px;text-align:center;margin:4px 0 0}
+.login .tg{font-style:italic;color:#9b9487;text-align:center;margin:0 0 14px}
+.login label{font-size:13px;color:#9b9487}
+.login input{background:#151513;border:1px solid #2b2a26;color:#e9e5dc;padding:12px;font-size:16px;border-radius:4px;width:100%}
+.login button{background:#e9e5dc;color:#0b0b0b;border:0;padding:13px;font-size:16px;border-radius:4px;cursor:pointer;font-family:var(--body);font-weight:600}
+.login .err{color:#e08a78;font-size:14px;min-height:1.2em}
+.login .fine{color:#9b9487;font-size:12.5px;text-align:center}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(120px);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:6px;z-index:50;transition:transform .2s;max-width:90vw}
+.toast.on{transform:translateX(-50%)}
+
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:20px;padding:3px 11px;font-size:12.5px;cursor:pointer}
+.chip.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.out{font-family:var(--mono);font-size:12.5px;background:var(--soft);border-radius:6px;padding:10px;max-height:200px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere}
+
+@media (max-width: 900px){
+  .how,.choice{grid-template-columns:1fr}
+  .fab{display:flex;position:fixed;right:18px;bottom:calc(22px + env(safe-area-inset-bottom));z-index:15;width:58px;height:58px;border-radius:50%;background:var(--accent);color:var(--accent-ink);border:0;font-size:30px;align-items:center;justify-content:center;box-shadow:var(--shadow);cursor:pointer}
+  .rail .add{display:none}
+  .brand{flex-direction:row;align-items:center;border:0;margin:0;padding:0 8px 0 0}
+  .brand svg{width:26px}
+  .tierpick{grid-template-columns:1fr}
+  body{flex-direction:column}
+  .rail{position:sticky;top:0;z-index:12;width:100%;flex:none;height:auto;flex-direction:row;align-items:center;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top));overflow-x:auto;gap:8px}
+    .brand span,.rail-foot{display:none}
+  .nav{flex-direction:row}
+  .nav a{white-space:nowrap;gap:6px}
+  .rail .add{margin:0}
+  main{padding:20px 16px 50px}
+  .grid2{grid-template-columns:1fr}
+  .fgrid,.fgrid.three{grid-template-columns:1fr}
+  .kv{grid-template-columns:1fr}
+  .kv dt{margin-top:6px}
+  .netinfo{width:auto;left:12px}
+}
+@media (prefers-reduced-motion: reduce){ .drawer,.toast{transition:none} }
+</style>
+</head>
+<body>
+<aside class="rail">
+  <div class="brand"><svg viewBox="0 0 1000 836" role="img" aria-label="Munger"><polygon points="0,64 97,0 500,258 903,0 1000,64 1000,722 814,836 814,146 500,378 186,146 186,836 0,722"/></svg><b>MUNGER</b><span>All roads lead to Munger.</span></div>
+  <nav class="nav" id="nav"></nav>
+  <button class="btn primary add" id="addBtn" type="button">+ Capture</button>
+  <div class="rail-foot" id="railFoot">Connecting…</div>
+</aside>
+<main id="main"></main>
+
+<button class="fab" id="fab" type="button" aria-label="Capture a person or business">+</button>
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-live="polite"></aside>
+<div class="modal" id="modal" role="dialog" aria-modal="true"></div>
+<div class="toast" id="toast" role="status"></div>
+<div class="login" id="login" hidden>
+  <form id="loginForm" novalidate>
+    <svg viewBox="0 0 1000 836" aria-hidden="true"><polygon points="0,64 97,0 500,258 903,0 1000,64 1000,722 814,836 814,146 500,378 186,146 186,836 0,722"/></svg>
+    <p class="wm">MUNGER</p><p class="tg">All roads lead to Munger.</p>
+    <div><label for="lEmail">Email</label><input id="lEmail" type="email" autocomplete="username" inputmode="email" autocapitalize="off"></div>
+    <div><label for="lPass">Password</label><input id="lPass" type="password" autocomplete="current-password"></div>
+    <button type="submit" id="lBtn">Sign in</button>
+    <div class="err" id="lErr" role="alert"></div>
+    <p class="fine">Partners only. Ask Rynhardt for a login.</p>
+  </form>
+</div>
+<script src="supabase.js"></script>
+
+<script>
+"use strict";
+/* ---------------- Reference data ---------------- */
+const STAGES = [
+  {id:"lead", label:"New lead", group:"active"},
+  {id:"research", label:"Researching", group:"active"},
+  {id:"contacted", label:"First contact made", group:"active"},
+  {id:"talks", label:"In conversation", group:"active"},
+  {id:"info", label:"NDA / info received", group:"active"},
+  {id:"eval", label:"Evaluating", group:"active"},
+  {id:"offer", label:"Offer / LOI", group:"active"},
+  {id:"dd", label:"Due diligence", group:"active"},
+  {id:"won", label:"Acquired", group:"won"},
+  {id:"nurture", label:"Nurture – check in later", group:"nurture"},
+  {id:"parked", label:"Not for now", group:"nurture"},
+  {id:"passed", label:"Passed / dead", group:"closed"}
+];
+const STAGE = Object.fromEntries(STAGES.map(s=>[s.id,s]));
+const GROUPS = {active:"Active deals", nurture:"Nurture & check-in", won:"Acquired", closed:"Passed"};
+
+const CHANNELS = [
+  {id:"direct", label:"Direct marketing"},
+  {id:"mapping", label:"Industry mapping / vertical integration"},
+  {id:"accounting", label:"Accounting firm", contact:true},
+  {id:"law", label:"Law firm", contact:true},
+  {id:"tax", label:"Tax advisor", contact:true},
+  {id:"hatstone", label:"Hatstone client base", contact:true},
+  {id:"whatsapp", label:"Partner network (WhatsApp sweep)", contact:true},
+  {id:"c2c", label:"Coast to Coast (past deal flow)"},
+  {id:"pearl", label:"Pearl Valley roadshow"},
+  {id:"friend", label:"Friend / personal referral", contact:true},
+  {id:"connector", label:"Connector / intermediary", contact:true},
+  {id:"bank", label:"Bank / financier", contact:true},
+  {id:"broker", label:"Business broker", contact:true},
+  {id:"inbound", label:"Inbound – owner approached us"},
+  {id:"other", label:"Other"}
+];
+const CHANNEL = Object.fromEntries(CHANNELS.map(c=>[c.id,c]));
+const TIERS = {
+  A:{label:"Owner", desc:"Owns or runs a business that could fit the mandate", action:"Personal call or coffee", types:["Business owner","Managing director / CEO","Family shareholder"]},
+  B:{label:"Connector", desc:"Accountants, attorneys, bankers, auditors, brokers and consultants who see owners' exit plans first", action:"Referral conversation", types:["Accountant / auditor","Attorney","Banker / financier","Business broker","Consultant","Tax advisor","Wealth / financial adviser"]},
+  C:{label:"Door-opener", desc:"Well-connected in a sector, town or community", action:"Ask for introductions", types:["Sector insider","Community / town figure","Friend","Industry body / association","Other"]}
+};
+const CONTACT_TYPES = [...TIERS.A.types,...TIERS.B.types,...TIERS.C.types];
+const LEGACY_TIER = {"Accounting firm":"B","Law firm":"B","Tax advisor":"B","Bank / financier":"B","Business broker":"B","Connector / intermediary":"C","Friend":"C","Business owner":"A","Industry body":"C","Investor":"C","Other":"C"};
+function tierOf(k){ return (k&&k.tier&&TIERS[k.tier])? k.tier : (TIERS.A.types.includes(k?.type)?"A":TIERS.B.types.includes(k?.type)?"B":LEGACY_TIER[k?.type]||"C"); }
+function tierBadge(t){ return `<span class="tier ${t}" title="${t} – ${esc(TIERS[t].label)}">${t}</span>`; }
+const CHANNEL_TO_TYPE = {accounting:"Accountant / auditor",law:"Attorney",tax:"Tax advisor",friend:"Friend",connector:"Sector insider",bank:"Banker / financier",broker:"Business broker",hatstone:"Attorney",whatsapp:"Business owner"};
+const CHANNEL_TO_TIER = {accounting:"B",law:"B",tax:"B",bank:"B",broker:"B",hatstone:"B",friend:"C",connector:"C",whatsapp:"A"};
+
+const INDUSTRIES = {
+  "Agriculture":["Fruit & citrus","Grain & field crops","Vegetables & horticulture","Livestock & dairy","Poultry & eggs","Wine & viticulture","Nuts (macadamia, pecan)","Mushrooms & specialty crops","Forestry & timber","Aquaculture & fishing","Agri inputs & services"],
+  "Agro-processing & food":["Food manufacturing","Juice & concentrates","Meat processing","Milling & bakery","Packhouses & cold storage","Beverages, wineries & breweries","Animal feed"],
+  "Manufacturing":["Engineering & metal fabrication","Plastics & packaging","Chemicals","Automotive components","Textiles & clothing","Furniture & wood products","Building materials","Electrical equipment","Printing & signage"],
+  "Mining & energy":["Mining & quarrying","Mining services & equipment","Renewable energy & solar","Fuel distribution","Water & waste management"],
+  "Construction & property":["Construction & civils","Specialist contractors (electrical, HVAC, plumbing)","Property development","Property management","Equipment & plant hire"],
+  "Trade & distribution":["Wholesale & distribution","Retail","FMCG brands","Franchise groups","Automotive dealerships & aftermarket","E-commerce"],
+  "Logistics & transport":["Road freight","Cold chain logistics","Warehousing","Courier & last mile","Passenger transport","Marine & aviation services"],
+  "Tourism & hospitality":["Hotels & guesthouses","Game lodges & reserves","Tour operators","Restaurants & catering","Golf & leisure estates","Events & venues"],
+  "Health & education":["Private clinics & practices","Pharmacies","Pharmaceuticals & medical devices","Veterinary","Frail care & retirement","Private schools","Training & skills development"],
+  "Business & financial services":["Accounting & tax","Legal","Consulting","Insurance & brokers","Financial services & lending","Staffing & labour","Security services","Facilities management & cleaning","Marketing & media"],
+  "Technology":["Software & SaaS","IT & managed services","Telecoms & ISPs","Data & fintech"],
+  "Other":["Funeral services","Other"]
+};
+const SECTORS = Object.keys(INDUSTRIES);
+const PROVINCES = ["Western Cape","Eastern Cape","Northern Cape","Free State","KwaZulu-Natal","North West","Gauteng","Mpumalanga","Limpopo","Namibia","Eswatini","Botswana","Other"];
+const EBIT = ["Unknown","< R10m","R10–30m","R30–50m","R50m+"];
+const LANGS = {af:"Afrikaans", en:"English", both:"Both"};
+const CADENCE = [{m:0,l:"No scheduled check-in"},{m:1,l:"Every month"},{m:3,l:"Every 3 months"},{m:6,l:"Every 6 months"},{m:12,l:"Every 12 months"}];
+
+/* ---------------- State ---------------- */
+const S = {
+  db:null, user:null, uid:null,
+  companies:new Map(), contacts:new Map(), partners:[], settingsVersion:false,
+  loaded:{companies:false, contacts:false, settings:false}, offline:false, stale:false, readOnly:false,
+  view:"dashboard",
+  f:{q:"", group:"active", stage:"", sector:"", partner:"", province:"", lang:"", channel:"", sort:"next", dir:1},
+  dealsMode:"table",
+  k:{q:"", type:"", partner:"", tier:""},
+  lists:{lang:"af", groups:["active","nurture"], sector:"", includeContacts:true, ctype:"", tiers:["A","B","C"]},
+  drawer:null
+};
+const VIEWS = [
+  ["dashboard","Overview"],["contacts","People · A B C"],["deals","Businesses"],["followups","Check-ins"],["network","Network map"],["lists","Mail lists"],["settings","Settings"]
+];
+
+/* ---------------- Utils ---------------- */
+const $ = s=>document.querySelector(s);
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pad = n=>String(n).padStart(2,"0");
+const ymd = d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const today = ()=>ymd(new Date());
+function parseD(s){ if(!s||!/^\d{4}-\d{2}-\d{2}$/.test(s)) return null; const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); }
+function addMonths(s,m){ const d=parseD(s)||new Date(); const day=d.getDate(); const r=new Date(d.getFullYear(), d.getMonth()+m, 1); const last=new Date(r.getFullYear(), r.getMonth()+1, 0).getDate(); r.setDate(Math.min(day,last)); return ymd(r); }
+function daysUntil(s){ const d=parseD(s); if(!d) return null; const t=parseD(today()); return Math.round((d-t)/86400000); }
+const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function fmtD(s){ const d=parseD(s); return d? `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}` : "—"; }
+function dueInfo(c){
+  if(!c.nextCheckIn) return null;
+  const n=daysUntil(c.nextCheckIn);
+  if(n<0) return {cls:"late", txt:`${-n} day${n===-1?"":"s"} overdue`, n};
+  if(n===0) return {cls:"late", txt:"Due today", n};
+  if(n<=14) return {cls:"soon", txt:`In ${n} day${n===1?"":"s"}`, n};
+  return {cls:"ok", txt:fmtD(c.nextCheckIn), n};
+}
+function stagePill(id){ const s=STAGE[id]||STAGE.lead; const cls=s.group==="won"?"won":s.group==="nurture"?"nurture":s.group==="closed"?"closed":"active"; return `<span class="pill ${cls}">${esc(s.label)}</span>`; }
+function langTag(l){ return l? `<span class="lang" title="${esc(LANGS[l]||l)}">${l==="both"?"AF/EN":esc(String(l).toUpperCase())}</span>`:""; }
+function sourceText(c){
+  const s=c.source||{}; const ch=CHANNEL[s.channel]; if(!ch) return "—";
+  if(ch.contact && s.contactId){ const k=S.contacts.get(s.contactId); if(k) return `${ch.label} · ${k.name}${k.firm?` (${k.firm})`:""}`; }
+  if(ch.partner && s.partner) return `${ch.label} · ${s.partner}`;
+  return ch.label + (s.detail?` · ${s.detail}`:"");
+}
+function companyLangs(c){ const set=new Set(); (c.owners||[]).forEach(o=>{ if(o.language) set.add(o.language); }); if(!set.size && c.language) set.add(c.language); return [...set]; }
+function primaryLang(c){ const l=companyLangs(c); return l.length>1? "both" : (l[0]||""); }
+let toastT; function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("on"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("on"),2600); }
+function nowISO(){ return new Date().toISOString(); }
+function opts(list, val, blank){ return (blank!==undefined?`<option value="">${esc(blank)}</option>`:"") + list.map(o=>{ const v=typeof o==="string"?o:o.v; const l=typeof o==="string"?o:o.l; return `<option value="${esc(v)}"${String(v)===String(val??"")?" selected":""}>${esc(l)}</option>`; }).join(""); }
+function industryOpts(val){ return `<option value="">Choose industry…</option>`+SECTORS.map(g=>`<optgroup label="${esc(g)}">${INDUSTRIES[g].map(i=>{const v=`${g} › ${i}`; return `<option value="${esc(v)}"${v===val?" selected":""}>${esc(i)}</option>`;}).join("")}</optgroup>`).join(""); }
+const sectorOf = c => (c.industry||"").split(" › ")[0] || "";
+const industryShort = c => (c.industry||"").split(" › ")[1] || c.industry || "—";
+const companies = ()=>[...S.companies.values()];
+const contacts = ()=>[...S.contacts.values()];
+function dealsFrom(contactId){ return companies().filter(c=>c.source?.contactId===contactId); }
+async function copyText(t){ try{ await navigator.clipboard.writeText(t); toast("Copied to clipboard"); }catch(e){ toast("Couldn't copy – select the text and copy it manually"); } }
+
+/* ---------------- Data layer (Supabase) ---------------- */
+const SUPABASE_URL="https://iraterfkhjquhmoezpiw.supabase.co";
+const SUPABASE_KEY="sb_publishable_h_snfpBOHkOvfS4Vs8XLvQ_k7Drdl6f";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {auth:{persistSession:true, autoRefreshToken:true, detectSessionInUrl:false}});
+S.members=[]; S.me=null; S.session=null;
+let renderQueued=false;
+function queueRender(){ if(renderQueued) return; renderQueued=true; requestAnimationFrame(()=>{ renderQueued=false; render(); }); }
+
+const nz = v => (v===undefined||v===null||v==="") ? null : v;
+function companyFromRow(r){ return {id:r.id, name:r.name, tradingAs:r.trading_as, industry:r.industry, province:r.province, town:r.town, website:r.website, ebit:r.ebit, turnover:r.turnover, employees:r.employees, owners:r.owners||[], language:r.language, source:{channel:r.source_channel, contactId:r.source_contact_id||"", partner:r.source_partner, detail:r.source_detail}, partner:r.partner, status:r.status, followUpMonths:r.follow_up_months, nextCheckIn:r.next_check_in||"", lastContact:r.last_contact||"", notes:r.notes, log:r.log||[], example:r.example, createdBy:r.created_by, createdByName:r.created_by_name, createdAt:r.created_at, updatedAt:r.updated_at}; }
+function contactFromRow(r){ return {id:r.id, name:r.name, tier:r.tier, type:r.type, firm:r.firm, partner:r.partner, ownsCompanyId:r.owns_company_id||"", cell:r.cell, email:r.email, language:r.language, province:r.province, town:r.town, notes:r.notes, example:r.example, createdBy:r.created_by, createdAt:r.created_at, updatedAt:r.updated_at}; }
+const CMAP={name:"name",tradingAs:"trading_as",industry:"industry",province:"province",town:"town",website:"website",ebit:"ebit",turnover:"turnover",employees:"employees",owners:"owners",language:"language",partner:"partner",status:"status",followUpMonths:"follow_up_months",nextCheckIn:"next_check_in",lastContact:"last_contact",notes:"notes",log:"log",example:"example",createdByName:"created_by_name"};
+const KMAP={name:"name",tier:"tier",type:"type",firm:"firm",partner:"partner",ownsCompanyId:"owns_company_id",cell:"cell",email:"email",language:"language",province:"province",town:"town",notes:"notes",example:"example"};
+const NULLABLE=new Set(["next_check_in","last_contact","owns_company_id","source_contact_id"]);
+function toRow(table, d){
+  const map=table==="companies"?CMAP:KMAP; const row={};
+  for(const [k,col] of Object.entries(map)) if(k in d){ let v=d[k]; if(NULLABLE.has(col)) v=nz(v); else if(v===undefined||v===null) continue; row[col]=v; }
+  if(table==="companies" && d.source){ row.source_channel=d.source.channel||""; row.source_contact_id=nz(d.source.contactId); row.source_partner=d.source.partner||""; row.source_detail=d.source.detail||""; }
+  if(row.follow_up_months!==undefined) row.follow_up_months=Number(row.follow_up_months)||0;
+  return row;
+}
+function writeErr(e){
+  console.warn(e);
+  const m=(e&&(e.message||e.error_description))||"";
+  if(/row-level security|permission denied/i.test(m)){ toast("Your login isn't on the Munger team yet. Ask Rynhardt."); }
+  else if(/JWT|session/i.test(m)){ toast("Your session expired – sign in again."); showLogin(true); }
+  else toast("Couldn't save – check your connection and try again.");
+}
+async function run(q){ const {error}=await q; if(error){ writeErr(error); return false; } return true; }
+async function dbSet(path, data){
+  const [table,id]=path.split("/");
+  if(table==="settings") { const ok=await run(sb.from("settings").upsert({key:id, value:data})); if(ok) await loadSettings(); return ok; }
+  const row={id, ...toRow(table,data)};
+  const ok=await run(sb.from(table).upsert(row));
+  if(ok){ await (table==="companies"?loadCompanies():loadContacts()); }
+  return ok;
+}
+async function dbUpdate(path, patch){
+  const [table,id]=path.split("/");
+  const ok=await run(sb.from(table).update(toRow(table,patch)).eq("id",id));
+  if(ok){ await (table==="companies"?loadCompanies():loadContacts()); }
+  return ok;
+}
+async function dbDel(path){
+  const [table,id]=path.split("/");
+  const ok=await run(sb.from(table).delete().eq("id",id));
+  if(ok){ await Promise.all([loadCompanies(),loadContacts()]); }
+  return ok;
+}
+function newId(){ return (crypto.randomUUID? crypto.randomUUID() : "10000000-1000-4000-8000-100000000000".replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16))); }
+
+async function loadCompanies(){ const {data,error}=await sb.from("companies").select("*").order("created_at"); if(error){ console.warn(error); S.stale=true; } else { S.companies=new Map(data.map(r=>[r.id,companyFromRow(r)])); S.loaded.companies=true; S.stale=false; } queueRender(); }
+async function loadContacts(){ const {data,error}=await sb.from("contacts").select("*").order("created_at"); if(error){ console.warn(error); } else { S.contacts=new Map(data.map(r=>[r.id,contactFromRow(r)])); S.loaded.contacts=true; } queueRender(); }
+async function loadSettings(){ const {data}=await sb.from("settings").select("*").eq("key","team").maybeSingle(); const p=data?.value?.partners; S.partners=Array.isArray(p)?p.filter(Boolean):[]; S.loaded.settings=true; queueRender(); }
+async function loadMembers(){ const {data}=await sb.from("members").select("user_id,email,name,is_admin").order("created_at"); S.members=data||[]; S.me=S.members.find(m=>m.user_id===S.uid)||null; S.readOnly=!S.me; queueRender(); }
+let reloadT={}; function reloadSoon(table){ clearTimeout(reloadT[table]); reloadT[table]=setTimeout(()=>{ ({companies:loadCompanies,contacts:loadContacts,settings:loadSettings})[table](); },300); }
+let channel=null;
+async function startData(){
+  await loadMembers();
+  if(!S.me){ S.readOnly=true; render(); return; }
+  await Promise.all([loadCompanies(),loadContacts(),loadSettings()]);
+  if(channel) sb.removeChannel(channel);
+  channel=sb.channel("munger-live")
+    .on("postgres_changes",{event:"*",schema:"public",table:"companies"},()=>reloadSoon("companies"))
+    .on("postgres_changes",{event:"*",schema:"public",table:"contacts"},()=>reloadSoon("contacts"))
+    .on("postgres_changes",{event:"*",schema:"public",table:"settings"},()=>reloadSoon("settings"))
+    .subscribe();
+}
+function showLogin(on){ $("#login").hidden=!on; if(on) setTimeout(()=>$("#lEmail").focus(),50); }
+async function init(){
+  render();
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session){ showLogin(true); return; }
+  S.session=session; S.uid=session.user.id; showLogin(false); startData();
+}
+sb.auth.onAuthStateChange((ev,session)=>{
+  if(ev==="SIGNED_OUT"){ S.session=null; S.companies=new Map(); S.contacts=new Map(); S.me=null; showLogin(true); render(); }
+  else if(session){ S.session=session; S.uid=session.user.id; }
+});
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible" && S.me){ loadCompanies(); loadContacts(); } });
+document.getElementById("loginForm").addEventListener("submit",async e=>{
+  e.preventDefault(); const btn=$("#lBtn"); const err=$("#lErr"); err.textContent=""; btn.disabled=true; btn.textContent="Signing in…";
+  const {data,error}=await sb.auth.signInWithPassword({email:$("#lEmail").value.trim().toLowerCase(), password:$("#lPass").value});
+  btn.disabled=false; btn.textContent="Sign in";
+  if(error){ err.textContent= /invalid/i.test(error.message)? "That email and password don't match." : error.message; return; }
+  S.session=data.session; S.uid=data.user.id; $("#lPass").value=""; showLogin(false); await startData();
+  if(!S.me){ err.textContent="This login isn't on the Munger team. Ask Rynhardt to add you."; await sb.auth.signOut(); }
+});
+
+/* ---------------- Render shell ---------------- */
+function render(){
+  const v = (location.hash||"").replace("#","");
+  S.view = VIEWS.some(x=>x[0]===v)? v : "dashboard";
+  const due = companies().filter(c=>{ const n=daysUntil(c.nextCheckIn); return n!==null && n<=7 && STAGE[c.status]?.group!=="closed" && c.status!=="won"; }).length;
+  $("#nav").innerHTML = VIEWS.map(([id,l])=>`<a href="#${id}" class="${S.view===id?"on":""}"><span>${esc(l)}</span>${id==="followups"&&due?`<span class="badge">${due}</span>`:""}</a>`).join("");
+  $("#railFoot").textContent = !S.session? "Signed out" : !S.loaded.companies? (S.stale?"Still connecting – data may be out of date":"Connecting…") : `${S.companies.size} deals · ${S.contacts.size} contacts tagged`;
+  $("#addBtn").disabled = S.readOnly;
+  const m=$("#main");
+  const fn={dashboard:vDash, deals:vDeals, followups:vFollow, network:vNetwork, contacts:vContacts, lists:vLists, settings:vSettings}[S.view];
+  if(S.view==="network"){ if(!m.querySelector("#net")) { m.innerHTML=fn(); netInit(); } else netRebuild(); }
+  else { netStop(); const keep=captureFocus(); m.innerHTML = banner()+fn(); restoreFocus(keep); }
+  if(S.drawer) renderDrawer();
+}
+function captureFocus(){ const a=document.activeElement; if(a && a.id && $("#main").contains(a)) return {id:a.id, s:a.selectionStart, e:a.selectionEnd}; return null; }
+function restoreFocus(k){ if(!k) return; const el=document.getElementById(k.id); if(el){ el.focus(); try{ if(k.s!=null) el.setSelectionRange(k.s,k.e);}catch(e){} } }
+function isStandalone(){ return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone===true; }
+function installDismissed(){ try{ return localStorage.getItem("munger-install-hint")==="1"; }catch(e){ return false; } }
+function banner(){
+  let out="";
+  if(S.stale) out+=`<div class="notice err"><span>Couldn't reach the database. Check your connection; what you see may be out of date.</span><button class="btn sm" data-act="reload">Try again</button></div>`;
+  if(S.session && S.readOnly && S.loaded.settings===false && !S.me) out+=`<div class="notice"><span>Your login isn't on the Munger team yet. Ask Rynhardt to add you.</span></div>`;
+  if(S.me && !isStandalone() && !installDismissed()) out+=`<div class="notice"><span><b>Put Munger on your home screen:</b> ${/iphone|ipad|ipod/i.test(navigator.userAgent)?"tap the Share button in Safari, then “Add to Home Screen”.":"open your browser menu (⋮) and choose “Install app” or “Add to Home screen”."}</span><button class="btn sm" data-act="dismiss-install">Got it</button></div>`;
+  const ex=companies().filter(c=>c.example).length+contacts().filter(c=>c.example).length;
+  if(ex && !S.readOnly) out+=`<div class="notice"><span>${ex} example records are loaded so you can see how it works.</span><button class="btn sm" data-act="clear-examples">Remove examples</button></div>`;
+  if(S.loaded.settings && !S.partners.length && !S.readOnly) out+=`<div class="notice"><span>Add the four Munger partners so deals and networks can be linked to them.</span><a class="btn sm" href="#settings">Add partners</a></div>`;
+  return out;
+}
+
+/* ---------------- Dashboard ---------------- */
+function vDash(){
+  const all=companies(); const g=id=>STAGE[id]?.group||"active";
+  const active=all.filter(c=>g(c.status)==="active");
+  const nurture=all.filter(c=>g(c.status)==="nurture");
+  const open=all.filter(c=>g(c.status)==="active"||g(c.status)==="nurture");
+  const overdue=open.filter(c=>{const n=daysUntil(c.nextCheckIn); return n!==null&&n<0;});
+  const next30=open.filter(c=>{const n=daysUntil(c.nextCheckIn); return n!==null&&n>=0&&n<=30;});
+  const target=open.filter(c=>c.ebit==="R30–50m"||c.ebit==="R50m+");
+  const dueList=open.filter(c=>c.nextCheckIn).sort((a,b)=>a.nextCheckIn.localeCompare(b.nextCheckIn)).slice(0,8);
+  const recent=[...all].sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||"")).slice(0,6);
+  const stageCounts=STAGES.filter(s=>s.group==="active"||s.group==="nurture").map(s=>({k:s.id,l:s.label,n:all.filter(c=>c.status===s.id).length}));
+  const chCounts=CHANNELS.map(c=>({k:c.id,l:c.label,n:all.filter(x=>x.source?.channel===c.id).length})).filter(x=>x.n).sort((a,b)=>b.n-a.n);
+  const pCounts=S.partners.map(p=>({k:p,l:p,n:open.filter(c=>c.partner===p).length}));
+  const conn=contacts().map(k=>({k:k.id,l:k.name+(k.firm?` · ${k.firm}`:""),n:dealsFrom(k.id).length})).filter(x=>x.n).sort((a,b)=>b.n-a.n).slice(0,6);
+  const bars=(arr,act)=>{ const mx=Math.max(1,...arr.map(a=>a.n)); return arr.length? `<div class="bars">${arr.map(a=>`<div class="bar" data-act="${act}" data-k="${esc(a.k)}"><span class="t" title="${esc(a.l)}">${esc(a.l)}</span><span class="track"><span class="fill" style="width:${(a.n/mx*100).toFixed(1)}%"></span></span><span class="c">${a.n}</span></div>`).join("")}</div>`:`<div class="empty">Nothing captured yet</div>`; };
+  return `
+  <div class="head"><div><h1>Deal flow overview</h1><p>Every business, owner and connector the four of you know, in one place.</p></div>
+  <div class="row"><button class="btn primary" data-act="capture" ${S.readOnly?"disabled":""}>+ Capture</button></div></div>
+  <div class="how">
+    <a class="step-card" href="#contacts"><span class="stepn">1</span><b>People</b><span>Everyone we know who matters, tagged A owner, B connector or C door-opener. This is our network.</span></a>
+    <a class="step-card" href="#deals"><span class="stepn">2</span><b>Businesses</b><span>Any business that could fit the mandate, with its owners and who brought it to us. This is our pipeline, from new lead to acquired.</span></a>
+    <a class="step-card" href="#followups"><span class="stepn">3</span><b>Check-ins</b><span>Not buying now? Set the business to Nurture with a 3 or 6-month check-in. The app tells you who to call and when.</span></a>
+  </div>
+  <div class="tiles">
+    <button class="tile" data-act="goto-deals" data-g="active"><span class="n">${active.length}</span><span class="l">Active deals</span></button>
+    <button class="tile" data-act="goto-deals" data-g="nurture"><span class="n">${nurture.length}</span><span class="l">In nurture / check-in</span></button>
+    <button class="tile ${overdue.length?"alert":""}" data-act="goto" data-v="followups"><span class="n">${overdue.length}</span><span class="l">Check-ins overdue</span></button>
+    <button class="tile ${next30.length?"warn":""}" data-act="goto" data-v="followups"><span class="n">${next30.length}</span><span class="l">Check-ins next 30 days</span></button>
+    <button class="tile" data-act="goto-deals" data-g=""><span class="n">${target.length}</span><span class="l">Open deals at R30m+ EBIT</span></button>
+    <button class="tile" data-act="goto" data-v="contacts"><span class="n">${S.contacts.size}</span><span class="l">Contacts tagged A / B / C</span></button>
+  </div>
+  <div class="grid2">
+    <section class="panel"><div class="panel-h"><h2>Next check-ins</h2><a href="#followups">All check-ins</a></div>
+      ${dueList.length? `<div class="list">${dueList.map(c=>{const d=dueInfo(c); return `<div class="li" data-open="${esc(c.id)}"><div><div><b>${esc(c.name)}</b> ${langTag(primaryLang(c))}</div><div class="sub">${esc(STAGE[c.status]?.label||"")} · ${esc(c.partner||"No partner")} · ${esc((c.owners||[])[0]?.name||"No owner captured")}</div></div><span class="pill ${d.cls}">${esc(d.txt)}</span></div>`;}).join("")}</div>`:`<div class="empty">No check-ins scheduled. Set a cadence on a deal to see it here.</div>`}
+    </section>
+    <section class="panel"><div class="panel-h"><h2>Pipeline by stage</h2><small>active + nurture</small></div>${bars(stageCounts,"f-stage")}</section>
+  </div>
+  <div class="grid2">
+    <section class="panel"><div class="panel-h"><h2>Where deals come from</h2><small>all deals</small></div>${bars(chCounts,"f-channel")}</section>
+    <section class="panel"><div class="panel-h"><h2>Open deals per partner</h2></div>${S.partners.length?bars(pCounts,"f-partner"):`<div class="empty">Add partners in Settings</div>`}</section>
+  </div>
+  <div class="grid2">
+    <section class="panel"><div class="panel-h"><h2>Recently captured</h2><a href="#deals">All businesses</a></div>
+      ${recent.length?`<div class="list">${recent.map(c=>`<div class="li" data-open="${esc(c.id)}"><div><b>${esc(c.name)}</b><div class="sub">${esc(industryShort(c))} · ${esc(c.province||"")} · ${esc(sourceText(c))}</div></div>${stagePill(c.status)}</div>`).join("")}</div>`:`<div class="empty">No deals yet. Click “New deal” to capture the first one.</div>`}
+    </section>
+    <section class="panel"><div class="panel-h"><h2>Top connectors</h2><small>deals introduced</small></div>${bars(conn,"open-contact")}</section>
+  </div>
+  ${sweepPanel()}`;
+}
+
+function sweepPanel(){
+  const ks=contacts(); const rows=[...S.partners]; if(ks.some(k=>!k.partner||!S.partners.includes(k.partner))) rows.push("");
+  const cnt=(p,t)=>ks.filter(k=>(p?k.partner===p:(!k.partner||!S.partners.includes(k.partner))) && (!t||tierOf(k)===t)).length;
+  const tot=t=>ks.filter(k=>!t||tierOf(k)===t).length;
+  return `<section class="panel"><div class="panel-h"><h2>Partner network sweep</h2><a href="#contacts">Open partner network</a></div>
+  <p class="hint" style="margin:0">Every useful relationship the four partners have, tagged. A gets a personal call or coffee, B a referral conversation, C an ask for introductions.</p>
+  <div style="overflow-x:auto"><table class="sweep"><thead><tr><th>Partner</th><th>${tierBadge("A")} Owners</th><th>${tierBadge("B")} Connectors</th><th>${tierBadge("C")} Door-openers</th><th>Total</th></tr></thead>
+  <tbody>${rows.map(p=>`<tr><td>${esc(p||"Unassigned")}</td>${["A","B","C",""].map(t=>`<td>${cnt(p,t)||"–"}</td>`).join("")}</tr>`).join("")}</tbody>
+  <tfoot><tr><td>All partners</td>${["A","B","C",""].map(t=>`<td>${tot(t)}</td>`).join("")}</tr></tfoot></table></div></section>`;
+}
+
+/* ---------------- Deals ---------------- */
+function filteredDeals(){
+  const f=S.f, q=f.q.trim().toLowerCase();
+  let arr=companies().filter(c=>{
+    const st=STAGE[c.status]||STAGE.lead;
+    if(f.group && st.group!==f.group) return false;
+    if(f.stage && c.status!==f.stage) return false;
+    if(f.sector && sectorOf(c)!==f.sector) return false;
+    if(f.partner && c.partner!==f.partner) return false;
+    if(f.province && c.province!==f.province) return false;
+    if(f.channel && c.source?.channel!==f.channel) return false;
+    if(f.lang){ const ls=companyLangs(c); if(!(ls.includes(f.lang)||ls.includes("both"))) return false; }
+    if(q){ const hay=[c.name,c.tradingAs,c.town,c.province,c.industry,c.notes,c.partner,sourceText(c),...(c.owners||[]).flatMap(o=>[o.name,o.email,o.cell])].join(" ").toLowerCase(); if(!hay.includes(q)) return false; }
+    return true;
+  });
+  const key={name:c=>(c.name||"").toLowerCase(), industry:c=>c.industry||"", province:c=>c.province||"", stage:c=>STAGES.findIndex(s=>s.id===c.status), partner:c=>c.partner||"", source:c=>sourceText(c), next:c=>c.nextCheckIn||"9999", ebit:c=>EBIT.indexOf(c.ebit||"Unknown")}[f.sort]||(c=>c.name);
+  arr.sort((a,b)=>{ const x=key(a), y=key(b); return (x<y?-1:x>y?1:0)*f.dir; });
+  return arr;
+}
+function vDeals(){
+  const f=S.f; const arr=filteredDeals();
+  const th=(k,l)=>`<th data-sort="${k}">${esc(l)}${f.sort===k?(f.dir>0?" ↑":" ↓"):""}</th>`;
+  const groupChips=[["","All"],["active","Active"],["nurture","Nurture"],["won","Acquired"],["closed","Passed"]].map(([k,l])=>`<button class="chip ${f.group===k?"on":""}" data-act="f-group" data-k="${k}">${l} <span class="num">${k?companies().filter(c=>(STAGE[c.status]||STAGE.lead).group===k).length:S.companies.size}</span></button>`).join("");
+  let body;
+  if(!arr.length) body=`<div class="panel"><div class="empty">${S.companies.size?"No deals match these filters.":"No deals captured yet."}</div></div>`;
+  else if(S.dealsMode==="board"){
+    const cols=STAGES.filter(s=>!f.group||s.group===f.group);
+    body=`<div class="board">${cols.map(s=>{const items=arr.filter(c=>(c.status||"lead")===s.id); return `<div class="col"><div class="col-h"><span>${esc(s.label)}</span><span class="num">${items.length}</span></div>${items.map(c=>{const d=dueInfo(c); return `<div class="card" data-open="${esc(c.id)}"><b>${esc(c.name)}</b><span class="sub">${esc(industryShort(c))} · ${esc(c.province||"")}</span><span class="sub">${esc(c.partner||"")} ${langTag(primaryLang(c))}</span>${d?`<span class="pill ${d.cls}">${esc(d.txt)}</span>`:""}</div>`;}).join("")}</div>`;}).join("")}</div>`;
+  } else {
+    body=`<div class="tablewrap"><table><thead><tr>${th("name","Company")}${th("industry","Industry")}${th("province","Province")}${th("stage","Stage")}${th("partner","Partner")}${th("source","How we heard")}${th("ebit","EBIT")}${th("next","Next check-in")}</tr></thead><tbody>
+    ${arr.map(c=>{const d=dueInfo(c); const o=(c.owners||[])[0]; return `<tr data-open="${esc(c.id)}"><td><div class="nm">${esc(c.name)} ${langTag(primaryLang(c))}</div><div class="sub">${esc(o?o.name:"No owner captured")}${(c.owners||[]).length>1?` +${c.owners.length-1}`:""}</div></td><td><div>${esc(industryShort(c))}</div><div class="sub">${esc(sectorOf(c))}</div></td><td>${esc(c.province||"—")}<div class="sub">${esc(c.town||"")}</div></td><td>${stagePill(c.status)}</td><td>${esc(c.partner||"—")}</td><td><div class="sub" style="color:inherit">${esc(sourceText(c))}</div></td><td class="num">${esc(c.ebit||"—")}</td><td>${d?`<span class="pill ${d.cls}">${esc(d.txt)}</span>`:`<span class="tag">—</span>`}</td></tr>`;}).join("")}
+    </tbody></table></div>`;
+  }
+  return `<div class="head"><div><h1>Businesses</h1><p>The pipeline: every business we're looking at, from first lead to acquired. ${arr.length} of ${S.companies.size} shown.</p></div><div class="row"><div class="seg"><button class="${S.dealsMode==="table"?"on":""}" data-act="mode" data-k="table">Table</button><button class="${S.dealsMode==="board"?"on":""}" data-act="mode" data-k="board">Board</button></div><button class="btn" data-act="export-deals">Download CSV</button><button class="btn primary" data-act="new-deal" ${S.readOnly?"disabled":""}>+ Add business</button></div></div>
+  <div class="chips">${groupChips}</div>
+  <div class="toolbar">
+    <input type="search" id="fq" placeholder="Search company, owner, email, town, notes…" value="${esc(f.q)}" aria-label="Search deals">
+    <select id="fstage" aria-label="Stage">${opts(STAGES.filter(s=>!f.group||s.group===f.group).map(s=>({v:s.id,l:s.label})),f.stage,"Any stage")}</select>
+    <select id="fsector" aria-label="Sector">${opts(SECTORS,f.sector,"Any sector")}</select>
+    <select id="fpartner" aria-label="Partner">${opts(S.partners,f.partner,"Any partner")}</select>
+    <select id="fprovince" aria-label="Province">${opts(PROVINCES,f.province,"Any province")}</select>
+    <select id="fchannel" aria-label="Source">${opts(CHANNELS.map(c=>({v:c.id,l:c.label})),f.channel,"Any source")}</select>
+    <select id="flang" aria-label="Language">${opts([{v:"af",l:"Afrikaans"},{v:"en",l:"English"}],f.lang,"Any language")}</select>
+    ${(f.stage||f.sector||f.partner||f.province||f.channel||f.lang||f.q)?`<button class="btn ghost sm" data-act="f-clear">Clear filters</button>`:""}
+  </div>${body}`;
+}
+
+/* ---------------- Follow-ups ---------------- */
+function vFollow(){
+  const open=companies().filter(c=>{const g=(STAGE[c.status]||STAGE.lead).group; return g==="active"||g==="nurture";});
+  const sch=open.filter(c=>c.nextCheckIn).sort((a,b)=>a.nextCheckIn.localeCompare(b.nextCheckIn));
+  const buckets=[
+    ["Overdue",c=>daysUntil(c.nextCheckIn)<0],
+    ["This week",c=>{const n=daysUntil(c.nextCheckIn); return n>=0&&n<=7;}],
+    ["Next 30 days",c=>{const n=daysUntil(c.nextCheckIn); return n>7&&n<=30;}],
+    ["Next 3 months",c=>{const n=daysUntil(c.nextCheckIn); return n>30&&n<=92;}],
+    ["Later",c=>daysUntil(c.nextCheckIn)>92]
+  ];
+  const none=open.filter(c=>!c.nextCheckIn);
+  const row=c=>{const d=dueInfo(c); const o=(c.owners||[])[0]; const cad=CADENCE.find(x=>x.m===Number(c.followUpMonths))?.l||"Once-off";
+    return `<div class="li" data-open="${esc(c.id)}"><div><div><b>${esc(c.name)}</b> ${langTag(primaryLang(c))} ${stagePill(c.status)}</div><div class="sub">${esc(o?`${o.name}${o.cell?" · "+o.cell:""}`:"No owner captured")} · ${esc(c.partner||"No partner")} · ${esc(cad)} · last contact ${esc(fmtD(c.lastContact))}</div></div><div class="row"><span class="pill ${d.cls}">${esc(d.txt)}</span>${S.readOnly?"":`<button class="btn sm" data-act="checkin" data-id="${esc(c.id)}">Log check-in</button>`}</div></div>`;};
+  return `<div class="head"><div><h1>Check-ins</h1><p>Businesses we're not buying now but keep warm. Logging a check-in schedules the next one from the deal's cadence.</p></div><button class="btn" data-act="export-follow">Download CSV</button></div>
+  ${buckets.map(([l,fn])=>{const items=sch.filter(fn); return items.length?`<section class="panel"><div class="panel-h"><h2>${l}</h2><small class="num">${items.length}</small></div><div class="list">${items.map(row).join("")}</div></section>`:"";}).join("") || `<div class="panel"><div class="empty">No check-ins scheduled yet.</div></div>`}
+  ${none.length?`<section class="panel"><div class="panel-h"><h2>Open deals with no check-in date</h2><small class="num">${none.length}</small></div><div class="list">${none.map(c=>`<div class="li" data-open="${esc(c.id)}"><div><b>${esc(c.name)}</b> ${stagePill(c.status)}<div class="sub">${esc(c.partner||"No partner")} · captured ${esc(fmtD((c.createdAt||"").slice(0,10)))}</div></div><span class="tag">Set a cadence</span></div>`).join("")}</div></section>`:""}`;
+}
+
+/* ---------------- Contacts ---------------- */
+function vContacts(){
+  const k=S.k, q=k.q.trim().toLowerCase();
+  const arr=contacts().filter(c=>{ if(k.tier&&tierOf(c)!==k.tier) return false; if(k.type&&c.type!==k.type) return false; if(k.partner&&c.partner!==k.partner) return false; if(q){const h=[c.name,c.firm,c.email,c.cell,c.town,c.notes,c.type].join(" ").toLowerCase(); if(!h.includes(q)) return false;} return true; }).sort((a,b)=>tierOf(a).localeCompare(tierOf(b)) || dealsFrom(b.id).length-dealsFrom(a.id).length || (a.name||"").localeCompare(b.name||""));
+  const chip=(t,l)=>`<button class="chip ${k.tier===t?"on":""}" data-act="k-tier" data-k="${t}">${t?`${t} – `:""}${esc(l)} <span class="num">${t?contacts().filter(c=>tierOf(c)===t).length:S.contacts.size}</span></button>`;
+  const typeList=k.tier?TIERS[k.tier].types:CONTACT_TYPES;
+  return `<div class="head"><div><h1>People · A B C</h1><p>Our network, from the WhatsApp sweep. A person is who we know; their business goes under Businesses. Every business they bring in links back to them.</p></div><div class="row"><button class="btn" data-act="export-contacts">Download CSV</button><button class="btn primary" data-act="new-contact" ${S.readOnly?"disabled":""}>+ Tag a contact</button></div></div>
+  <div class="tiles">${["A","B","C"].map(t=>`<button class="tile" data-act="k-tier" data-k="${t}"><span class="row" style="gap:8px">${tierBadge(t)}<span class="n">${contacts().filter(c=>tierOf(c)===t).length}</span></span><span class="l"><b style="color:var(--ink)">${esc(TIERS[t].label)}</b> · ${esc(TIERS[t].desc)}</span><span class="tag">Next step: ${esc(TIERS[t].action)}</span></button>`).join("")}</div>
+  <div class="chips">${chip("","All")}${chip("A","Owners")}${chip("B","Connectors")}${chip("C","Door-openers")}</div>
+  <div class="toolbar"><input type="search" id="kq" placeholder="Search name, firm, email, cell…" value="${esc(k.q)}" aria-label="Search contacts"><select id="ktype" aria-label="Type">${opts(typeList,k.type,"Any type")}</select><select id="kpartner" aria-label="Partner">${opts(S.partners,k.partner,"Anyone's network")}</select></div>
+  ${arr.length?`<div class="tablewrap"><table style="min-width:760px"><thead><tr><th>Tag</th><th>Name</th><th>Type</th><th>Whose network</th><th>Contact</th><th>Lang</th><th>Next step</th><th>Deals</th></tr></thead><tbody>${arr.map(c=>{const n=dealsFrom(c.id).length; const t=tierOf(c); const own=c.ownsCompanyId?S.companies.get(c.ownsCompanyId):null; return `<tr data-contact="${esc(c.id)}"><td>${tierBadge(t)}</td><td><div class="nm">${esc(c.name)}</div><div class="sub">${esc(own?own.name:(c.firm||""))}${c.town?` · ${esc(c.town)}`:""}</div></td><td>${esc(c.type||"—")}</td><td>${esc(c.partner||"—")}</td><td><div class="sub" style="color:inherit">${esc(c.cell||"")}</div><div class="sub">${esc(c.email||"")}</div></td><td>${langTag(c.language)}</td><td class="sub">${esc(TIERS[t].action)}</td><td class="num">${n||"—"}</td></tr>`;}).join("")}</tbody></table></div>`:`<div class="panel"><div class="empty">${S.contacts.size?"Nobody matches.":"No contacts tagged yet. Start the sweep with “Tag a contact”, or name the person when you capture a deal."}</div></div>`}`;
+}
+
+/* ---------------- Mail lists ---------------- */
+function listRows(){
+  const L=S.lists; const rows=[];
+  companies().forEach(c=>{
+    const g=(STAGE[c.status]||STAGE.lead).group; if(!L.groups.includes(g)) return;
+    if(L.sector && sectorOf(c)!==L.sector) return;
+    (c.owners||[]).forEach(o=>{ const lang=o.language||c.language; if(!(lang===L.lang||lang==="both")) return; if(!o.email&&!o.cell) return; rows.push({name:o.name,email:o.email||"",cell:o.cell||"",org:c.name,kind:"Business owner",lang}); });
+  });
+  if(L.includeContacts) contacts().forEach(k=>{ if(!L.tiers.includes(tierOf(k))) return; if(!(k.language===L.lang||k.language==="both")) return; if(!k.email&&!k.cell) return; rows.push({name:k.name,email:k.email||"",cell:k.cell||"",org:k.firm||"",kind:`${tierOf(k)} · ${k.type||"Contact"}`,lang:k.language}); });
+  const seen=new Set(); return rows.filter(r=>{const key=(r.email||r.cell).toLowerCase(); if(seen.has(key)) return false; seen.add(key); return true;});
+}
+function vLists(){
+  const L=S.lists; const rows=listRows(); const emails=rows.filter(r=>r.email);
+  const gchip=(k,l)=>`<button class="chip ${L.groups.includes(k)?"on":""}" data-act="l-group" data-k="${k}">${l}</button>`;
+  return `<div class="head"><div><h1>Mail lists</h1><p>Pull everyone who should get the Afrikaans or the English mailer. People marked “Both” appear in both lists.</p></div></div>
+  <section class="panel">
+    <div class="row"><div class="seg"><button class="${L.lang==="af"?"on":""}" data-act="l-lang" data-k="af">Afrikaans</button><button class="${L.lang==="en"?"on":""}" data-act="l-lang" data-k="en">English</button></div>
+      <span class="tag">Deals:</span><div class="chips">${gchip("active","Active")}${gchip("nurture","Nurture")}${gchip("won","Acquired")}${gchip("closed","Passed")}</div></div>
+    <div class="row"><select id="lsector" aria-label="Sector">${opts(SECTORS,L.sector,"Any sector")}</select>
+      <label class="row" style="gap:6px"><input type="checkbox" id="lcontacts" ${L.includeContacts?"checked":""}> Include partner-network contacts</label>
+      ${L.includeContacts?`<div class="chips">${["A","B","C"].map(t=>`<button class="chip ${L.tiers.includes(t)?"on":""}" data-act="l-tier" data-k="${t}">${t} – ${esc(TIERS[t].label)}s</button>`).join("")}</div>`:""}</div>
+  </section>
+  <div class="tiles"><div class="tile" style="cursor:default"><span class="n">${rows.length}</span><span class="l">${LANGS[L.lang]} recipients</span></div><div class="tile" style="cursor:default"><span class="n">${emails.length}</span><span class="l">with an email address</span></div><div class="tile" style="cursor:default"><span class="n">${rows.filter(r=>r.cell).length}</span><span class="l">with a cell number</span></div></div>
+  <section class="panel"><div class="panel-h"><h2>Recipients</h2><div class="row"><button class="btn sm" data-act="copy-emails" ${emails.length?"":"disabled"}>Copy emails</button><button class="btn sm" data-act="copy-cells" ${rows.some(r=>r.cell)?"":"disabled"}>Copy cell numbers</button><button class="btn sm" data-act="export-list" ${rows.length?"":"disabled"}>Download CSV</button></div></div>
+  ${rows.length?`<div class="tablewrap" style="border:0"><table style="min-width:640px"><thead><tr><th>Name</th><th>Organisation</th><th>Type</th><th>Email</th><th>Cell</th></tr></thead><tbody>${rows.map(r=>`<tr style="cursor:default"><td>${esc(r.name)}</td><td>${esc(r.org)}</td><td class="sub">${esc(r.kind)}</td><td>${esc(r.email)}</td><td class="num">${esc(r.cell)}</td></tr>`).join("")}</tbody></table></div>`:`<div class="empty">Nobody on this list yet.</div>`}
+  </section>`;
+}
+
+/* ---------------- Settings ---------------- */
+function teamPanel(){
+  const admin=S.me?.is_admin;
+  return `<section class="panel" style="max-width:620px"><h2>Team logins</h2><p class="hint" style="margin:0">Only people listed here can open Munger and see the data.</p>
+  <div class="list">${S.members.map(m=>`<div class="li" style="cursor:default"><div><b>${esc(m.name||m.email)}</b>${m.is_admin?` <span class="pill">Admin</span>`:""}<div class="sub">${esc(m.email)}</div></div>${admin&&m.user_id!==S.uid?`<button class="btn sm danger" data-act="remove-member" data-id="${esc(m.user_id)}">Remove</button>`:""}</div>`).join("")}</div>
+  ${admin?`<div class="ownerbox"><div class="ownerbox-h">Add a partner</div><div class="fgrid"><div class="f"><label for="mName">Name</label><input id="mName" autocomplete="off"></div><div class="f"><label for="mEmail">Email</label><input id="mEmail" type="email" autocomplete="off"></div><div class="f"><label for="mPw">Temporary password</label><input id="mPw" autocomplete="off" value="${esc(tempPw())}"></div><div class="f"><label class="row" style="gap:6px;margin-top:22px;color:var(--ink)"><input type="checkbox" id="mAdmin"> Admin (can add partners)</label></div></div><div class="row"><button class="btn primary" data-act="add-member">Add partner</button></div><p class="hint" style="margin:0">Send them the link, their email and this password. They can change it under Settings.</p></div>`:""}</section>`;
+}
+function tempPw(){ const a="ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789"; const r=crypto.getRandomValues(new Uint8Array(8)); return "Munger-"+[...r].map(x=>a[x%a.length]).join(""); }
+function vSettings(){
+  const p=[...S.partners]; while(p.length<4) p.push("");
+  return `<div class="head"><div><h1>Settings</h1><p>Shared by all partners.</p></div></div>
+  <section class="panel" style="max-width:620px"><h2>Munger partners</h2><p class="hint" style="margin:0">Every deal gets a lead partner, and every tagged contact sits in someone's network. Renaming a partner here doesn't rename existing records.</p>
+  <div class="fgrid">${p.map((n,i)=>`<div class="f"><label for="p${i}">Partner ${i+1}</label><input id="p${i}" value="${esc(n)}" ${S.readOnly?"disabled":""}></div>`).join("")}</div>
+  <div class="row"><button class="btn primary" data-act="save-partners" ${S.readOnly?"disabled":""}>Save partners</button></div></section>
+  <section class="panel" style="max-width:620px"><h2>Export everything</h2><p class="hint" style="margin:0">A CSV backup of all deals and all people, for Excel.</p><div class="row"><button class="btn" data-act="export-deals-all">All deals CSV</button><button class="btn" data-act="export-contacts">All people CSV</button></div></section>
+  ${teamPanel()}
+  <section class="panel" style="max-width:620px"><h2>Your login</h2><p class="hint" style="margin:0">Signed in as <b>${esc(S.me?.email||S.session?.user?.email||"")}</b>.</p>
+   <div class="fgrid"><div class="f"><label for="newPw">New password</label><input id="newPw" type="password" autocomplete="new-password" placeholder="At least 8 characters"></div></div>
+   <div class="row"><button class="btn" data-act="change-pw">Change password</button><button class="btn danger" data-act="sign-out">Sign out</button></div></section>`;
+}
+
+/* ---------------- Drawer ---------------- */
+function openDrawer(kind,id){ S.drawer={kind,id}; renderDrawer(); $("#drawer").classList.add("on"); $("#scrim").classList.add("on"); }
+function closeDrawer(){ S.drawer=null; $("#drawer").classList.remove("on"); $("#scrim").classList.remove("on"); }
+function renderDrawer(){
+  const d=$("#drawer"); const D=S.drawer; if(!D) return;
+  const keepNote=d.querySelector("#noteTxt")?.value||"";
+  if(D.kind==="company"){
+    const c=S.companies.get(D.id); if(!c){ closeDrawer(); return; }
+    const due=dueInfo(c); const cad=CADENCE.find(x=>x.m===Number(c.followUpMonths));
+    const src=c.source||{}; const sk=src.contactId?S.contacts.get(src.contactId):null;
+    d.innerHTML=`<div class="drawer-h"><div class="row" style="justify-content:space-between"><span class="tag">${esc(c.industry||"No industry")}</span><button class="btn ghost sm" data-act="close">Close ✕</button></div>
+      <h2 style="font-size:24px">${esc(c.name)}${c.example?` <span class="pill">Example</span>`:""}</h2>
+      <div class="row">${S.readOnly?stagePill(c.status):`<select id="dStage" aria-label="Stage">${opts(STAGES.map(s=>({v:s.id,l:s.label})),c.status)}</select>`} ${langTag(primaryLang(c))} <span class="tag">Lead partner: <b>${esc(c.partner||"—")}</b></span></div>
+      <div class="row">${S.readOnly?"":`<button class="btn sm" data-act="edit-deal" data-id="${esc(c.id)}">Edit details</button>`}${S.readOnly?"":`<button class="btn sm danger" data-act="del-deal" data-id="${esc(c.id)}">Delete</button>`}</div></div>
+    <div class="drawer-b">
+      <div class="fu"><div class="row" style="justify-content:space-between"><span class="section-t">Check-in</span>${due?`<span class="pill ${due.cls}">${esc(due.txt)}</span>`:`<span class="tag">Not scheduled</span>`}</div>
+        <div class="kv"><dt>Cadence</dt><dd>${esc(cad?cad.l:"—")}</dd><dt>Next check-in</dt><dd>${esc(fmtD(c.nextCheckIn))}</dd><dt>Last contact</dt><dd>${esc(fmtD(c.lastContact))}</dd></div>
+        ${S.readOnly?"":`<textarea id="noteTxt" placeholder="What was discussed? (optional)">${esc(keepNote)}</textarea><div class="row"><button class="btn primary sm" data-act="checkin" data-id="${esc(c.id)}">Log check-in${Number(c.followUpMonths)?` & schedule next (+${c.followUpMonths}m)`:""}</button><button class="btn sm" data-act="add-note" data-id="${esc(c.id)}">Add note only</button></div>`}
+      </div>
+      <div><div class="section-t">Owners</div></div>
+      ${(c.owners||[]).length?(c.owners||[]).map(o=>`<div class="owner"><div><b>${esc(o.name||"Unnamed")}</b> ${o.role?`<span class="tag">· ${esc(o.role)}</span>`:""} ${langTag(o.language)}</div><div class="ctl">${o.cell?`<span class="num">${esc(o.cell)}</span><a href="https://wa.me/${esc(waNum(o.cell))}" target="_blank" rel="noopener">WhatsApp</a><button class="btn ghost sm" data-act="copy" data-t="${esc(o.cell)}">Copy</button>`:""}</div><div class="ctl">${o.email?`<span>${esc(o.email)}</span><button class="btn ghost sm" data-act="copy" data-t="${esc(o.email)}">Copy</button>`:""}</div></div>`).join(""):`<div class="tag">No owners captured.</div>`}
+      <div class="section-t">How we heard about it</div>
+      <div class="kv"><dt>Channel</dt><dd>${esc(CHANNEL[src.channel]?.label||"—")}</dd>${sk?`<dt>Introduced by</dt><dd><a href="#" data-act="open-contact" data-k="${esc(sk.id)}">${esc(sk.name)}</a>${sk.firm?` · ${esc(sk.firm)}`:""}${sk.partner?`<div class="tag">In ${esc(sk.partner)}'s network</div>`:""}</dd>`:""}${src.partner?`<dt>Partner network</dt><dd>${esc(src.partner)}</dd>`:""}${src.detail?`<dt>Detail</dt><dd>${esc(src.detail)}</dd>`:""}</div>
+      <div class="section-t">Business</div>
+      <div class="kv"><dt>Trading as</dt><dd>${esc(c.tradingAs||"—")}</dd><dt>Location</dt><dd>${esc([c.town,c.province].filter(Boolean).join(", ")||"—")}</dd><dt>Website</dt><dd>${c.website?`<a href="${esc(/^https?:/i.test(c.website)?c.website:"https://"+c.website)}" target="_blank" rel="noopener">${esc(c.website)}</a>`:"—"}</dd><dt>EBIT estimate</dt><dd>${esc(c.ebit||"—")}</dd><dt>Turnover estimate</dt><dd>${esc(c.turnover||"—")}</dd><dt>Employees</dt><dd>${esc(c.employees||"—")}</dd><dt>Captured</dt><dd>${esc(fmtD((c.createdAt||"").slice(0,10)))}${c.createdByName?` by ${esc(c.createdByName)}`:""}</dd></div>
+      ${c.notes?`<div><div class="section-t">Notes</div><p style="white-space:pre-wrap;margin:6px 0 0">${esc(c.notes)}</p></div>`:""}
+      <div class="section-t">Activity</div>
+      ${(c.log||[]).length?`<div class="log">${[...c.log].reverse().map(e=>`<div class="e"><small>${esc(fmtD(e.d))}${e.by?` · ${esc(e.by)}`:""}</small><div style="white-space:pre-wrap">${esc(e.text)}</div></div>`).join("")}</div>`:`<div class="tag">No activity logged yet.</div>`}
+    </div>`;
+  } else {
+    const k=S.contacts.get(D.id); if(!k){ closeDrawer(); return; }
+    const deals=dealsFrom(k.id);
+    d.innerHTML=`<div class="drawer-h"><div class="row" style="justify-content:space-between"><span class="row" style="gap:8px">${tierBadge(tierOf(k))}<span class="tag">${esc(TIERS[tierOf(k)].label)} · ${esc(k.type||"Contact")}</span></span><button class="btn ghost sm" data-act="close">Close ✕</button></div>
+      <h2 style="font-size:24px">${esc(k.name)}${k.example?` <span class="pill">Example</span>`:""}</h2><div class="row">${langTag(k.language)}<span class="tag">${esc(k.firm||"")}</span>${k.partner?`<span class="tag">In <b>${esc(k.partner)}</b>'s network</span>`:""}</div>
+      <div class="row">${S.readOnly?"":`<button class="btn sm" data-act="edit-contact" data-id="${esc(k.id)}">Edit</button><button class="btn sm" data-act="new-deal-from" data-id="${esc(k.id)}">${tierOf(k)==="A"?"+ Add their business":"+ Business they introduced"}</button><button class="btn sm danger" data-act="del-contact" data-id="${esc(k.id)}">Delete</button>`}</div></div>
+    <div class="drawer-b">
+      <div class="fu"><span class="section-t">Next step for a ${esc(TIERS[tierOf(k)].label.toLowerCase())}</span><b>${esc(TIERS[tierOf(k)].action)}</b>${k.ownsCompanyId&&S.companies.get(k.ownsCompanyId)?`<span>Owns <a href="#" data-open="${esc(k.ownsCompanyId)}">${esc(S.companies.get(k.ownsCompanyId).name)}</a></span>`:""}</div>
+      <div class="kv"><dt>Cell</dt><dd>${k.cell?`<span class="num">${esc(k.cell)}</span> <a href="https://wa.me/${esc(waNum(k.cell))}" target="_blank" rel="noopener">WhatsApp</a>`:"—"}</dd><dt>Email</dt><dd>${esc(k.email||"—")}</dd><dt>Location</dt><dd>${esc([k.town,k.province].filter(Boolean).join(", ")||"—")}</dd></div>
+      ${k.notes?`<div><div class="section-t">Notes</div><p style="white-space:pre-wrap;margin:6px 0 0">${esc(k.notes)}</p></div>`:""}
+      <div class="section-t">Businesses introduced (${deals.length})</div>
+      ${deals.length?`<div class="list">${deals.map(c=>`<div class="li" data-open="${esc(c.id)}"><div><b>${esc(c.name)}</b><div class="sub">${esc(industryShort(c))} · ${esc(c.province||"")}</div></div>${stagePill(c.status)}</div>`).join("")}</div>`:`<div class="tag">None yet.</div>`}
+    </div>`;
+  }
+}
+function waNum(cell){ let n=String(cell).replace(/\D/g,""); if(n.startsWith("0")) n="27"+n.slice(1); return n; }
+
+/* ---------------- Forms ---------------- */
+function closeModal(){ $("#modal").classList.remove("on"); $("#modal").innerHTML=""; }
+function ownerBlock(o,i){ o=o||{}; return `<div class="ownerbox" data-owner="${i}"><div class="ownerbox-h"><span>Owner ${i+1}</span>${i>0?`<button type="button" class="btn ghost sm" data-act="rm-owner" data-i="${i}">Remove</button>`:""}</div>
+  <div class="fgrid"><div class="f"><label for="o${i}n">Full name</label><input id="o${i}n" value="${esc(o.name)}"></div><div class="f"><label for="o${i}r">Role / shareholding</label><input id="o${i}r" value="${esc(o.role)}" placeholder="e.g. Founder, 60%"></div>
+  <div class="f"><label for="o${i}c">Cell phone</label><input id="o${i}c" type="tel" value="${esc(o.cell)}" placeholder="082 123 4567"></div><div class="f"><label for="o${i}e">Email</label><input id="o${i}e" type="email" value="${esc(o.email)}"></div>
+  <div class="f"><label for="o${i}l">Speaks</label><select id="o${i}l">${opts([{v:"af",l:"Afrikaans"},{v:"en",l:"English"},{v:"both",l:"Both"}],o.language||"af")}</select></div></div></div>`; }
+
+let FORM=null;
+function dealForm(id, preset){
+  const c = id? JSON.parse(JSON.stringify(S.companies.get(id)||{})) : {status:"lead", followUpMonths:3, owners:[{language:"af"}], source:{}, partner:S.partners[0]||"", ebit:"Unknown", ...(preset||{})};
+  FORM={kind:"deal", id, owners:(c.owners&&c.owners.length?c.owners:[{language:"af"}]), data:c};
+  const src=c.source||{};
+  $("#modal").innerHTML=`<form class="sheet" id="dealForm" novalidate><div class="sheet-h"><h2>${id?"Edit business":"Add a business"}</h2><button type="button" class="btn ghost sm" data-act="close-modal">Cancel</button></div><div class="sheet-b">
+  <fieldset><legend><span class="step">1</span>The business</legend><div class="fgrid">
+    <div class="f full"><label for="cName">Company name *</label><input id="cName" value="${esc(c.name)}" required autocomplete="off"><div id="dupWarn" class="warnline"></div></div>
+    <div class="f"><label for="cTrading">Trading as</label><input id="cTrading" value="${esc(c.tradingAs)}"></div>
+    <div class="f"><label for="cIndustry">Industry *</label><select id="cIndustry">${industryOpts(c.industry)}</select></div>
+    <div class="f"><label for="cProvince">Province</label><select id="cProvince">${opts(PROVINCES,c.province,"Choose…")}</select></div>
+    <div class="f"><label for="cTown">Town / area</label><input id="cTown" value="${esc(c.town)}"></div>
+    <div class="f"><label for="cWeb">Website</label><input id="cWeb" value="${esc(c.website)}"></div>
+    <div class="f"><label for="cEbit">EBIT estimate</label><select id="cEbit">${opts(EBIT,c.ebit)}</select></div>
+    <div class="f"><label for="cTurnover">Turnover estimate</label><input id="cTurnover" value="${esc(c.turnover)}" placeholder="e.g. R180m"></div>
+    <div class="f"><label for="cEmp">Employees</label><input id="cEmp" value="${esc(c.employees)}"></div>
+  </div></fieldset>
+  <fieldset><legend><span class="step">2</span>Owners</legend><div id="owners"></div><div><button type="button" class="btn sm" data-act="add-owner" id="addOwnerBtn">+ Add another owner</button></div></fieldset>
+  <fieldset><legend><span class="step">3</span>Where did we hear about this lead?</legend><div class="fgrid">
+    <div class="f full"><label for="sChannel">Source *</label><select id="sChannel">${opts(CHANNELS.map(x=>({v:x.id,l:x.label})),src.channel,"Choose source…")}</select></div>
+    <div id="srcExtra" class="f full"></div>
+  </div></fieldset>
+  <fieldset><legend><span class="step">4</span>Munger</legend><div class="fgrid">
+    <div class="f"><label for="cPartner">Lead partner</label><select id="cPartner">${opts(S.partners,c.partner,"Unassigned")}</select></div>
+    <div class="f"><label for="cStage">Stage</label><select id="cStage">${opts(STAGES.map(s=>({v:s.id,l:s.label})),c.status)}</select></div>
+    <div class="f"><label for="cCad">Check in</label><select id="cCad">${opts(CADENCE.map(x=>({v:x.m,l:x.l})),c.followUpMonths??0)}</select></div>
+    <div class="f"><label for="cNext">Next check-in date</label><input id="cNext" type="date" value="${esc(c.nextCheckIn||"")}"><span class="hint" id="nextHint"></span></div>
+    <div class="f full"><label for="cNotes">Notes</label><textarea id="cNotes" placeholder="What makes this business interesting? Succession situation, culture, anything the partners should know.">${esc(c.notes)}</textarea></div>
+  </div></fieldset>
+  </div><div class="sheet-f"><button type="button" class="btn" data-act="close-modal">Cancel</button><button type="submit" class="btn primary">${id?"Save changes":"Save business"}</button></div></form>`;
+  $("#modal").classList.add("on");
+  drawOwners(); drawSrcExtra(src); autoNext(!c.nextCheckIn);
+  $("#cName").focus();
+}
+function readOwners(){ return FORM.owners.map((o,i)=>({name:$(`#o${i}n`)?.value.trim()||"", role:$(`#o${i}r`)?.value.trim()||"", cell:$(`#o${i}c`)?.value.trim()||"", email:$(`#o${i}e`)?.value.trim()||"", language:$(`#o${i}l`)?.value||"af"})); }
+function drawOwners(){ $("#owners").innerHTML=FORM.owners.map(ownerBlock).join(""); $("#addOwnerBtn").style.display=FORM.owners.length>=3?"none":""; }
+function drawSrcExtra(src){
+  src=src||{}; const ch=CHANNEL[$("#sChannel").value]; const box=$("#srcExtra");
+  if(!ch){ box.innerHTML=""; return; }
+  if(ch.contact){
+    const pool=contacts().sort((a,b)=>(a.name||"").localeCompare(b.name||""));
+    box.innerHTML=`<label for="sContact">${ch.id==="whatsapp"?"Which contact from the sweep?":"Who referred it?"}</label><select id="sContact"><option value="">Choose a person…</option><option value="__new"${!src.contactId&&!pool.length?" selected":""}>+ Add a new person</option>${["A","B","C"].map(t=>{const g=pool.filter(k=>tierOf(k)===t); return g.length?`<optgroup label="${t} – ${esc(TIERS[t].label)}s">${g.map(k=>`<option value="${esc(k.id)}"${k.id===src.contactId?" selected":""}>${esc(k.name)}${k.firm?` – ${esc(k.firm)}`:""}${k.partner?` (${esc(k.partner)})`:""}</option>`).join("")}</optgroup>`:"";}).join("")}</select><div id="newContact"></div><div class="f" style="margin-top:8px"><label for="sDetail">Extra detail</label><input id="sDetail" value="${esc(src.detail)}" placeholder="e.g. met at golf day"></div>`;
+    drawNewContact(ch);
+  } else if(ch.partner){
+    box.innerHTML=`<label for="sPartner">Whose WhatsApp network?</label><select id="sPartner">${opts(S.partners,src.partner,"Choose partner…")}</select><div class="f" style="margin-top:8px"><label for="sDetail">Group or detail</label><input id="sDetail" value="${esc(src.detail)}"></div>`;
+  } else {
+    box.innerHTML=`<label for="sDetail">Detail</label><input id="sDetail" value="${esc(src.detail)}" placeholder="${ch.id==="direct"?"e.g. letter campaign Nov 2026":ch.id==="mapping"?"e.g. tourism value chain map":"Anything useful"}">`;
+  }
+}
+function drawNewContact(ch){
+  const nc=$("#newContact"); if(!nc) return;
+  if($("#sContact").value!=="__new"){ nc.innerHTML=""; return; }
+  nc.innerHTML=`<div class="ownerbox" style="margin-top:8px"><div class="ownerbox-h">New person</div><div class="fgrid"><div class="f"><label for="nkName">Name *</label><input id="nkName"></div><div class="f"><label for="nkFirm">Firm / company</label><input id="nkFirm"></div><div class="f"><label for="nkTier">Tag</label><select id="nkTier">${opts(["A","B","C"].map(t=>({v:t,l:`${t} – ${TIERS[t].label}`})),CHANNEL_TO_TIER[ch.id]||"C")}</select></div><div class="f"><label for="nkType">Type</label><select id="nkType">${opts(TIERS[CHANNEL_TO_TIER[ch.id]||"C"].types,CHANNEL_TO_TYPE[ch.id])}</select></div><div class="f"><label for="nkPartner">Whose network</label><select id="nkPartner">${opts(S.partners,$("#cPartner")?.value||S.partners[0],"—")}</select></div><div class="f"><label for="nkCell">Cell</label><input id="nkCell" type="tel"></div><div class="f"><label for="nkEmail">Email</label><input id="nkEmail" type="email"></div><div class="f"><label for="nkLang">Speaks</label><select id="nkLang">${opts([{v:"af",l:"Afrikaans"},{v:"en",l:"English"},{v:"both",l:"Both"}],"af")}</select></div></div></div>`;
+}
+function autoNext(force){
+  const m=Number($("#cCad").value); const el=$("#cNext"); const hint=$("#nextHint");
+  if(m && (force || !el.value)){ el.value=addMonths(today(),m); }
+  hint.textContent = m? `Next one is set automatically each time a check-in is logged.` : "";
+}
+function dupCheck(){
+  const v=$("#cName").value.trim().toLowerCase(); const w=$("#dupWarn"); if(!v||v.length<3){ w.textContent=""; return; }
+  const hit=companies().find(c=>c.id!==FORM.id && ((c.name||"").toLowerCase()===v || (c.name||"").toLowerCase().includes(v) && v.length>5));
+  w.innerHTML = hit? `Already in the system: <a href="#" data-act="open-dup" data-id="${esc(hit.id)}">${esc(hit.name)}</a> (${esc(STAGE[hit.status]?.label||"")}, ${esc(hit.partner||"no partner")})` : "";
+}
+async function submitDeal(){
+  const name=$("#cName").value.trim(); if(!name){ toast("Company name is required"); $("#cName").focus(); return; }
+  const channel=$("#sChannel").value; if(!channel){ toast("Choose where you heard about the lead"); $("#sChannel").focus(); return; }
+  const ch=CHANNEL[channel]; const source={channel, detail:$("#sDetail")?.value.trim()||""};
+  let newContact=null;
+  if(ch.contact){
+    const sel=$("#sContact").value;
+    if(sel==="__new"){ const nm=$("#nkName").value.trim(); if(!nm){ toast("Enter the name of the person who referred it"); $("#nkName").focus(); return; }
+      const kid=newId(); newContact={id:kid, data:{name:nm, firm:$("#nkFirm").value.trim(), tier:$("#nkTier").value, type:$("#nkType").value, partner:$("#nkPartner").value, cell:$("#nkCell").value.trim(), email:$("#nkEmail").value.trim(), language:$("#nkLang").value, province:$("#cProvince").value, town:"", notes:"", createdAt:nowISO(), createdBy:S.uid||""}}; source.contactId=kid; }
+    else if(sel) source.contactId=sel;
+  }
+  if(ch.partner) source.partner=$("#sPartner").value;
+  const owners=readOwners().filter(o=>o.name||o.email||o.cell);
+  const prev=FORM.id? S.companies.get(FORM.id):null;
+  const status=$("#cStage").value;
+  const data={
+    name, tradingAs:$("#cTrading").value.trim(), industry:$("#cIndustry").value, province:$("#cProvince").value, town:$("#cTown").value.trim(),
+    website:$("#cWeb").value.trim(), ebit:$("#cEbit").value, turnover:$("#cTurnover").value.trim(), employees:$("#cEmp").value.trim(),
+    owners, language: owners.length? (new Set(owners.map(o=>o.language)).size>1?"both":owners[0].language) : "",
+    source, partner:$("#cPartner").value, status, followUpMonths:Number($("#cCad").value), nextCheckIn:$("#cNext").value||"",
+    notes:$("#cNotes").value.trim(),
+    lastContact: prev?.lastContact||"", log: prev?.log? [...prev.log] : [],
+    createdAt: prev?.createdAt||nowISO(), createdBy: prev?.createdBy||S.uid||"", createdByName: prev?.createdByName||await myName(),
+    updatedAt: nowISO(), example: prev?.example||false
+  };
+  if(!prev) data.log.push({d:today(), by:data.createdByName, text:`Captured · ${ch.label}`});
+  else if(prev.status!==status) data.log.push({d:today(), by:await myName(), text:`Stage: ${STAGE[prev.status]?.label||"—"} → ${STAGE[status].label}`});
+  const btn=$("#dealForm button[type=submit]"); btn.disabled=true;
+  if(newContact){ const ok=await dbSet("contacts/"+newContact.id, newContact.data); if(!ok){ btn.disabled=false; return; } }
+  const id=FORM.id||newId();
+  const ok=await dbSet("companies/"+id, data);
+  btn.disabled=false;
+  if(ok){
+    const sk=source.contactId&&S.contacts.get(source.contactId);
+    if(!FORM.id && sk && tierOf(sk)==="A" && !sk.ownsCompanyId && channel==="whatsapp") await dbUpdate("contacts/"+sk.id,{ownsCompanyId:id, updatedAt:nowISO()});
+    closeModal(); toast(FORM.id?"Business updated":"Business saved"); openDrawer("company",id); }
+}
+async function myName(){ return S.me?.name || ""; }
+
+function contactForm(id, preset){
+  const k=id? {...S.contacts.get(id)} : {language:"af", partner:S.partners[0]||"", tier:"B", ...(preset||{})};
+  const tier=tierOf(k);
+  FORM={kind:"contact", id};
+  const comps=companies().sort((a,b)=>(a.name||"").localeCompare(b.name||""));
+  $("#modal").innerHTML=`<form class="sheet" id="contactForm" novalidate><div class="sheet-h"><h2>${id?"Edit contact":"Tag a contact"}</h2><button type="button" class="btn ghost sm" data-act="close-modal">Cancel</button></div><div class="sheet-b">
+  <fieldset><legend><span class="step">1</span>Who is this?</legend><div class="tierpick" role="radiogroup">${["A","B","C"].map(t=>`<label><input type="radio" name="kTier" value="${t}" ${tier===t?"checked":""}><b>${tierBadge(t)} ${esc(TIERS[t].label)}</b><span>${esc(TIERS[t].desc)}</span><span>Next step: ${esc(TIERS[t].action)}</span></label>`).join("")}</div></fieldset>
+  <fieldset><legend><span class="step">2</span>Details</legend><div class="fgrid">
+   <div class="f"><label for="kName">Name *</label><input id="kName" value="${esc(k.name)}" autocomplete="off"><div id="kDup" class="warnline"></div></div><div class="f"><label for="kType">Type</label><select id="kType">${opts(TIERS[tier].types,k.type)}</select></div>
+   <div class="f"><label for="kFirm" id="kFirmL">${tier==="A"?"Business they own / run":"Firm / company"}</label><input id="kFirm" value="${esc(k.firm)}"></div><div class="f"><label for="kPartner">Whose network</label><select id="kPartner">${opts(S.partners,k.partner,"—")}</select></div>
+   <div class="f full" id="kOwnsWrap" ${tier==="A"?"":"hidden"}><label for="kOwns">Their business in Businesses</label><select id="kOwns">${opts(comps.map(c=>({v:c.id,l:c.name})),k.ownsCompanyId,"Not added yet")}</select>${id?"":`<label class="row" style="gap:6px;margin-top:6px;color:var(--ink)"><input type="checkbox" id="kAddBiz" checked> After saving, add their business so we can track it and check in</label>`}</div>
+   <div class="f"><label for="kCell">Cell</label><input id="kCell" type="tel" value="${esc(k.cell)}"></div><div class="f"><label for="kEmail">Email</label><input id="kEmail" type="email" value="${esc(k.email)}"></div>
+   <div class="f"><label for="kLang">Speaks</label><select id="kLang">${opts([{v:"af",l:"Afrikaans"},{v:"en",l:"English"},{v:"both",l:"Both"}],k.language)}</select></div><div class="f"><label for="kProv">Province</label><select id="kProv">${opts(PROVINCES,k.province,"Choose…")}</select></div>
+   <div class="f full"><label for="kTown">Town / area / sector they know</label><input id="kTown" value="${esc(k.town)}"></div>
+   <div class="f full"><label for="kNotes">Notes</label><textarea id="kNotes" placeholder="How we know them, who they know, what kind of clients they see…">${esc(k.notes)}</textarea></div>
+  </div></fieldset></div><div class="sheet-f"><button type="button" class="btn" data-act="close-modal">Cancel</button><button type="submit" class="btn primary">Save contact</button></div></form>`;
+  $("#modal").classList.add("on"); $("#kName").focus();
+}
+function contactDupCheck(){
+  const w=$("#kDup"); if(!w) return;
+  const nm=$("#kName").value.trim().toLowerCase(), cell=($("#kCell").value||"").replace(/\D/g,"").slice(-9), em=($("#kEmail").value||"").trim().toLowerCase();
+  const hit=contacts().find(c=>c.id!==FORM.id && ((nm.length>3&&(c.name||"").toLowerCase()===nm) || (cell.length>=9&&(c.cell||"").replace(/\D/g,"").slice(-9)===cell) || (em&&(c.email||"").toLowerCase()===em)));
+  w.innerHTML=hit?`Already tagged: <a href="#" data-act="open-dup-contact" data-id="${esc(hit.id)}">${esc(hit.name)}</a>${hit.partner?` in ${esc(hit.partner)}'s network`:""}. Agree who contacts them so nobody calls twice.`:"";
+}
+async function submitContact(){
+  const name=$("#kName").value.trim(); if(!name){ toast("Name is required"); return; }
+  const prev=FORM.id? S.contacts.get(FORM.id):null;
+  const tier=(document.querySelector('input[name=kTier]:checked')||{}).value||"C";
+  const data={name, tier, firm:$("#kFirm").value.trim(), type:$("#kType").value, partner:$("#kPartner").value, ownsCompanyId: tier==="A"?($("#kOwns").value||""):"", cell:$("#kCell").value.trim(), email:$("#kEmail").value.trim(), language:$("#kLang").value, province:$("#kProv").value, town:$("#kTown").value.trim(), notes:$("#kNotes").value.trim(), createdAt:prev?.createdAt||nowISO(), createdBy:prev?.createdBy||S.uid||"", updatedAt:nowISO(), example:prev?.example||false};
+  const id=FORM.id||newId();
+  if(await dbSet("contacts/"+id,data)){ const addBiz=tier==="A"&&!data.ownsCompanyId&&$("#kAddBiz")?.checked; closeModal(); toast("Saved"); if(addBiz){ S.contacts.set(id,{id,...data}); document.dispatchEvent(new CustomEvent("munger-add-biz",{detail:id})); } else openDrawer("contact",id); }
+}
+function captureChooser(){
+  $("#modal").innerHTML=`<div class="sheet" style="width:min(560px,100%)"><div class="sheet-h"><h2>What are you capturing?</h2><button class="btn ghost sm" data-act="close-modal">Cancel</button></div><div class="sheet-b"><div class="choice">
+   <button type="button" data-act="new-contact"><b>A person</b><span>Someone we know: an owner (A), a connector like an accountant or attorney (B), or a door-opener (C).</span></button>
+   <button type="button" data-act="new-deal"><b>A business</b><span>A company that could fit the mandate. You'll add its owners and who told us about it.</span></button>
+  </div></div></div>`;
+  $("#modal").classList.add("on");
+}
+function confirmBox(title, text, okLabel, fn){
+  $("#modal").innerHTML=`<div class="sheet" style="width:min(440px,100%)"><div class="sheet-h"><h2>${esc(title)}</h2></div><div class="sheet-b"><p style="margin:0">${esc(text)}</p></div><div class="sheet-f"><button class="btn" data-act="close-modal">Cancel</button><button class="btn primary" id="okBtn">${esc(okLabel)}</button></div></div>`;
+  $("#modal").classList.add("on"); $("#okBtn").onclick=async()=>{ $("#okBtn").disabled=true; await fn(); closeModal(); };
+}
+
+/* ---------------- Actions ---------------- */
+async function checkIn(id, noteOnly){
+  const c=S.companies.get(id); if(!c) return;
+  const txt=($("#noteTxt")?.value||"").trim();
+  if(noteOnly && !txt){ toast("Type a note first"); return; }
+  const by=await myName(); const log=[...(c.log||[])];
+  const patch={updatedAt:nowISO()};
+  if(noteOnly){ log.push({d:today(),by,text:txt}); }
+  else { const m=Number(c.followUpMonths)||0; patch.lastContact=today(); patch.nextCheckIn= m? addMonths(today(),m) : ""; log.push({d:today(),by,text:"Checked in"+(txt?`: ${txt}`:"")+(m?` · next ${fmtD(patch.nextCheckIn)}`:"")}); }
+  patch.log=log.slice(-200);
+  if(await dbUpdate("companies/"+id, patch)){ const t=$("#noteTxt"); if(t) t.value=""; toast(noteOnly?"Note added":"Check-in logged"); }
+}
+function csv(rows){ return rows.map(r=>r.map(v=>{ const s=String(v??""); return /[",\n;]/.test(s)?`"${s.replace(/"/g,'""')}"`:s; }).join(",")).join("\r\n"); }
+async function download(filename, rows){
+  const text="﻿"+csv(rows);
+  try{ const blob=new Blob([text],{type:"text/csv;charset=utf-8"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=filename; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},1000); return; }catch(e){ console.warn(e); }
+  showOut(filename, csv(rows));
+}
+function showOut(title, text){
+  $("#modal").innerHTML=`<div class="sheet"><div class="sheet-h"><h2>${esc(title)}</h2><button class="btn ghost sm" data-act="close-modal">Close</button></div><div class="sheet-b"><p class="hint" style="margin:0">Copy this and send or paste it where you need it.</p><div class="out">${esc(text)}</div></div><div class="sheet-f"><button class="btn primary" data-act="copy" data-t="${esc(text)}">Copy</button></div></div>`;
+  $("#modal").classList.add("on");
+}
+function dealRows(list){
+  const head=["Company","Trading as","Sector","Industry","Province","Town","Stage","Lead partner","Source","Referred by","EBIT","Turnover","Next check-in","Last contact","Cadence (months)","Owner 1","Owner 1 cell","Owner 1 email","Owner 1 language","Owner 2","Owner 2 cell","Owner 2 email","Owner 3","Owner 3 cell","Owner 3 email","Notes"];
+  return [head, ...list.map(c=>{ const o=c.owners||[]; const k=c.source?.contactId?S.contacts.get(c.source.contactId):null; return [c.name,c.tradingAs,sectorOf(c),industryShort(c),c.province,c.town,STAGE[c.status]?.label,c.partner,CHANNEL[c.source?.channel]?.label,k?k.name:(c.source?.partner||""),c.ebit,c.turnover,c.nextCheckIn,c.lastContact,c.followUpMonths,o[0]?.name,o[0]?.cell,o[0]?.email,LANGS[o[0]?.language]||"",o[1]?.name,o[1]?.cell,o[1]?.email,o[2]?.name,o[2]?.cell,o[2]?.email,c.notes]; })];
+}
+function contactRows(){ return [["Tag","Name","Firm","Type","Whose network","Cell","Email","Language","Province","Town","Deals introduced","Notes"], ...contacts().map(k=>[`${tierOf(k)} – ${TIERS[tierOf(k)].label}`,k.name,k.firm,k.type,k.partner,k.cell,k.email,LANGS[k.language]||"",k.province,k.town,dealsFrom(k.id).length,k.notes])]; }
+
+document.addEventListener("click", async e=>{
+  const t=e.target.closest("[data-act],[data-open],[data-contact],[data-sort]"); if(!t) return;
+  if(t.dataset.open){ e.preventDefault(); openDrawer("company",t.dataset.open); return; }
+  if(t.dataset.contact){ openDrawer("contact",t.dataset.contact); return; }
+  if(t.dataset.sort && t.tagName==="TH"){ const k=t.dataset.sort; if(S.f.sort===k) S.f.dir*=-1; else {S.f.sort=k; S.f.dir=1;} render(); return; }
+  const a=t.dataset.act, k=t.dataset.k, id=t.dataset.id;
+  switch(a){
+    case "new-deal": if(!S.readOnly) dealForm(); break;
+    case "new-contact": if(!S.readOnly) contactForm(); break;
+    case "capture": if(!S.readOnly) captureChooser(); break;
+    case "reload": S.stale=false; startData(); break;
+    case "dismiss-install": try{ localStorage.setItem("munger-install-hint","1"); }catch(_){} render(); break;
+    case "sign-out": await sb.auth.signOut(); break;
+    case "change-pw": { const pw=$("#newPw").value; if(pw.length<8){ toast("Use at least 8 characters"); break; } const {error}=await sb.auth.updateUser({password:pw}); if(error) toast(error.message); else { $("#newPw").value=""; toast("Password changed"); } break; }
+    case "add-member": { const name=$("#mName").value.trim(), email=$("#mEmail").value.trim(), pw=$("#mPw").value.trim(); if(!name||!email){ toast("Enter a name and email"); break; }
+      const {error}=await sb.rpc("add_member",{p_email:email,p_name:name,p_password:pw,p_admin:$("#mAdmin").checked}); if(error){ toast(error.message); break; }
+      await loadMembers(); if(!S.partners.includes(name)){ const ps=S.partners.filter(p=>!/^Partner \d$/.test(p)); ps.push(name); await dbSet("settings/team",{partners:ps}); }
+      showOut("Partner added", `Munger app: ${location.origin+location.pathname}\nEmail: ${email.toLowerCase()}\nPassword: ${pw}\n\nOpen the link on your phone, sign in, then add it to your home screen.`); break; }
+    case "remove-member": { const m=S.members.find(x=>x.user_id===id); confirmBox("Remove partner?", `${m?.name||m?.email} will no longer be able to sign in. Their captured records stay.`, "Remove", async()=>{ const {error}=await sb.rpc("remove_member",{p_user_id:id}); if(error) toast(error.message); else { toast("Removed"); await loadMembers(); } }); break; }
+    case "new-deal-from": { const kk=S.contacts.get(id); const t=tierOf(kk); const map={"Accountant / auditor":"accounting","Attorney":"law","Tax advisor":"tax","Banker / financier":"bank","Business broker":"broker","Friend":"friend"};
+      const preset={source:{channel:t==="A"?"whatsapp":(map[kk?.type]||"connector"),contactId:id}, partner:kk?.partner||S.partners[0]||""};
+      if(t==="A"){ preset.name=kk.firm||""; preset.province=kk.province||""; preset.owners=[{name:kk.name,cell:kk.cell||"",email:kk.email||"",language:kk.language||"af",role:kk.type||""}]; }
+      dealForm(null,preset); break; }
+    case "k-tier": S.k.tier=(S.k.tier===k?"":k); S.k.type=""; if(S.view!=="contacts") location.hash="contacts"; render(); break;
+    case "l-tier": { const ts=S.lists.tiers; S.lists.tiers=ts.includes(k)?ts.filter(x=>x!==k):[...ts,k]; render(); break; }
+    case "open-dup-contact": e.preventDefault(); closeModal(); openDrawer("contact",id); break;
+    case "edit-deal": dealForm(id); break;
+    case "edit-contact": contactForm(id); break;
+    case "del-deal": { const c=S.companies.get(id); confirmBox("Delete deal?", `${c?.name||"This deal"} and its activity log will be removed for all partners.`, "Delete", async()=>{ if(await dbDel("companies/"+id)){ closeDrawer(); toast("Deleted"); } }); break; }
+    case "del-contact": { const kk=S.contacts.get(id); const n=dealsFrom(id).length; confirmBox("Delete person?", `${kk?.name||"This person"} will be removed.${n?` ${n} deal(s) will lose their referral link.`:""}`, "Delete", async()=>{ if(await dbDel("contacts/"+id)){ closeDrawer(); toast("Deleted"); } }); break; }
+    case "close": closeDrawer(); break;
+    case "close-modal": closeModal(); break;
+    case "add-owner": FORM.owners=readOwners(); if(FORM.owners.length<3) FORM.owners.push({language:FORM.owners[0]?.language||"af"}); drawOwners(); break;
+    case "rm-owner": FORM.owners=readOwners(); FORM.owners.splice(Number(t.dataset.i),1); drawOwners(); break;
+    case "open-dup": e.preventDefault(); closeModal(); openDrawer("company",id); break;
+    case "open-contact": e.preventDefault(); openDrawer("contact",k); break;
+    case "checkin": e.stopPropagation(); checkIn(id,false); break;
+    case "add-note": checkIn(id,true); break;
+    case "copy": copyText(t.dataset.t); break;
+    case "goto": location.hash=t.dataset.v; break;
+    case "goto-deals": S.f={...S.f, group:t.dataset.g, stage:"", sector:"", partner:"", province:"", channel:"", lang:"", q:""}; location.hash="deals"; render(); break;
+    case "f-stage": S.f={...S.f, group:STAGE[k].group, stage:k}; location.hash="deals"; render(); break;
+    case "f-channel": S.f={...S.f, group:"", channel:k}; location.hash="deals"; render(); break;
+    case "f-partner": S.f={...S.f, group:"", partner:k}; location.hash="deals"; render(); break;
+    case "f-group": S.f.group=k; S.f.stage=""; render(); break;
+    case "f-clear": S.f={...S.f, q:"", stage:"", sector:"", partner:"", province:"", channel:"", lang:""}; render(); break;
+    case "mode": S.dealsMode=k; render(); break;
+    case "l-lang": S.lists.lang=k; render(); break;
+    case "l-group": { const g=S.lists.groups; S.lists.groups=g.includes(k)?g.filter(x=>x!==k):[...g,k]; render(); break; }
+    case "copy-emails": copyText(listRows().filter(r=>r.email).map(r=>r.email).join("; ")); break;
+    case "copy-cells": copyText(listRows().filter(r=>r.cell).map(r=>r.cell).join("\n")); break;
+    case "export-list": download(`munger-${S.lists.lang==="af"?"afrikaans":"english"}-list-${today()}.csv`, [["Name","Organisation","Type","Email","Cell","Language"], ...listRows().map(r=>[r.name,r.org,r.kind,r.email,r.cell,LANGS[r.lang]||""])]); break;
+    case "export-deals": download(`munger-deals-${today()}.csv`, dealRows(filteredDeals())); break;
+    case "export-deals-all": download(`munger-all-deals-${today()}.csv`, dealRows(companies())); break;
+    case "export-follow": download(`munger-checkins-${today()}.csv`, dealRows(companies().filter(c=>c.nextCheckIn).sort((a,b)=>a.nextCheckIn.localeCompare(b.nextCheckIn)))); break;
+    case "export-contacts": download(`munger-people-${today()}.csv`, contactRows()); break;
+    case "save-partners": { const p=[0,1,2,3].map(i=>$("#p"+i).value.trim()).filter(Boolean); if(await dbSet("settings/team",{partners:p, updatedAt:nowISO()})) toast("Partners saved"); break; }
+    case "clear-examples": confirmBox("Remove example records?", "All records marked as examples will be deleted. Your own records stay.", "Remove", async()=>{ for(const c of companies().filter(x=>x.example)) await dbDel("companies/"+c.id); for(const k2 of contacts().filter(x=>x.example)) await dbDel("contacts/"+k2.id); toast("Examples removed"); }); break;
+    case "net-open": { const [kind,nid]=k.split(":"); if(kind==="c") openDrawer("company",nid); else if(kind==="k") openDrawer("contact",nid); break; }
+  }
+});
+$("#addBtn").addEventListener("click",()=>{ if(!S.readOnly) captureChooser(); });
+$("#fab").addEventListener("click",()=>{ if(!S.readOnly) captureChooser(); });
+document.addEventListener("munger-add-biz",e=>{ const b=document.createElement("button"); b.dataset.act="new-deal-from"; b.dataset.id=e.detail; b.hidden=true; document.body.appendChild(b); b.click(); b.remove(); });
+$("#scrim").addEventListener("click",closeDrawer);
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ if($("#modal").classList.contains("on")) closeModal(); else closeDrawer(); } });
+document.addEventListener("submit",e=>{ e.preventDefault(); if(e.target.id==="dealForm") submitDeal(); else if(e.target.id==="contactForm") submitContact(); });
+document.addEventListener("input",e=>{
+  const id=e.target.id;
+  if(id==="fq"){ S.f.q=e.target.value; render(); }
+  else if(id==="kq"){ S.k.q=e.target.value; render(); }
+  else if(id==="cName") dupCheck();
+  else if(id==="kName"||id==="kCell"||id==="kEmail") contactDupCheck();
+});
+document.addEventListener("change",async e=>{
+  const id=e.target.id, v=e.target.value;
+  const fmap={fstage:"stage",fsector:"sector",fpartner:"partner",fprovince:"province",fchannel:"channel",flang:"lang"};
+  if(fmap[id]){ S.f[fmap[id]]=v; render(); return; }
+  if(id==="ktype"){ S.k.type=v; render(); } else if(id==="kpartner"){ S.k.partner=v; render(); }
+  else if(id==="lsector"){ S.lists.sector=v; render(); } else if(id==="lcontacts"){ S.lists.includeContacts=e.target.checked; render(); } else if(id==="lctype"){ S.lists.ctype=v; render(); }
+  else if(id==="sChannel"){ drawSrcExtra({}); }
+  else if(e.target.name==="kTier"){ const t=e.target.value; $("#kType").innerHTML=opts(TIERS[t].types,TIERS[t].types[0]); $("#kOwnsWrap").hidden=t!=="A"; $("#kFirmL").textContent=t==="A"?"Business they own / run":"Firm / company"; }
+  else if(id==="nkTier"){ $("#nkType").innerHTML=opts(TIERS[v].types,TIERS[v].types[0]); }
+  else if(id==="sContact"){ drawNewContact(CHANNEL[$("#sChannel").value]); }
+  else if(id==="cCad"){ autoNext(true); }
+  else if(id==="cStage"){ if(v==="nurture" && Number($("#cCad").value)===0){ $("#cCad").value="6"; autoNext(true); } }
+  else if(id==="dStage" && S.drawer){ const c=S.companies.get(S.drawer.id); if(!c||c.status===v) return; const by=await myName(); const patch={status:v, updatedAt:nowISO(), log:[...(c.log||[]),{d:today(),by,text:`Stage: ${STAGE[c.status]?.label||"—"} → ${STAGE[v].label}`}].slice(-200)}; if(v==="nurture" && !c.nextCheckIn){ patch.followUpMonths=Number(c.followUpMonths)||6; patch.nextCheckIn=addMonths(today(),patch.followUpMonths); } if(await dbUpdate("companies/"+c.id,patch)) toast("Stage updated"); }
+});
+window.addEventListener("hashchange",()=>{ closeDrawer(); closeModal(); render(); });
+
+/* ---------------- Network map ---------------- */
+const G={nodes:[], edges:[], byId:new Map(), t:{x:0,y:0,k:1}, raf:0, alpha:1, drag:null, sel:null, hover:null, w:0, h:0, show:{p:true,k:true,c:true}};
+function vNetwork(){
+  return `<div class="head"><div><h1>Network map</h1><p>Partners, the people in their networks, and the businesses those people opened doors to. Click a dot to see its connections; drag to move, scroll to zoom.</p></div>
+  <div class="chips"><button class="chip on" data-net="p">Partners</button><button class="chip on" data-net="k">Contacts</button><button class="chip on" data-net="c">Businesses</button><button class="chip" data-net="reset">Re-centre</button></div></div>
+  <div class="netwrap"><canvas id="net" aria-label="Network map of partners, people and businesses"></canvas>
+  <div class="legend"><span><i style="background:var(--ink);box-shadow:0 0 0 2px var(--line)"></i>Munger partner</span><span><i style="background:var(--tierA)"></i>A – Owner</span><span><i style="background:var(--tierB)"></i>B – Connector</span><span><i style="background:var(--tierC)"></i>C – Door-opener</span><span><i class="sq" style="background:var(--ok)"></i>Business – active</span><span><i class="sq" style="background:var(--warn)"></i>Business – nurture</span><span><i class="sq" style="background:var(--muted)"></i>Business – closed</span></div>
+  <div class="netinfo" id="netinfo"></div></div>`;
+}
+function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim()||"#888"; }
+function netBuildGraph(){
+  const old=G.byId; const nodes=[], edges=[]; const by=new Map();
+  const add=(id,type,label,extra)=>{ const o=old.get(id); const n={id,type,label,x:o?.x??(Math.random()-.5)*400,y:o?.y??(Math.random()-.5)*400,vx:0,vy:0,...extra}; nodes.push(n); by.set(id,n); return n; };
+  const partnerSet=new Set(S.partners); companies().forEach(c=>{ if(c.partner) partnerSet.add(c.partner); }); contacts().forEach(k=>{ if(k.partner) partnerSet.add(k.partner); });
+  if(G.show.p) [...partnerSet].forEach(p=>add("p:"+p,"p",p,{r:16}));
+  if(G.show.k) contacts().forEach(k=>add("k:"+k.id,"k",k.name,{r:8,sub:k.firm||k.type,tier:tierOf(k)}));
+  if(G.show.c) companies().forEach(c=>add("c:"+c.id,"c",c.name,{r:7,group:(STAGE[c.status]||STAGE.lead).group,sub:industryShort(c)}));
+  const link=(a,b,kind)=>{ if(by.has(a)&&by.has(b)) edges.push({a:by.get(a),b:by.get(b),kind}); };
+  contacts().forEach(k=>{ if(k.partner) link("k:"+k.id,"p:"+k.partner,"network"); if(k.ownsCompanyId) link("k:"+k.id,"c:"+k.ownsCompanyId,"owns"); });
+  companies().forEach(c=>{
+    if(c.source?.contactId) link("c:"+c.id,"k:"+c.source.contactId,"referred");
+    if(c.source?.partner) link("c:"+c.id,"p:"+c.source.partner,"referred");
+    if(c.partner) link("c:"+c.id,"p:"+c.partner,"lead");
+  });
+  nodes.forEach(n=>n.deg=0); edges.forEach(e=>{e.a.deg++; e.b.deg++;});
+  nodes.forEach(n=>{ if(n.type!=="p") n.r += Math.min(8, n.deg*1.2); });
+  G.nodes=nodes; G.edges=edges; G.byId=by;
+}
+function netInit(){
+  const cv=$("#net"); if(!cv) return;
+  G.byId=new Map(); G.t={x:0,y:0,k:1}; G.sel=null;
+  netBuildGraph(); netSize(); G.alpha=1; netLoop();
+  const ro=new ResizeObserver(()=>{ netSize(); netDraw(); }); ro.observe(cv); G.ro=ro;
+  const pt=e=>{ const r=cv.getBoundingClientRect(); return {sx:e.clientX-r.left, sy:e.clientY-r.top}; };
+  const toW=(sx,sy)=>({x:(sx-G.w/2-G.t.x)/G.t.k, y:(sy-G.h/2-G.t.y)/G.t.k});
+  const hit=(sx,sy)=>{ const w=toW(sx,sy); let best=null,bd=Infinity; for(const n of G.nodes){ const d=Math.hypot(n.x-w.x,n.y-w.y); if(d<n.r+6/G.t.k && d<bd){bd=d;best=n;} } return best; };
+  cv.addEventListener("pointerdown",e=>{ cv.setPointerCapture(e.pointerId); const {sx,sy}=pt(e); const n=hit(sx,sy); G.drag={n, sx, sy, moved:false, tx:G.t.x, ty:G.t.y}; cv.style.cursor="grabbing"; });
+  cv.addEventListener("pointermove",e=>{ const {sx,sy}=pt(e);
+    if(G.drag){ const dx=sx-G.drag.sx, dy=sy-G.drag.sy; if(Math.abs(dx)+Math.abs(dy)>3) G.drag.moved=true;
+      if(G.drag.n){ const w=toW(sx,sy); G.drag.n.x=w.x; G.drag.n.y=w.y; G.drag.n.fixed=true; G.alpha=Math.max(G.alpha,.3); netLoop(); }
+      else { G.t.x=G.drag.tx+dx; G.t.y=G.drag.ty+dy; netDraw(); } }
+    else { const n=hit(sx,sy); if(n!==G.hover){ G.hover=n; cv.style.cursor=n?"pointer":"grab"; netDraw(); } } });
+  cv.addEventListener("pointerup",e=>{ const D=G.drag; G.drag=null; cv.style.cursor="grab"; if(D&&D.n) D.n.fixed=false; if(D&&!D.moved){ G.sel=D.n||null; netInfo(); netDraw(); } });
+  cv.addEventListener("wheel",e=>{ e.preventDefault(); const {sx,sy}=pt(e); const w=toW(sx,sy); const k=Math.min(4,Math.max(.2,G.t.k*Math.exp(-e.deltaY*.0015))); G.t.k=k; G.t.x=sx-G.w/2-w.x*k; G.t.y=sy-G.h/2-w.y*k; netDraw(); },{passive:false});
+  document.querySelectorAll("[data-net]").forEach(b=>b.addEventListener("click",()=>{ const k=b.dataset.net; if(k==="reset"){ G.t={x:0,y:0,k:1}; G.alpha=1; netLoop(); return; } G.show[k]=!G.show[k]; b.classList.toggle("on",G.show[k]); netBuildGraph(); G.alpha=.8; netLoop(); }));
+  netInfo();
+}
+function netRebuild(){ const before=G.nodes.length+":"+G.edges.length; netBuildGraph(); if(before!==G.nodes.length+":"+G.edges.length) { G.alpha=Math.max(G.alpha,.5); netLoop(); } else netDraw(); if(G.sel) { G.sel=G.byId.get(G.sel.id)||null; netInfo(); } }
+function netStop(){ cancelAnimationFrame(G.raf); G.raf=0; if(G.ro){ G.ro.disconnect(); G.ro=null; } }
+function netSize(){ const cv=$("#net"); if(!cv) return; const r=cv.getBoundingClientRect(); const dpr=window.devicePixelRatio||1; G.w=r.width; G.h=r.height; cv.width=Math.max(1,r.width*dpr); cv.height=Math.max(1,r.height*dpr); cv.getContext("2d").setTransform(dpr,0,0,dpr,0,0); }
+function netLoop(){ if(G.raf) return; const step=()=>{ netTick(); netDraw(); if(G.alpha>0.01 || G.drag?.n){ G.raf=requestAnimationFrame(step); } else G.raf=0; }; G.raf=requestAnimationFrame(step); }
+function netTick(){
+  const N=G.nodes, a=G.alpha;
+  for(let i=0;i<N.length;i++){ const n=N[i]; for(let j=i+1;j<N.length;j++){ const m=N[j]; let dx=n.x-m.x, dy=n.y-m.y; let d2=dx*dx+dy*dy; if(d2<1){dx=Math.random()-.5;dy=Math.random()-.5;d2=1;} if(d2>640000) continue; const f=5200/d2*a; const d=Math.sqrt(d2); const fx=dx/d*f, fy=dy/d*f; n.vx+=fx; n.vy+=fy; m.vx-=fx; m.vy-=fy; } }
+  for(const e of G.edges){ const len=e.kind==="lead"?200:e.kind==="network"?130:90; const dx=e.b.x-e.a.x, dy=e.b.y-e.a.y; const d=Math.sqrt(dx*dx+dy*dy)||1; const k=e.kind==="lead"?.015:.04; const f=(d-len)*k*a; const fx=dx/d*f, fy=dy/d*f; e.a.vx+=fx; e.a.vy+=fy; e.b.vx-=fx; e.b.vy-=fy; }
+  for(const n of N){ const pull=n.type==="p"?.008:.003; n.vx-=n.x*pull*a; n.vy-=n.y*pull*a; if(n.fixed){ n.vx=0; n.vy=0; continue; } n.vx*=.6; n.vy*=.6; n.x+=n.vx; n.y+=n.vy; }
+  G.alpha*=.985;
+}
+function netDraw(){
+  const cv=$("#net"); if(!cv) return; const ctx=cv.getContext("2d");
+  ctx.clearRect(0,0,G.w,G.h);
+  const col={p:cssVar("--line"),A:cssVar("--tierA"),B:cssVar("--tierB"),C:cssVar("--tierC"),active:cssVar("--ok"),nurture:cssVar("--warn"),won:cssVar("--ok"),closed:cssVar("--muted"),line:cssVar("--line"),ink:cssVar("--ink"),muted:cssVar("--muted"),surface:cssVar("--surface")};
+  ctx.save(); ctx.translate(G.w/2+G.t.x, G.h/2+G.t.y); ctx.scale(G.t.k,G.t.k);
+  const focus=G.sel||G.hover; const nb=new Set(); if(focus){ nb.add(focus); G.edges.forEach(e=>{ if(e.a===focus) nb.add(e.b); if(e.b===focus) nb.add(e.a); }); }
+  for(const e of G.edges){ const on=focus&&(e.a===focus||e.b===focus); ctx.globalAlpha=focus?(on?1:.12):.8; ctx.strokeStyle=on?col.ink:col.line; ctx.lineWidth=(on?1.6:1)/G.t.k; if(e.kind==="lead") ctx.setLineDash([4/G.t.k,4/G.t.k]); else ctx.setLineDash([]); ctx.beginPath(); ctx.moveTo(e.a.x,e.a.y); ctx.lineTo(e.b.x,e.b.y); ctx.stroke(); }
+  ctx.setLineDash([]);
+  for(const n of G.nodes){ ctx.globalAlpha=focus&&!nb.has(n)?.25:1; ctx.fillStyle=n.type==="p"?col.ink:n.type==="k"?col[n.tier]:(col[n.group]||col.active); ctx.beginPath(); if(n.type==="c"){ const s=n.r*.9; ctx.rect(n.x-s,n.y-s,s*2,s*2); } else ctx.arc(n.x,n.y,n.r,0,Math.PI*2); ctx.fill(); if(n===G.sel){ ctx.strokeStyle=col.p; ctx.lineWidth=4/G.t.k; ctx.stroke(); } else { ctx.strokeStyle=n.type==="p"?col.p:col.surface; ctx.lineWidth=(n.type==="p"?3:1.5)/G.t.k; ctx.stroke(); } }
+  ctx.textAlign="center"; ctx.textBaseline="top";
+  for(const n of G.nodes){ const show=n.type==="p"||(n.type==="k"&&G.t.k>.6)||G.t.k>1.3||nb.has(n); if(!show) continue; ctx.globalAlpha=focus&&!nb.has(n)?.25:1; const fs=(n.type==="p"?13:11)/Math.max(G.t.k,.7); ctx.font=`${n.type==="p"?600:500} ${fs}px "Source Serif 4", Georgia, serif`; const txt=n.label.length>26?n.label.slice(0,25)+"…":n.label; ctx.lineWidth=3/G.t.k; ctx.strokeStyle=col.surface; ctx.strokeText(txt,n.x,n.y+n.r+3/G.t.k); ctx.fillStyle=n.type==="p"?col.ink:col.muted; ctx.fillText(txt,n.x,n.y+n.r+3/G.t.k); }
+  ctx.restore(); ctx.globalAlpha=1;
+  if(!G.nodes.length){ ctx.fillStyle=col.muted; ctx.font='15px "Source Serif 4", Georgia, serif'; ctx.textAlign="center"; ctx.fillText("Add partners, people and deals to see the network grow.", G.w/2, G.h/2); }
+}
+function netInfo(){
+  const box=$("#netinfo"); if(!box) return; const n=G.sel; if(!n){ box.classList.remove("on"); return; }
+  const links=G.edges.filter(e=>e.a===n||e.b===n).map(e=>e.a===n?e.b:e.a);
+  const kind=n.type==="k"?`${n.tier} – ${TIERS[n.tier].label}`:{p:"Munger partner",c:"Business"}[n.type];
+  let extra="";
+  if(n.type==="p"){ const deals=companies().filter(c=>c.partner===n.label); const ppl=contacts().filter(k=>k.partner===n.label); extra=`<div class="tag">${["A","B","C"].map(t=>`${ppl.filter(k=>tierOf(k)===t).length} ${t}`).join(" · ")} contacts · ${deals.length} deals led</div>`; }
+  if(n.type==="k"){ extra=`<div class="tag">${esc(n.sub||"")} · ${dealsFrom(n.id.slice(2)).length} deals introduced</div>`; }
+  if(n.type==="c"){ const c=S.companies.get(n.id.slice(2)); extra=c?`<div>${stagePill(c.status)}</div><div class="tag">${esc(sourceText(c))}</div>`:""; }
+  box.innerHTML=`<span class="tag">${kind}</span><b style="font-size:15px">${esc(n.label)}</b>${extra}<div class="section-t" style="margin-top:4px">Connected to (${links.length})</div><div style="max-height:160px;overflow:auto">${links.map(m=>`<div>${esc(m.label)} <span class="tag">${m.type==="p"?"partner":m.type==="k"?m.tier:"business"}</span></div>`).join("")||`<span class="tag">Nothing yet</span>`}</div>${n.type!=="p"?`<button class="btn sm" data-act="net-open" data-k="${n.type}:${esc(n.id.slice(2))}">Open record</button>`:""}`;
+  box.classList.add("on");
+}
+
+init();
+if("serviceWorker" in navigator){ window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{})); }
+</script>
+</body>
+</html>
