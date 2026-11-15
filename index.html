@@ -278,6 +278,9 @@ table.mini th{font-weight:600;color:var(--muted);font-size:12.5px;border-top:0}
 table.mini th:first-child,table.mini td:first-child{text-align:left}
 .plain{border:0;background:none;padding:0}
 .kv .v a{color:var(--ink);font-weight:600}
+.stars{color:#b8862b;font-size:12px;letter-spacing:1px;vertical-align:1px}
+.likebox{margin-top:14px;border-color:var(--ink)}
+[hidden]{display:none!important}
 /* Misc */
 .toast{position:fixed;left:50%;top:calc(var(--top) + 12px);transform:translate(-50%,-20px);opacity:0;background:var(--ink);color:var(--paper);padding:11px 18px;border-radius:12px;z-index:60;transition:all .2s;max-width:90vw;font-weight:600;font-size:14.5px;pointer-events:none}
 .toast.on{transform:translate(-50%,0);opacity:1}
@@ -359,21 +362,20 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 "use strict";
 /* ---------------- Reference data ---------------- */
 const STAGES = [
-  {id:"lead", label:"New lead", group:"active"},
-  {id:"research", label:"Researching", group:"active"},
-  {id:"contacted", label:"First contact made", group:"active"},
+  {id:"network", label:"In our network", group:"network"},
+  {id:"target", label:"Target – we like it", group:"target"},
   {id:"talks", label:"In conversation", group:"active"},
   {id:"info", label:"NDA / info received", group:"active"},
   {id:"eval", label:"Evaluating", group:"active"},
   {id:"offer", label:"Offer / LOI", group:"active"},
   {id:"dd", label:"Due diligence", group:"active"},
   {id:"won", label:"Acquired", group:"won"},
-  {id:"nurture", label:"Nurture – check in later", group:"nurture"},
-  {id:"parked", label:"Not for now", group:"nurture"},
-  {id:"passed", label:"Passed / dead", group:"closed"}
+  {id:"passed", label:"Not for us", group:"closed"}
 ];
 const STAGE = Object.fromEntries(STAGES.map(s=>[s.id,s]));
-const GROUPS = {active:"Active deals", nurture:"Nurture & check-in", won:"Acquired", closed:"Passed"};
+const LEGACY_STAGE={lead:"network",research:"network",contacted:"network",parked:"network",nurture:"target"};
+function stageOf(id){ return STAGE[id]||STAGE[LEGACY_STAGE[id]]||STAGE.network; }
+const GROUPS = {network:"In our network", target:"Targets", active:"Active deals", won:"Acquired", closed:"Not for us"};
 
 const CHANNELS = [
   {id:"direct", label:"Direct marketing"},
@@ -417,6 +419,8 @@ const INDUSTRIES = {
   "Health & education":["Private clinics & practices","Pharmacies","Pharmaceuticals & medical devices","Veterinary","Frail care & retirement","Private schools","Training & skills development"],
   "Business & financial services":["Accounting & tax","Legal","Consulting","Insurance & brokers","Financial services & lending","Staffing & labour","Security services","Facilities management & cleaning","Marketing & media"],
   "Technology":["Software & SaaS","IT & managed services","Telecoms & ISPs","Data & fintech"],
+  "Creative & media":["Video, film & editing","Photography","Content & social media","Graphic design & branding","Copywriting, PR & communications","Events, MCs & presenters","Music & audio"],
+  "Professional services":["Architecture & interior design","Engineering consulting","Quantity surveying","Town planning","Property valuation","Recruitment & executive search","Coaching & training"],
   "Other":["Funeral services","Other"]
 };
 const SECTORS = Object.keys(INDUSTRIES);
@@ -432,10 +436,10 @@ const S = {
   companies:new Map(), contacts:new Map(), conns:new Map(), commitments:[], meetings:[], ask:{q:"",res:null,loading:false}, aiOff:false, partners:[], members:[], me:null, session:null,
   loaded:{companies:false, contacts:false, settings:false}, stale:false, readOnly:false,
   view:"today",
-  f:{q:"", group:"active", sector:"", partner:"", province:"", lang:"", channel:"", mine:false},
+  f:{q:"", group:"target", sector:"", partner:"", province:"", lang:"", channel:"", mine:false},
   k:{q:"", tier:"", mine:false},
   scope:null,
-  lists:{lang:"af", groups:["active","nurture"], sector:"", includeContacts:true, tiers:["A","B","C"]},
+  lists:{lang:"af", groups:["network","target","active"], sector:"", includeContacts:true, tiers:["A","B","C"]},
   imp:{rows:[], tags:{}, partner:"", lang:"af", rel:"business", q:"", shown:60, hideExisting:true, source:""},
   sheet:null
 };
@@ -459,7 +463,7 @@ function dueInfo(c){
   if(n<=14) return {cls:"soon", txt:`In ${n} day${n===1?"":"s"}`, n};
   return {cls:"ok", txt:fmtD(c.nextCheckIn), n};
 }
-function stagePill(id){ const s=STAGE[id]||STAGE.lead; const cls=s.group==="won"?"won":s.group==="nurture"?"nurture":s.group==="closed"?"closed":"active"; return `<span class="pill ${cls}">${esc(s.label)}</span>`; }
+function stagePill(id){ const s=stageOf(id); const cls={network:"",target:"nurture",active:"active",won:"won",closed:"closed"}[s.group]; return `<span class="pill ${cls}">${esc(s.label)}</span>`; }
 function langTag(l){ return l? `<span class="lang" title="${esc(LANGS[l]||l)}">${l==="both"?"AF/EN":esc(String(l).toUpperCase())}</span>`:""; }
 function sourceText(c){
   const s=c.source||{}; const ch=CHANNEL[s.channel]; if(!ch) return "—";
@@ -481,6 +485,17 @@ function dealsFrom(contactId){ return companies().filter(c=>c.source?.contactId=
 async function copyText(t){ try{ await navigator.clipboard.writeText(t); toast("Copied to clipboard"); }catch(e){ toast("Couldn't copy – select the text and copy it manually"); } }
 
 
+function listRows(){
+  const L=S.lists; const rows=[];
+  companies().forEach(c=>{
+    const g=stageOf(c.status).group; if(!L.groups.includes(g)) return;
+    if(L.sector && sectorOf(c)!==L.sector) return;
+    (c.owners||[]).forEach(o=>{ const lang=o.language||c.language; if(!(lang===L.lang||lang==="both")) return; if(!o.email&&!o.cell) return; rows.push({name:o.name,email:o.email||"",cell:o.cell||"",org:c.name,kind:"Business owner",lang}); });
+  });
+  if(L.includeContacts) contacts().forEach(k=>{ if(!L.tiers.includes(tierOf(k))) return; if(!(k.language===L.lang||k.language==="both")) return; if(!k.email&&!k.cell) return; rows.push({name:k.name,email:k.email||"",cell:k.cell||"",org:k.firm||"",kind:`${tierOf(k)} · ${k.type||"Contact"}`,lang:k.language}); });
+  const seen=new Set(); return rows.filter(r=>{const key=(r.email||r.cell).toLowerCase(); if(seen.has(key)) return false; seen.add(key); return true;});
+}
+
 /* ---------------- Data layer (Supabase) ---------------- */
 const SUPABASE_URL="https://iraterfkhjquhmoezpiw.supabase.co";
 const SUPABASE_KEY="sb_publishable_h_snfpBOHkOvfS4Vs8XLvQ_k7Drdl6f";
@@ -491,9 +506,9 @@ function queueRender(){ if(renderQueued) return; renderQueued=true; requestAnima
 
 const nz = v => (v===undefined||v===null||v==="") ? null : v;
 function companyFromRow(r){ return {id:r.id, name:r.name, tradingAs:r.trading_as, industry:r.industry, province:r.province, town:r.town, website:r.website, ebit:r.ebit, turnover:r.turnover, employees:r.employees, owners:r.owners||[], language:r.language, source:{channel:r.source_channel, contactId:r.source_contact_id||"", partner:r.source_partner, detail:r.source_detail}, partner:r.partner, status:r.status, followUpMonths:r.follow_up_months, nextCheckIn:r.next_check_in||"", lastContact:r.last_contact||"", notes:r.notes, log:r.log||[], example:r.example, hqCountry:r.hq_country, footprint:r.footprint, countries:r.countries, regNo:r.reg_no, ebitConfirmed:r.ebit_confirmed, turnoverConfirmed:r.turnover_confirmed, financialsYear:r.financials_year, fit:r.fit||{}, createdBy:r.created_by, createdByName:r.created_by_name, createdAt:r.created_at, updatedAt:r.updated_at}; }
-function contactFromRow(r){ return {id:r.id, name:r.name, tier:r.tier, type:r.type, firm:r.firm, partner:r.partner, ownsCompanyId:r.owns_company_id||"", companyId:r.company_id||r.owns_company_id||"", companyRole:r.company_role||(r.owns_company_id?"Owner":""), title:r.title||"", country:r.country||"", industry:r.industry||"", expertise:r.expertise||"", linkedin:r.linkedin||"", cell:r.cell, email:r.email, language:r.language, province:r.province, town:r.town, notes:r.notes, example:r.example, createdBy:r.created_by, createdAt:r.created_at, updatedAt:r.updated_at}; }
+function contactFromRow(r){ return {id:r.id, name:r.name, tier:r.tier, type:r.type, firm:r.firm, partner:r.partner, ownsCompanyId:r.owns_company_id||"", companyId:r.company_id||r.owns_company_id||"", companyRole:r.company_role||(r.owns_company_id?"Owner":""), title:r.title||"", country:r.country||"", industry:r.industry||"", expertise:r.expertise||"", linkedin:r.linkedin||"", influence:r.influence||0, cell:r.cell, email:r.email, language:r.language, province:r.province, town:r.town, notes:r.notes, example:r.example, createdBy:r.created_by, createdAt:r.created_at, updatedAt:r.updated_at}; }
 const CMAP={name:"name",tradingAs:"trading_as",industry:"industry",province:"province",town:"town",website:"website",ebit:"ebit",turnover:"turnover",employees:"employees",owners:"owners",language:"language",partner:"partner",status:"status",followUpMonths:"follow_up_months",nextCheckIn:"next_check_in",lastContact:"last_contact",notes:"notes",log:"log",example:"example",createdByName:"created_by_name",hqCountry:"hq_country",footprint:"footprint",countries:"countries",regNo:"reg_no",ebitConfirmed:"ebit_confirmed",turnoverConfirmed:"turnover_confirmed",financialsYear:"financials_year",fit:"fit"};
-const KMAP={name:"name",tier:"tier",type:"type",firm:"firm",partner:"partner",ownsCompanyId:"owns_company_id",cell:"cell",email:"email",language:"language",province:"province",town:"town",notes:"notes",example:"example",companyId:"company_id",companyRole:"company_role",title:"title",country:"country",industry:"industry",expertise:"expertise",linkedin:"linkedin"};
+const KMAP={name:"name",tier:"tier",type:"type",firm:"firm",partner:"partner",ownsCompanyId:"owns_company_id",cell:"cell",email:"email",language:"language",province:"province",town:"town",notes:"notes",example:"example",companyId:"company_id",companyRole:"company_role",title:"title",country:"country",industry:"industry",expertise:"expertise",linkedin:"linkedin",influence:"influence"};
 const NULLABLE=new Set(["next_check_in","last_contact","owns_company_id","source_contact_id","company_id","ebit_confirmed","turnover_confirmed"]);
 function toRow(table, d){
   const map=table==="companies"?CMAP:KMAP; const row={};
@@ -608,8 +623,8 @@ const ICON={
 function ic(n,s=22){ return `<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[n]||""}</svg>`; }
 
 /* ---------------- Helpers ---------------- */
-const grp = c => (STAGE[c.status]||STAGE.lead).group;
-const isOpen = c => ["active","nurture"].includes(grp(c));
+const grp = c => stageOf(c.status).group;
+const isOpen = c => ["target","active"].includes(grp(c));
 function myPartner(){ const n=S.me?.name||""; return S.partners.includes(n)? n : (S.partners.find(p=>n && p.toLowerCase().startsWith(n.toLowerCase().split(" ")[0]))||n); }
 const isMine = c => !!myPartner() && c.partner===myPartner();
 function initials(n){ const p=String(n||"?").trim().split(/\s+/).filter(Boolean); return ((p[0]||"?")[0]+(p.length>1?p[p.length-1][0]:"")).toUpperCase(); }
@@ -769,7 +784,7 @@ function vBusinesses(){
   return `<div class="ph"><div><h1>Businesses</h1><p>The pipeline, from first lead to acquired.</p></div><button class="btn sm primary" data-act="new-deal">${ic("plus",18)} Add</button></div>
   <div class="search">${ic("search",20)}<input id="fq" type="search" placeholder="Search business, owner, town…" value="${esc(f.q)}" autocomplete="off" aria-label="Search businesses"></div>
   <div class="chips">
-    ${[["active","Active"],["nurture","Nurture"],["won","Acquired"],["closed","Passed"],["","All"]].map(([g,l])=>`<button class="chip ${f.group===g?"on":""}" data-act="f-group" data-k="${g}">${l} <span class="n">${g?n(g):S.companies.size}</span></button>`).join("")}
+    ${[["target","Targets"],["active","Active deals"],["network","In our network"],["won","Acquired"],["closed","Not for us"],["","All"]].map(([g,l])=>`<button class="chip ${f.group===g?"on":""}" data-act="f-group" data-k="${g}">${l} <span class="n">${g?n(g):S.companies.size}</span></button>`).join("")}
     ${myPartner()?`<button class="chip ${f.mine?"on":""}" data-act="f-mine">Mine</button>`:""}
     <button class="chip ${nf?"on":""}" data-act="f-sheet">${ic("sliders",16)} Filters${nf?` · ${nf}`:""}</button>
   </div>
@@ -827,8 +842,8 @@ function vLists(){
   const gchip=(k,l)=>`<button class="chip ${L.groups.includes(k)?"on":""}" data-act="l-group" data-k="${k}">${l}</button>`;
   return `<div class="ph"><div><h1>Mail lists</h1><p>Everyone who should get the Afrikaans or the English mailer.</p></div></div>
   <div class="seg"><button class="${L.lang==="af"?"on":""}" data-act="l-lang" data-k="af">Afrikaans</button><button class="${L.lang==="en"?"on":""}" data-act="l-lang" data-k="en">English</button></div>
-  <div class="sec" style="margin-top:6px"><h2>Business owners in</h2></div>
-  <div class="chips">${gchip("active","Active")}${gchip("nurture","Nurture")}${gchip("won","Acquired")}${gchip("closed","Passed")}</div>
+  <div class="sec" style="margin-top:6px"><h2>Business owners of</h2></div>
+  <div class="chips">${gchip("network","In our network")}${gchip("target","Targets")}${gchip("active","Active deals")}${gchip("won","Acquired")}${gchip("closed","Not for us")}</div>
   <div class="sec" style="margin-top:0"><h2>People tagged</h2></div>
   <div class="chips">${["A","B","C"].map(t=>`<button class="chip ${L.includeContacts&&L.tiers.includes(t)?"on":""}" data-act="l-tier" data-k="${t}">${t} · ${esc(TIERS[t].label)}s</button>`).join("")}</div>
   <div class="stats"><div class="stat"><span class="n">${rows.length}</span><span class="l">Recipients</span></div><div class="stat"><span class="n">${emails.length}</span><span class="l">With email</span></div><div class="stat"><span class="n">${rows.filter(r=>r.cell).length}</span><span class="l">With cell</span></div></div>
@@ -839,7 +854,7 @@ function vLists(){
 
 /* ---------------- Settings ---------------- */
 function vSettings(){
-  const p=[...S.partners]; while(p.length<4) p.push(""); const admin=S.me?.is_admin;
+  const p=[...S.partners]; p.push(""); while(p.length<4) p.push(""); const admin=S.me?.is_admin;
   return `<div class="ph"><div><h1>Team & settings</h1></div></div>
   <div class="fsec">Munger partners</div>
   <div class="fields">${p.map((n,i)=>`<div class="fld"><label for="p${i}">Partner ${i+1}</label><input id="p${i}" value="${esc(n)}" ${admin?"":"disabled"}></div>`).join("")}</div>
@@ -1269,7 +1284,7 @@ document.addEventListener("click", async e=>{
     case "reload": S.stale=false; startData(); break;
     case "dismiss-install": try{ localStorage.setItem("munger-install-hint","1"); }catch(_){} render(); break;
     case "scope": S.scope=k; render(); break;
-    case "biz-active": S.f.group="active"; break;
+    case "biz-active": S.f.group="target"; break;
     case "goto": location.hash=t.dataset.v; break;
     case "sign-out": await sb.auth.signOut(); break;
     case "change-pw": { const pw=$("#newPw").value; if(pw.length<8){ toast("Use at least 8 characters"); break; } const {error}=await sb.auth.updateUser({password:pw}); if(error) toast(error.message); else { $("#newPw").value=""; toast("Password changed"); } break; }
@@ -1278,7 +1293,7 @@ document.addEventListener("click", async e=>{
       await loadMembers(); if(!S.partners.includes(name)){ const ps=S.partners.filter(p=>!/^Partner \d$/.test(p)); ps.push(name); await dbSet("settings/team",{partners:ps}); }
       showOut("Send this to "+name, `Munger app: ${location.origin+location.pathname}\nEmail: ${email.toLowerCase()}\nPassword: ${pw}\n\nOpen the link on your phone, sign in, then add it to your home screen.`); break; }
     case "remove-member": { const m=S.members.find(x=>x.user_id===id); confirmBox("Remove partner?", `${m?.name||m?.email} will no longer be able to sign in. Their records stay.`, "Remove", async()=>{ const {error}=await sb.rpc("remove_member",{p_user_id:id}); if(error) toast(error.message); else { toast("Removed"); await loadMembers(); } closeModal(); }); break; }
-    case "save-partners": { const p=[0,1,2,3].map(i=>$("#p"+i).value.trim()).filter(Boolean); if(await dbSet("settings/team",{partners:p})) toast("Partners saved"); break; }
+    case "save-partners": { const p=[...Array(12).keys()].map(i=>$("#p"+i)?.value.trim()).filter(Boolean); if(await dbSet("settings/team",{partners:p})) toast("Partners saved"); break; }
     case "new-deal-from": ownerDealForm(id); break;
     case "edit-deal": dealForm(id); break;
     case "edit-contact": contactForm(id); break;
@@ -1338,8 +1353,8 @@ document.addEventListener("change",async e=>{
   else if(id==="nkTier"){ $("#nkType").innerHTML=opts(TIERS[v].types,TIERS[v].types[0]); }
   else if(id==="sContact"){ drawNewContact(CHANNEL[$("#sChannel").value]); }
   else if(id==="cCad"){ autoNext(true); }
-  else if(id==="cStage"){ if(v==="nurture" && Number($("#cCad").value)===0){ $("#cCad").value="6"; autoNext(true); } }
-  else if(id==="dStage" && S.sheet){ const c=S.companies.get(S.sheet.id); if(!c||c.status===v) return; const by=await myName(); const patch={status:v, log:[...(c.log||[]),{d:today(),by,text:`Stage: ${STAGE[c.status]?.label||"—"} → ${STAGE[v].label}`}].slice(-200)}; if(v==="nurture" && !c.nextCheckIn){ patch.followUpMonths=Number(c.followUpMonths)||6; patch.nextCheckIn=addMonths(today(),patch.followUpMonths); } if(await dbUpdate("companies/"+c.id,patch)) toast("Stage updated"); }
+  else if(id==="cStage"){ cadVis(); if(["target","active"].includes(stageOf(v).group) && Number($("#cCad").value)===0){ $("#cCad").value="3"; autoNext(true); } }
+  else if(id==="dStage" && S.sheet){ const c=S.companies.get(S.sheet.id); if(!c||c.status===v) return; const by=await myName(); const patch={status:v, log:[...(c.log||[]),{d:today(),by,text:`Stage: ${STAGE[c.status]?.label||"—"} → ${STAGE[v].label}`}].slice(-200)}; if(["target","active"].includes(stageOf(v).group) && !c.nextCheckIn){ patch.followUpMonths=Number(c.followUpMonths)||3; patch.nextCheckIn=addMonths(today(),patch.followUpMonths); } if(["network","closed"].includes(stageOf(v).group)){ patch.nextCheckIn=""; } if(await dbUpdate("companies/"+c.id,patch)) toast("Stage updated"); }
 });
 window.addEventListener("hashchange",()=>{ if(sheetOpen()) hideSheet(); if(modalOpen()) hideModal(); render(); window.scrollTo(0,0); });
 $("#scrim").addEventListener("click",()=>{ if(modalOpen()) closeModal(); else closeSheet(); });
@@ -1361,7 +1376,7 @@ function netBuildGraph(){
   const partnerSet=new Set(S.partners); companies().forEach(c=>{ if(c.partner) partnerSet.add(c.partner); }); contacts().forEach(k=>{ if(k.partner) partnerSet.add(k.partner); });
   if(G.show.p) [...partnerSet].forEach(p=>add("p:"+p,"p",p,{r:16}));
   if(G.show.k) contacts().forEach(k=>add("k:"+k.id,"k",k.name,{r:8,sub:k.firm||k.type,tier:tierOf(k)}));
-  if(G.show.c) companies().forEach(c=>add("c:"+c.id,"c",c.name,{r:7,group:(STAGE[c.status]||STAGE.lead).group,sub:industryShort(c)}));
+  if(G.show.c) companies().forEach(c=>add("c:"+c.id,"c",c.name,{r:7,group:stageOf(c.status).group,sub:industryShort(c)}));
   const link=(a,b,kind)=>{ if(by.has(a)&&by.has(b)) edges.push({a:by.get(a),b:by.get(b),kind}); };
   contacts().forEach(k=>{ if(k.partner) link("k:"+k.id,"p:"+k.partner,"network"); if(k.ownsCompanyId) link("k:"+k.id,"c:"+k.ownsCompanyId,"owns"); });
   companies().forEach(c=>{
@@ -1406,7 +1421,7 @@ function netTick(){
 function netDraw(){
   const cv=$("#net"); if(!cv) return; const ctx=cv.getContext("2d");
   ctx.clearRect(0,0,G.w,G.h);
-  const col={p:cssVar("--line"),A:cssVar("--tierA"),B:cssVar("--tierB"),C:cssVar("--tierC"),active:cssVar("--ok"),nurture:cssVar("--warn"),won:cssVar("--ok"),closed:cssVar("--muted"),line:cssVar("--line"),ink:cssVar("--ink"),muted:cssVar("--muted"),surface:cssVar("--surface")};
+  const col={p:cssVar("--line"),A:cssVar("--tierA"),B:cssVar("--tierB"),C:cssVar("--tierC"),active:cssVar("--ok"),target:cssVar("--warn"),network:cssVar("--faint"),nurture:cssVar("--warn"),won:cssVar("--ok"),closed:cssVar("--muted"),line:cssVar("--line"),ink:cssVar("--ink"),muted:cssVar("--muted"),surface:cssVar("--surface")};
   ctx.save(); ctx.translate(G.w/2+G.t.x, G.h/2+G.t.y); ctx.scale(G.t.k,G.t.k);
   const focus=G.sel||G.hover; const nb=new Set(); if(focus){ nb.add(focus); G.edges.forEach(e=>{ if(e.a===focus) nb.add(e.b); if(e.b===focus) nb.add(e.a); }); }
   for(const e of G.edges){ const on=focus&&(e.a===focus||e.b===focus); ctx.globalAlpha=focus?(on?1:.12):.8; ctx.strokeStyle=on?col.ink:col.line; ctx.lineWidth=(on?1.6:1)/G.t.k; if(e.kind==="lead") ctx.setLineDash([4/G.t.k,4/G.t.k]); else ctx.setLineDash([]); ctx.beginPath(); ctx.moveTo(e.a.x,e.a.y); ctx.lineTo(e.b.x,e.b.y); ctx.stroke(); }
@@ -1448,6 +1463,8 @@ function companyOf(k){ return k.companyId? S.companies.get(k.companyId) : null; 
 function peopleAt(c){ return contacts().filter(k=>k.companyId===c.id); }
 function isMineK(k){ const me=myPartner(); return !!me && knowers(k).some(x=>x.partner===me); }
 function workLine(k){ const co=companyOf(k); if(co) return `${k.companyRole||k.title||"Works"} at ${co.name}`; return [k.title, k.firm].filter(Boolean).join(", ") || k.type || ""; }
+function influenceScore(k){ const kn=knowers(k); return (Number(k.influence)||0)*20 + kn.length*8 + kn.filter(x=>x.relation==="friend").length*4 + dealsFrom(k.id).length*10 + (OWNER_ROLES.includes(k.companyRole)?5:0) + (tierOf(k)==="B"?3:0); }
+function stars(n){ n=Number(n)||0; return n? `<span class="stars" title="Influence ${n} of 5">${"★".repeat(n)}</span>` : ""; }
 function fitPct(c){ const f=c.fit||{}; const v=FITDIMS.map(([d])=>Number(f[d])||0).filter(Boolean); return v.length? Math.round(v.reduce((a,b)=>a+b,0)/(v.length*5)*100) : null; }
 function fitPill(c){ const p=fitPct(c); if(p===null) return ""; return `<span class="pill ${p>=70?"won":p>=45?"nurture":"closed"}">Fit ${p}%</span>`; }
 function sizeTxt(c){ if(c.ebitConfirmed!=null && c.ebitConfirmed!=="") return `EBIT R${c.ebitConfirmed}m (confirmed${c.financialsYear?`, ${c.financialsYear}`:""})`; return c.ebit&&c.ebit!=="Unknown"? `EBIT ${c.ebit} (estimate)` : "Not known yet"; }
@@ -1463,7 +1480,7 @@ function linkMail(e){ return e? `<a href="mailto:${esc(e)}">${esc(e)}</a>` : "�
 function personRow(k){
   const n=dealsFrom(k.id).length; const cp=completeness(k).pct;
   const who=knowers(k).map(x=>x.partner.split(" ")[0]).join(", ");
-  return `<button class="rowi" data-contact="${esc(k.id)}">${avatarP(k)}<span class="main"><span class="t1" style="display:block">${esc(k.name)}</span><span class="t2" style="display:block">${esc([workLine(k)||TIERS[tierOf(k)].label, who].filter(Boolean).join(" · "))}</span></span><span class="trail">${n?`<span class="pill">${n} lead${n>1?"s":""}</span>`:""}${cp<50?`<span class="pill soon">Add details</span>`:""}</span></button>`;
+  return `<button class="rowi" data-contact="${esc(k.id)}">${avatarP(k)}<span class="main"><span class="t1" style="display:block">${esc(k.name)} ${stars(k.influence)}</span><span class="t2" style="display:block">${esc([workLine(k)||TIERS[tierOf(k)].label, who].filter(Boolean).join(" · "))}</span></span><span class="trail">${n?`<span class="pill">${n} lead${n>1?"s":""}</span>`:""}${cp<50?`<span class="pill soon">Add details</span>`:""}</span></button>`;
 }
 function bizRow(c){
   const d=dueInfo(c); const o=bizContact(c);
@@ -1478,7 +1495,7 @@ function vToday(){
   const open=companies().filter(isOpen); const pool=mine? open.filter(isMine) : open;
   const due=pool.filter(c=>{const n=daysUntil(c.nextCheckIn); return n!==null&&n<=7;}).sort((a,b)=>a.nextCheckIn.localeCompare(b.nextCheckIn));
   const soon=pool.filter(c=>{const n=daysUntil(c.nextCheckIn); return n!==null&&n>7&&n<=30;}).sort((a,b)=>a.nextCheckIn.localeCompare(b.nextCheckIn));
-  const active=pool.filter(c=>grp(c)==="active").length;
+  const active=pool.length; const newNet=companies().filter(c=>grp(c)==="network" && daysSince(c.createdAt)<=21).length;
   const ppl=mine? contacts().filter(isMineK) : contacts();
   const cm=S.commitments.filter(x=>x.status==="open" && (!mine || x.owner===me)).sort((a,b)=>(a.due||"9999").localeCompare(b.due||"9999"));
   const weak=contacts().filter(k=>isMineK(k)||k.createdBy===S.uid).map(k=>({k,c:completeness(k)})).filter(x=>x.c.pct<60).sort((a,b)=>a.c.pct-b.c.pct).slice(0,4);
@@ -1489,7 +1506,7 @@ function vToday(){
   <div class="seg" role="tablist"><button class="${mine?"on":""}" data-act="scope" data-k="mine">Mine</button><button class="${!mine?"on":""}" data-act="scope" data-k="team">Whole team</button></div>
   <div class="stats">
     <a class="stat ${overdue?"alert":""}" href="#checkins"><span class="n">${due.length}</span><span class="l">Check-ins this week</span></a>
-    <a class="stat" href="#businesses" data-act="biz-active"><span class="n">${active}</span><span class="l">Active businesses</span></a>
+    <a class="stat" href="#businesses" data-act="biz-active"><span class="n">${active}</span><span class="l">Targets & live deals</span></a>
     <a class="stat" href="#people"><span class="n">${ppl.length}</span><span class="l">${mine?"People I know":"People tagged"}</span></a>
   </div>
   ${contacts().length<15?`<div class="sec"><h2>Get started</h2></div><a class="card start" href="#import">${ic("upload",28)}<div><b>Start the network sweep</b><span>Import your phone contacts and tag the A, B and C people in one go.</span></div></a>`:""}
@@ -1497,6 +1514,7 @@ function vToday(){
   ${due.length? due.map(dueCard).join("") : `<div class="card empty"><b>You're up to date</b>${soon.length?`Next up: ${esc(soon[0].name)} on ${esc(fmtD(soon[0].nextCheckIn))}.`:"No check-ins due. Businesses you set to check in on will show up here."}</div>`}
   ${cm.length?`<div class="sec"><h2>${mine?"My commitments":"Team commitments"}</h2><a href="#meeting">Meeting</a></div><div class="group">${cm.slice(0,6).map(cmtRow).join("")}</div>`:""}
   ${weak.length?`<div class="sec"><h2>Make these profiles stronger</h2></div><div class="group">${weak.map(({k,c})=>`<button class="rowi" data-act="complete-profile" data-id="${esc(k.id)}">${avatarP(k)}<span class="main"><span class="t1" style="display:block">${esc(k.name)}</span><span class="t2" style="display:block">Add ${esc(c.missing.slice(0,3).join(", "))}</span></span><span class="trail"><span class="pill soon">${c.pct}%</span></span></button>`).join("")}</div>`:""}
+  ${newNet?`<div class="sec"><h2>New in our network</h2><a href="#businesses" data-act="biz-network">Review</a></div><div class="card box tag">${newNet} business${newNet>1?"es":""} added in the last three weeks. Open one and tap <b>We like it</b> to make it a target and start check-ins.</div>`:""}
   ${soon.length?`<div class="sec"><h2>Coming up</h2></div><div class="group">${soon.slice(0,5).map(bizRow).join("")}</div>`:""}
   ${recent.length?`<div class="sec"><h2>New from the team</h2></div><div class="group">${recent.map(r=>r.k==="company"?bizRow(r.x):personRow(r.x)).join("")}</div>`:""}`;
 }
@@ -1508,17 +1526,19 @@ function cmtRow(x){
 /* ---------- People list: Mine uses partner connections ---------- */
 function vPeople(){
   const k=S.k, q=k.q.trim().toLowerCase(); const me=myPartner(); const all=contacts();
-  const arr=all.filter(c=>{ if(k.tier&&tierOf(c)!==k.tier) return false; if(k.mine&&!isMineK(c)) return false; if(q){ const co=companyOf(c); const h=[c.name,c.firm,c.title,c.email,c.cell,c.town,c.province,c.country,c.notes,c.type,c.industry,c.expertise,c.companyRole,co?.name,knowsTxt(c)].join(" ").toLowerCase(); if(!h.includes(q)) return false; } return true; }).sort((a,b)=>(a.name||"").localeCompare(b.name||"",undefined,{sensitivity:"base"}));
+  const arr=all.filter(c=>{ if(k.tier==="top") return true; if(k.tier&&tierOf(c)!==k.tier) return false; if(k.mine&&!isMineK(c)) return false; if(q){ const co=companyOf(c); const h=[c.name,c.firm,c.title,c.email,c.cell,c.town,c.province,c.country,c.notes,c.type,c.industry,c.expertise,c.companyRole,co?.name,knowsTxt(c)].join(" ").toLowerCase(); if(!h.includes(q)) return false; } return true; }).sort((a,b)=> k.tier==="top"? influenceScore(b)-influenceScore(a) : (a.name||"").localeCompare(b.name||"",undefined,{sensitivity:"base"}));
+  if(k.tier==="top") arr.splice(50);
   const cnt=t=>all.filter(c=>tierOf(c)===t).length;
   const chip=(t,l,n)=>`<button class="chip ${k.tier===t?"on":""}" data-act="k-tier" data-k="${t}">${l} <span class="n">${n}</span></button>`;
   let body="";
   if(!arr.length) body=`<div class="card empty">${all.length?"<b>Nobody matches</b>Try a different search or filter, or use Ask the network.":`<b>Your network starts here</b>Import your contacts and tag who matters, or tap + to add one person.<div style="margin-top:14px"><a class="btn primary" href="#import">${ic("upload",18)} Import contacts</a></div>`}</div>`;
   else { let last=""; const parts=[]; let buf=[]; const flush=()=>{ if(buf.length){ parts.push(`<div class="group">${buf.join("")}</div>`); buf=[]; } };
-    for(const c of arr){ const L=(c.name||"#")[0].toUpperCase(); const letter=/[A-Z]/.test(L)?L:"#"; if(letter!==last && arr.length>12){ flush(); parts.push(`<div class="letter">${letter}</div>`); last=letter; } buf.push(personRow(c)); }
+    for(const c of arr){ const L=(c.name||"#")[0].toUpperCase(); const letter=/[A-Z]/.test(L)?L:"#"; if(k.tier!=="top" && letter!==last && arr.length>12){ flush(); parts.push(`<div class="letter">${letter}</div>`); last=letter; } buf.push(personRow(c)); }
     flush(); body=parts.join(""); }
   return `<div class="ph"><div><h1>People</h1><p>${all.length} in the network · A ${cnt("A")} · B ${cnt("B")} · C ${cnt("C")}</p></div><a class="btn sm" href="#import">${ic("upload",18)} Import</a></div>
   <div class="search">${ic("search",20)}<input id="kq" type="search" placeholder="Search name, company, skill, town…" value="${esc(k.q)}" autocomplete="off" aria-label="Search people"></div>
-  <div class="chips">${chip("","All",all.length)}${chip("A","A · Owners",cnt("A"))}${chip("B","B · Connectors",cnt("B"))}${chip("C","C · Good contacts",cnt("C"))}${me?`<button class="chip ${k.mine?"on":""}" data-act="k-mine">People I know</button>`:""}</div>
+  <div class="chips">${chip("","All",all.length)}${chip("A","A · Owners",cnt("A"))}${chip("B","B · Connectors",cnt("B"))}${chip("C","C · Good contacts",cnt("C"))}<button class="chip ${k.tier==="top"?"on":""}" data-act="k-tier" data-k="top">★ Most influential</button>${me?`<button class="chip ${k.mine?"on":""}" data-act="k-mine">People I know</button>`:""}</div>
+  ${k.tier==="top"?`<p class="tag" style="margin:-4px 2px 10px">Ranked by your influence rating, how many partners know them, friendships and the leads they've brought in.</p>`:""}
   ${body}`;
 }
 
@@ -1560,14 +1580,16 @@ function renderSheet(){
       <a class="bigact" ${o?.cell?`href="${esc(telHref(o.cell))}"`:'aria-disabled="true"'}>${ic("phone",22)}Call</a>
       <a class="bigact" ${o?.cell?`href="${esc(waHref(o.cell))}" target="_blank" rel="noopener"`:'aria-disabled="true"'}>${ic("wa",22)}WhatsApp</a>
       <a class="bigact" ${o?.email?`href="mailto:${esc(o.email)}"`:'aria-disabled="true"'}>${ic("mail",22)}Email</a>
-      <button class="bigact" data-act="quick-checkin" data-id="${esc(c.id)}" ${ro?'aria-disabled="true"':""}>${ic("check",22)}Check in</button>
+      ${grp(c)==="network"?`<button class="bigact" data-act="like" data-id="${esc(c.id)}" ${ro?'aria-disabled="true"':""}><span style="font-size:20px;line-height:22px">★</span>Like</button>`:`<button class="bigact" data-act="quick-checkin" data-id="${esc(c.id)}" ${ro?'aria-disabled="true"':""}>${ic("check",22)}Check in</button>`}
     </div>
-    <div class="fsec">Check-in</div>
+    ${grp(c)==="network"?`<div class="card box likebox"><div class="lbl">In our network</div><div class="next">Do we like this business?</div><div class="tag">Liking it makes it a target: map the owners and key people, then start checking in.</div>${ro?"":`<div class="acts" style="grid-template-columns:2fr 1fr"><button class="act dark" data-act="like" data-id="${esc(c.id)}">★ We like it</button><button class="act" data-act="not-for-us" data-id="${esc(c.id)}">Not for us</button></div>`}</div>`:""}
+    ${grp(c)==="target"&&!ro?`<div class="acts" style="grid-template-columns:1fr 1fr;margin-top:12px"><button class="act dark" data-act="start-deal" data-id="${esc(c.id)}">Start a conversation</button><button class="act" data-act="like" data-id="${esc(c.id)}">Change check-ins</button></div>`:""}
+    ${["target","active"].includes(grp(c))?`<div class="fsec">Check-in</div>
     <div class="card box">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div class="lbl">Next check-in</div><div class="next">${c.nextCheckIn?esc(fmtD(c.nextCheckIn)):"Not scheduled"}</div></div>${due?`<span class="pill ${due.cls}">${esc(due.txt)}</span>`:""}</div>
       <div class="tag">${esc(CADENCE.find(x=>x.m===Number(c.followUpMonths))?.l||"No scheduled check-in")} · last contact ${esc(fmtD(c.lastContact))}</div>
-      ${ro?"":`<div class="fields"><div class="fld"><label for="dStage">Stage</label><select id="dStage">${opts(STAGES.map(s=>({v:s.id,l:s.label})),c.status)}</select></div></div>`}
-    </div>
+    </div>`:""}
+    ${ro?"":`<div class="fields" style="margin-top:12px"><div class="fld"><label for="dStage">Stage</label><select id="dStage">${opts(STAGES.map(s=>({v:s.id,l:s.label})),stageOf(c.status).id)}</select></div></div>`}
     <div class="fsec">People we know here</div>
     ${(c.owners||[]).length||ppl.length? `<div class="group">${(c.owners||[]).filter(w=>!ppl.some(k=>k.name.toLowerCase()===String(w.name||"").toLowerCase())).map(w=>`<div class="rowi"><span class="avatar biz">${esc(initials(w.name))}</span><span class="main"><span class="t1" style="display:block">${esc(w.name||"Unnamed")} ${langTag(w.language)}</span><span class="t2" style="display:block">${esc([w.role||"Owner",w.cell,w.email].filter(Boolean).join(" · "))}</span></span>${w.cell?`<a class="btn sm" href="${esc(telHref(w.cell))}" aria-label="Call ${esc(w.name)}">${ic("phone",18)}</a>`:""}</div>`).join("")}${ppl.map(k=>`<button class="rowi" data-contact="${esc(k.id)}">${avatarP(k)}<span class="main"><span class="t1" style="display:block">${esc(k.name)}</span><span class="t2" style="display:block">${esc([k.companyRole||k.title||"Works here", knowers(k).length?"known by "+knowers(k).map(x=>x.partner.split(" ")[0]).join(", "):""].filter(Boolean).join(" · "))}</span></span>${ic("chev",18).replace('class="ic"','class="ic chev"')}</button>`).join("")}</div>` : `<div class="card empty">Nobody linked yet.</div>`}
     ${knownVia.length?`<p class="tag" style="margin:8px 2px 0">Our way in: ${esc(knownVia.join(", "))}</p>`:""}
@@ -1588,7 +1610,7 @@ function renderSheet(){
     const k=S.contacts.get(D.id); if(!k){ closeSheet(); return; }
     const t=tierOf(k); const deals=dealsFrom(k.id); const co=companyOf(k); const cp=completeness(k);
     el.innerHTML=`${ovHead(k.name,null,ro?"":`<button class="hbtn" data-act="edit-contact" data-id="${esc(k.id)}">Edit</button>`)}<div class="ovb">
-    <div class="hero">${avatarP(k,true)}<h2>${esc(k.name)}</h2><div class="sub">${esc(workLine(k)||TIERS[t].label)}</div><div class="pills"><span class="pill ${t}">${t} · ${esc(TIERS[t].label)}</span>${k.industry?`<span class="pill">${esc(k.industry.split(" › ").pop())}</span>`:""}${langTag(k.language)}</div></div>
+    <div class="hero">${avatarP(k,true)}<h2>${esc(k.name)}</h2><div class="sub">${esc(workLine(k)||TIERS[t].label)}</div><div class="pills"><span class="pill ${t}">${t} · ${esc(TIERS[t].label)}</span>${k.influence?`<span class="pill">${stars(k.influence)}</span>`:""}${k.industry?`<span class="pill">${esc(k.industry.split(" › ").pop())}</span>`:""}${langTag(k.language)}</div></div>
     <div class="bigacts">
       <a class="bigact" ${k.cell?`href="${esc(telHref(k.cell))}"`:'aria-disabled="true"'}>${ic("phone",22)}Call</a>
       <a class="bigact" ${k.cell?`href="${esc(waHref(k.cell))}" target="_blank" rel="noopener"`:'aria-disabled="true"'}>${ic("wa",22)}WhatsApp</a>
@@ -1644,6 +1666,7 @@ function contactForm(id, preset){
   <div class="fsec">Which partners know them?</div>
   <div class="fields">${S.partners.map((p,i)=>`<div class="fld"><label for="rel${i}">${esc(p)}</label><select id="rel${i}" data-partner="${esc(p)}">${opts([{v:"",l:"Doesn't know them"},...Object.entries(RELS).map(([v,l])=>({v,l}))],rel[p]||"")}</select></div>`).join("")}</div>
   <div class="hint">Friend or business associate matters: it tells the team who should make the call.</div>
+  <div class="fields" style="margin-top:10px"><div class="fld"><label for="kInfl">How influential are they?</label><select id="kInfl">${opts([{v:0,l:"Not rated"},{v:1,l:"★ Some reach"},{v:2,l:"★★ Well connected locally"},{v:3,l:"★★★ Respected in their industry"},{v:4,l:"★★★★ Opens doors nationally"},{v:5,l:"★★★★★ Top of the network"}],k.influence||0)}</select></div></div>
   <div id="kAddBizWrap" hidden><label class="check"><input type="checkbox" id="kAddBiz" checked> Add their business to Businesses next</label></div>
   <details class="more" ${id?"open":""}><summary>${ic("plus",18)} More details</summary>
    <div class="fsec">More</div>
@@ -1665,7 +1688,7 @@ function kFormRead(){
   const tier=(document.querySelector('input[name=kTier]:checked')||{}).value||"";
   const cname=($("#kCompany")?.value||"").trim(); const co=companies().find(c=>c.name.toLowerCase()===cname.toLowerCase());
   const conns=[...document.querySelectorAll("[data-partner]")].filter(s=>s.value).map(s=>({partner:s.dataset.partner, relation:s.value}));
-  return {tier, name:$("#kName").value.trim(), cell:$("#kCell").value.trim(), email:$("#kEmail").value.trim(), country:$("#kCountry").value, companyId:co?co.id:"", firm: co? "" : cname, companyRole:$("#kRole").value, title:$("#kTitle").value.trim(), industry:$("#kIndustry").value, expertise:$("#kExpertise").value.trim(), type:$("#kType").value, language:$("#kLang").value, province:$("#kProv").value, town:$("#kTown").value.trim(), linkedin:$("#kLinkedin").value.trim(), notes:$("#kNotes").value.trim(), conns, coName:cname, coFound:!!co};
+  return {tier, name:$("#kName").value.trim(), cell:$("#kCell").value.trim(), email:$("#kEmail").value.trim(), country:$("#kCountry").value, companyId:co?co.id:"", firm: co? "" : cname, companyRole:$("#kRole").value, title:$("#kTitle").value.trim(), industry:$("#kIndustry").value, expertise:$("#kExpertise").value.trim(), type:$("#kType").value, language:$("#kLang").value, province:$("#kProv").value, town:$("#kTown").value.trim(), linkedin:$("#kLinkedin").value.trim(), notes:$("#kNotes").value.trim(), influence:Number($("#kInfl").value)||0, conns, coName:cname, coFound:!!co};
 }
 function kFormUpdate(){
   if(!$("#kName")) return; const d=kFormRead();
@@ -1688,7 +1711,7 @@ async function submitContact(){
   if(!d.tier){ toast("Tap A, B or C first"); return; }
   const me=myPartner(); const primary=(d.conns.find(c=>c.partner===me)||d.conns[0]||{}).partner||"";
   const prev=FORM.id? S.contacts.get(FORM.id):null;
-  const data={name:d.name, tier:d.tier, firm:d.firm, type:d.type, partner:primary, companyId:d.companyId, companyRole:d.companyRole, ownsCompanyId: OWNER_ROLES.includes(d.companyRole)? d.companyId : "", title:d.title, country:d.country, industry:d.industry, expertise:d.expertise, linkedin:d.linkedin, cell:d.cell, email:d.email, language:d.language, province:d.province, town:d.town, notes:d.notes, example:prev?.example||false};
+  const data={name:d.name, tier:d.tier, firm:d.firm, type:d.type, partner:primary, companyId:d.companyId, companyRole:d.companyRole, ownsCompanyId: OWNER_ROLES.includes(d.companyRole)? d.companyId : "", title:d.title, country:d.country, industry:d.industry, expertise:d.expertise, linkedin:d.linkedin, influence:d.influence, cell:d.cell, email:d.email, language:d.language, province:d.province, town:d.town, notes:d.notes, example:prev?.example||false};
   const id=FORM.id||newId();
   const addBiz=!FORM.id && !$("#kAddBizWrap").hidden && $("#kAddBiz")?.checked;
   document.querySelectorAll('button[type=submit]').forEach(b=>b.disabled=true);
@@ -1709,7 +1732,7 @@ function ownerDealForm(contactId){
 
 /* ---------- Business form (adds footprint, size, fit) ---------- */
 function dealForm(id, preset){
-  const c = id? JSON.parse(JSON.stringify(S.companies.get(id)||{})) : {status:"lead", followUpMonths:3, owners:[{language:"af"}], source:{}, partner:defaultPartner(), ebit:"Unknown", hqCountry:"South Africa", fit:{}, ...(preset||{})};
+  const c = id? JSON.parse(JSON.stringify(S.companies.get(id)||{})) : {status:"network", followUpMonths:0, owners:[{language:"af"}], source:{}, partner:defaultPartner(), ebit:"Unknown", hqCountry:"South Africa", fit:{}, ...(preset||{})};
   FORM={kind:"deal", id, owners:(c.owners&&c.owners.length?c.owners:[{language:"af"}])};
   const src=c.source||{}; const fit=c.fit||{};
   showModal(`<form id="dealForm" novalidate style="display:contents">${formHead(id?"Edit business":"New business","dealForm")}<div class="ovb">
@@ -1729,9 +1752,9 @@ function dealForm(id, preset){
   <div class="fields">
     <div class="fld"><label for="cPartner">Lead partner</label><select id="cPartner">${opts(S.partners,c.partner,"Unassigned")}</select></div>
     <div class="fld"><label for="cStage">Stage</label><select id="cStage">${opts(STAGES.map(s=>({v:s.id,l:s.label})),c.status)}</select></div>
-    <div class="fld"><label for="cCad">Check in</label><select id="cCad">${opts(CADENCE.map(x=>({v:x.m,l:x.l})),c.followUpMonths??0)}</select></div>
-    <div class="fld"><label for="cNext">Next check-in</label><input id="cNext" type="date" value="${esc(c.nextCheckIn||"")}"></div>
-  </div><div class="hint" id="nextHint"></div>
+    <div class="fld cadw"><label for="cCad">Check in</label><select id="cCad">${opts(CADENCE.map(x=>({v:x.m,l:x.l})),c.followUpMonths??0)}</select></div>
+    <div class="fld cadw"><label for="cNext">Next check-in (or pick a specific date)</label><input id="cNext" type="date" value="${esc(c.nextCheckIn||"")}"></div>
+  </div><div class="hint" id="nextHint"></div><div class="hint" id="cadOff">New businesses sit in our network with no check-ins. Set the stage to “Target – we like it” when you want to start checking in.</div>
   <details class="more" ${id?"open":""}><summary>${ic("plus",18)} Size, fit and more details</summary>
    <div class="fsec">How big is it?</div>
    <div class="fields">
@@ -1756,9 +1779,10 @@ function dealForm(id, preset){
   </details>
   <div style="margin-top:18px"><button type="submit" class="btn primary block">${id?"Save changes":"Save business"}</button></div>
   </div></form>`);
-  drawOwners(); drawSrcExtra(src); autoNext(!c.nextCheckIn);
+  drawOwners(); drawSrcExtra(src); cadVis(); if(["target","active"].includes(stageOf(c.status).group)) autoNext(!c.nextCheckIn);
   setTimeout(()=>{ if(!id) $("#cName")?.focus(); },300);
 }
+function cadVis(){ const on=["target","active"].includes(stageOf($("#cStage")?.value).group); document.querySelectorAll(".cadw").forEach(e=>e.hidden=!on); const o=$("#cadOff"); if(o) o.hidden=on; const h=$("#nextHint"); if(h&&!on) h.textContent=""; if(!on){ const n=$("#cNext"); if(n) n.value=""; } }
 const numOrNull=v=>{ const s=String(v||"").replace(/[^\d.,-]/g,"").replace(",","."); return s===""? null : Number(s); };
 async function submitDeal(){
   const name=$("#cName").value.trim(); if(!name){ toast("Add the business name"); $("#cName").focus(); return; }
@@ -1781,7 +1805,7 @@ async function submitDeal(){
     hqCountry:$("#cHq").value, footprint:$("#cFoot").value, countries:$("#cCountries").value.trim(), regNo:$("#cReg").value.trim(),
     ebitConfirmed:numOrNull($("#cEbitC").value), turnoverConfirmed:numOrNull($("#cTurnC").value), financialsYear:$("#cFy").value.trim(), fit,
     owners, language: owners.length? (new Set(owners.map(o=>o.language)).size>1?"both":owners[0].language) : "",
-    source, partner:$("#cPartner").value, status, followUpMonths:Number($("#cCad").value), nextCheckIn:$("#cNext").value||"",
+    source, partner:$("#cPartner").value, status, followUpMonths:["target","active"].includes(stageOf(status).group)?Number($("#cCad").value):0, nextCheckIn:["target","active"].includes(stageOf(status).group)?($("#cNext").value||""):"",
     notes:$("#cNotes").value.trim(), lastContact: prev?.lastContact||"", log: prev?.log? [...prev.log] : [],
     createdByName: prev?.createdByName||await myName(), example: prev?.example||false
   };
@@ -1845,6 +1869,12 @@ const INTENTS=[
  {keys:["insurance","insure","risk","cover","assurance"], groups:[["Insurance brokers",["insurance","broker","risk","assurance"]]]},
  {keys:["solar","energy","power","electricity","eskom","water","borehole","electrical"], groups:[["Energy & water",["solar","energy","power","electrical","electrician","renewable","water","borehole"]]]},
  {keys:["software","it","tech","technology","system","systems","website","digital","app","erp"], groups:[["Technology",["software","it","tech","developer","digital","systems","erp"]]]},
+ {keys:["content","video","videos","videography","videographer","film","filming","editing","editor","photo","photos","photography","photographer","shoot","documentary","narrator","voice","podcast","creative","creatives","story","storytelling"], groups:[
+   ["Videographers & editors",["videograph","video","film","editing","editor","camera","drone","documentary","production"]],
+   ["Photographers",["photograph"]],
+   ["Writers, narrators & storytellers",["copywrit","writer","narrat","voice","storytell","curator","script","journalist"]],
+   ["Content & social media",["content","social media","influencer","digital marketing","podcast"]],
+   ["Designers",["graphic design","designer","branding","brand"]]]},
  {keys:["marketing","brand","branding","media","pr","advertising","social"], groups:[["Marketing & media",["marketing","brand","media","pr","advertising","design","social media"]]]},
  {keys:["government","municipality","municipal","permit","permits","licence","license","council","approval","approvals"], groups:[["Government & approvals",["municipal","municipality","government","council","official","town planner","planning","regulatory"]]]},
  {keys:["tourism","hotel","lodge","lodges","hospitality","restaurant","events","golf","game"], groups:[["Tourism & hospitality",["tourism","hotel","lodge","hospitality","restaurant","events","golf","game"]]]},
@@ -1862,7 +1892,7 @@ function localFind(q){
   const extra=words.filter(w=>w.length>2 && !STOP.has(w) && !intents.some(it=>it.keys.includes(w)) && !place.some(p=>p.includes(w)));
   const people=contacts().map(k=>({k,h:hayOf(k)}));
   const used=new Set(); const groups=[];
-  const bonus=x=>{ let b=0; if(place.length && place.some(p=>x.h.place.includes(p))) b+=3; if(knowers(x.k).some(c=>c.relation==="friend")) b+=1; return b; };
+  const bonus=x=>{ let b=Math.min(3,Number(x.k.influence)||0); if(place.length && place.some(p=>x.h.place.includes(p))) b+=3; if(knowers(x.k).some(c=>c.relation==="friend")) b+=1; return b; };
   const groupDefs=intents.flatMap(it=>it.groups);
   if(extra.length) groupDefs.push(["Matches for “"+extra.join(" ")+"”", extra]);
   const best=new Map();
@@ -1924,7 +1954,8 @@ function vMeeting(){
   const openC=S.commitments.filter(x=>x.status==="open").sort((a,b)=>(a.owner||"").localeCompare(b.owner||"")||(a.due||"").localeCompare(b.due||""));
   const thisC=m? S.commitments.filter(x=>x.meetingId===m.id) : [];
   const dec=m? Object.fromEntries((m.decisions||[]).map(d=>[d.companyId,d.decision])) : {};
-  const live=companies().filter(c=>grp(c)==="active").sort((a,b)=>(a.name||"").localeCompare(b.name||""));
+  const live=companies().filter(c=>["target","active"].includes(grp(c))).sort((a,b)=>(grp(b)==="active")-(grp(a)==="active")||(a.name||"").localeCompare(b.name||""));
+  const newNet=companies().filter(c=>grp(c)==="network" && (c.createdAt||"").slice(0,10)>=since);
   const past=S.meetings.filter(x=>x.status==="done").sort((a,b)=>b.held_on.localeCompare(a.held_on)).slice(0,6);
   if(!m) return `<div class="ph"><div><h1>Target meeting</h1><p>Every three weeks, 60 minutes. Accountability before new ideas.</p></div></div>
    <div class="card box"><div class="lbl">${last?`Last meeting ${esc(fmtD(last.held_on))}`:"No meetings yet"}</div><div class="next">${nextDate?`Next due ${esc(fmtD(nextDate))}`:"Start your first target meeting"}</div>${S.readOnly?"":`<button class="btn primary block" data-act="meet-start">${ic("flag",18)} Start today's meeting</button>`}</div>
@@ -1938,11 +1969,12 @@ function vMeeting(){
   <div class="card box" style="margin-top:10px"><div class="lbl">Network sweep and check-ins per partner</div><table class="mini"><thead><tr><th>Partner</th><th>A</th><th>B</th><th>C</th><th>Check-ins</th></tr></thead><tbody>${pRows.map(r=>`<tr><td>${esc(r.p)}</td><td>${r.A||"–"}</td><td>${r.B||"–"}</td><td>${r.C||"–"}</td><td>${r.ci||"–"}</td></tr>`).join("")}</tbody></table></div>
   ${blk(3,"Commitment review",15)}
   ${openC.filter(x=>x.meetingId!==m.id).length?`<div class="group">${openC.filter(x=>x.meetingId!==m.id).map(cmtRow).join("")}</div>`:`<div class="card empty">No open commitments from before.</div>`}
-  ${blk(4,"Live deals: chase, park or drop",15)}
-  ${live.length?`<div class="group">${live.map(c=>`<div class="rowi" style="flex-wrap:wrap"><span class="main" data-open="${esc(c.id)}" style="cursor:pointer;min-width:160px"><span class="t1" style="display:block">${esc(c.name)}</span><span class="t2" style="display:block">${esc([STAGE[c.status]?.label,c.partner].filter(Boolean).join(" · "))}</span></span><span class="decide">${[["chase","Chase"],["park","Park"],["drop","Drop"]].map(([k,l])=>`<button class="${dec[c.id]===k?"on "+k:""}" data-act="decide" data-id="${esc(c.id)}" data-k="${k}">${l}</button>`).join("")}</span></div>`).join("")}</div>`:`<div class="card empty">No active businesses.</div>`}
-  <div class="hint">Park moves it to Nurture with a 6-month check-in. Drop marks it Passed.</div>
+  ${blk(4,"Targets & live deals: chase, keep warm or drop",15)}
+  ${live.length?`<div class="group">${live.map(c=>`<div class="rowi" style="flex-wrap:wrap"><span class="main" data-open="${esc(c.id)}" style="cursor:pointer;min-width:160px"><span class="t1" style="display:block">${esc(c.name)}</span><span class="t2" style="display:block">${esc([STAGE[c.status]?.label,c.partner].filter(Boolean).join(" · "))}</span></span><span class="decide">${[["chase","Chase"],["keep","Keep warm"],["drop","Drop"]].map(([k,l])=>`<button class="${dec[c.id]===k?"on "+k:""}" data-act="decide" data-id="${esc(c.id)}" data-k="${k}">${l}</button>`).join("")}</span></div>`).join("")}</div>`:`<div class="card empty">No targets yet.</div>`}
+  <div class="hint">Chase moves a target into an active conversation. Keep warm leaves it as a target with its check-ins. Drop marks it Not for us.</div>
   ${blk(5,"Channel review",10)}<div class="card box tag">Agree which channels get the most time until the next meeting. Capture it as commitments below.</div>
-  ${blk(6,"New targets & networks",5)}<div class="card box tag">Which businesses to chase and which networks to open, and who owns each. Use + to capture new ones now.</div>
+  ${blk(6,"New targets & networks",5)}
+  ${newNet.length?`<div class="group">${newNet.map(c=>`<div class="rowi"><span class="main" data-open="${esc(c.id)}" style="cursor:pointer"><span class="t1" style="display:block">${esc(c.name)}</span><span class="t2" style="display:block">${esc([industryShort(c)!=="—"?industryShort(c):"",c.createdByName].filter(Boolean).join(" · "))}</span></span><button class="btn sm" data-act="like" data-id="${esc(c.id)}">★ We like it</button></div>`).join("")}</div>`:`<div class="card box tag">Nothing new in the network since the last meeting. Use + to capture new businesses now.</div>`}
   ${blk(7,"Commitments",5)}
   ${thisC.length?`<div class="group" style="margin-bottom:10px">${thisC.map(cmtRow).join("")}</div>`:""}
   <div class="fields">
@@ -1957,7 +1989,7 @@ function vMeeting(){
   <div style="margin-top:16px;display:grid;gap:10px"><button class="btn" data-act="meet-copy" data-id="${esc(m.id)}">Copy minutes for WhatsApp</button><button class="btn primary" data-act="meet-finish" data-id="${esc(m.id)}">${ic("check",18)} Finish meeting</button></div>`;
 }
 function minutesText(m){
-  const decs=(m.decisions||[]).map(d=>`• ${S.companies.get(d.companyId)?.name||"?"}: ${d.decision.toUpperCase()}`).join("\n")||"• None";
+  const decs=(m.decisions||[]).map(d=>`• ${S.companies.get(d.companyId)?.name||"?"}: ${({chase:"CHASE",keep:"KEEP WARM",drop:"DROP",park:"PARK"})[d.decision]||d.decision}`).join("\n")||"• None";
   const cm=S.commitments.filter(c=>c.meetingId===m.id).map(c=>`• ${c.owner}: ${c.action}${c.due?` (by ${fmtD(c.due)})`:""}`).join("\n")||"• None";
   return `MUNGER TARGET MEETING · ${fmtD(m.held_on)}\n\nDecisions\n${decs}\n\nCommitments\n${cm}${m.notes?`\n\nNotes\n${m.notes}`:""}`;
 }
@@ -1966,7 +1998,8 @@ async function decide(companyId, decision){
   const by=await myName(); const decs=(m.decisions||[]).filter(d=>d.companyId!==companyId); decs.push({companyId, decision, by, at:today()});
   const {error}=await sb.from("meetings").update({decisions:decs}).eq("id",m.id); if(error){ writeErr(error); return; }
   const patch={log:[...(c.log||[]),{d:today(),by,text:`Target meeting: ${decision}`}].slice(-200)};
-  if(decision==="park"){ patch.status="nurture"; patch.followUpMonths=Number(c.followUpMonths)||6; patch.nextCheckIn=addMonths(today(),patch.followUpMonths); }
+  if(decision==="chase" && grp(c)==="target"){ patch.status="talks"; }
+  if(decision==="keep"){ if(grp(c)!=="target") patch.status="target"; if(!c.nextCheckIn){ patch.followUpMonths=Number(c.followUpMonths)||3; patch.nextCheckIn=addMonths(today(),patch.followUpMonths); } }
   if(decision==="drop"){ patch.status="passed"; patch.nextCheckIn=""; }
   await dbUpdate("companies/"+companyId, patch); await loadMeetings(); toast(`${c.name}: ${decision}`);
 }
@@ -1977,8 +2010,8 @@ function netBuildGraph(){
   const add=(id,type,label,extra)=>{ const o=old.get(id); const n={id,type,label,x:o?.x??(Math.random()-.5)*400,y:o?.y??(Math.random()-.5)*400,vx:0,vy:0,...extra}; nodes.push(n); by.set(id,n); return n; };
   const partnerSet=new Set(S.partners); contacts().forEach(k=>knowers(k).forEach(x=>partnerSet.add(x.partner))); companies().forEach(c=>{ if(c.partner) partnerSet.add(c.partner); });
   if(G.show.p) [...partnerSet].filter(Boolean).forEach(p=>add("p:"+p,"p",p,{r:16}));
-  if(G.show.k) contacts().forEach(k=>add("k:"+k.id,"k",k.name,{r:8,sub:workLine(k),tier:tierOf(k)}));
-  if(G.show.c) companies().forEach(c=>add("c:"+c.id,"c",c.name,{r:7,group:(STAGE[c.status]||STAGE.lead).group,sub:industryShort(c)}));
+  if(G.show.k) contacts().forEach(k=>add("k:"+k.id,"k",k.name,{r:8+(Number(k.influence)||0)*1.6,sub:workLine(k),tier:tierOf(k)}));
+  if(G.show.c) companies().forEach(c=>add("c:"+c.id,"c",c.name,{r:7,group:stageOf(c.status).group,sub:industryShort(c)}));
   const link=(a,b,kind)=>{ if(by.has(a)&&by.has(b)) edges.push({a:by.get(a),b:by.get(b),kind}); };
   contacts().forEach(k=>{ knowers(k).forEach(x=>link("k:"+k.id,"p:"+x.partner,x.relation==="friend"?"friend":"network")); if(k.companyId) link("k:"+k.id,"c:"+k.companyId,"works"); });
   companies().forEach(c=>{ if(c.source?.contactId) link("c:"+c.id,"k:"+c.source.contactId,"referred"); if(c.source?.partner) link("c:"+c.id,"p:"+c.source.partner,"referred"); if(c.partner) link("c:"+c.id,"p:"+c.partner,"lead"); });
@@ -1998,12 +2031,30 @@ function netInfo(){
   box.classList.add("on");
 }
 
+function likeModal(id){
+  const c=S.companies.get(id); if(!c) return; const isT=grp(c)!=="network";
+  showModal(`${ovHead(isT?"Check-ins":"We like it",`<button class="hbtn" data-act="close-modal">Cancel</button>`)}<div class="ovb">
+   <p style="margin:0 2px 12px;font-size:15.5px">${isT?"":`<b>${esc(c.name)}</b> becomes a target. `}When should we check in?</p>
+   <div class="fields"><div class="fld"><label for="lkCad">Check in</label><select id="lkCad">${opts(CADENCE.filter(x=>x.m).map(x=>({v:x.m,l:x.l})),Number(c.followUpMonths)||3)}</select></div>
+   <div class="fld"><label for="lkDate">First / next check-in date</label><input id="lkDate" type="date" value="${esc(c.nextCheckIn||addMonths(today(),Number(c.followUpMonths)||3))}"></div>
+   <div class="fld"><label for="lkPartner">Who owns this relationship?</label><select id="lkPartner">${opts(S.partners,c.partner||defaultPartner())}</select></div></div>
+   ${isT?"":`<div class="hint">Next: add the owners and key people at ${esc(c.name)} so we know our way in.</div>`}
+   <div style="margin-top:14px"><button class="btn primary block" data-act="like-save" data-id="${esc(c.id)}">${isT?"Save":"★ Make it a target"}</button></div></div>`, true);
+}
 /* ---------- Phase 2 events ---------- */
 document.addEventListener("click", async e=>{
   const t=e.target.closest("[data-act]"); if(!t) return;
   const a=t.dataset.act, k=t.dataset.k, id=t.dataset.id;
   switch(a){
     case "complete-profile": contactForm(id); break;
+    case "like": likeModal(id); break;
+    case "like-save": { const c=S.companies.get(id); if(!c) break; const by=await myName(); const was=grp(c);
+      const patch={followUpMonths:Number($("#lkCad").value)||3, nextCheckIn:$("#lkDate").value||addMonths(today(),3), partner:$("#lkPartner").value};
+      if(was==="network"||was==="closed"){ patch.status="target"; patch.log=[...(c.log||[]),{d:today(),by,text:"★ We like it – now a target"}].slice(-200); }
+      if(await dbUpdate("companies/"+id,patch)){ closeModal(); toast(was==="network"?"Now a target":"Check-ins updated"); } break; }
+    case "not-for-us": { const c=S.companies.get(id); const by=await myName(); if(await dbUpdate("companies/"+id,{status:"passed", nextCheckIn:"", log:[...(c.log||[]),{d:today(),by,text:"Not for us"}].slice(-200)})) toast("Marked not for us"); break; }
+    case "start-deal": { const c=S.companies.get(id); const by=await myName(); if(await dbUpdate("companies/"+id,{status:"talks", log:[...(c.log||[]),{d:today(),by,text:"Started a conversation – now an active deal"}].slice(-200)})) toast("Now an active deal"); break; }
+    case "biz-network": S.f.group="network"; break;
     case "person-at": { const c=S.companies.get(id); contactForm(null,{companyId:id, firm:"", industry:c?.industry||"", town:c?.town||"", province:c?.province||""}); break; }
     case "ask-ex": $("#askQ").value=k; runAsk(k); break;
     case "meet-start": { const {error}=await sb.from("meetings").insert({held_on:today()}); if(error) writeErr(error); else { await loadMeetings(); toast("Meeting started"); } break; }
@@ -2022,6 +2073,7 @@ document.addEventListener("submit",e=>{ if(e.target.id==="askForm"){ e.preventDe
 document.addEventListener("input",e=>{ if(e.target.closest && e.target.closest("#contactForm")) kFormUpdate(); });
 document.addEventListener("change",e=>{ if(e.target.closest && e.target.closest("#contactForm")) kFormUpdate(); if(e.target.id==="mtNotes"){ const m=openMeeting(); if(m) sb.from("meetings").update({notes:e.target.value}).eq("id",m.id).then(()=>{}); } if(e.target.id==="impRel"){ S.imp.rel=e.target.value; } });
 document.addEventListener("keydown",e=>{ if(e.target.id==="askQ" && e.key==="Enter" && !e.shiftKey){ e.preventDefault(); runAsk(e.target.value); } });
+
 
 function vNetwork(){
   return `<div class="ph"><div><h1>Network map</h1><p>Every partner, everyone they know, and the businesses those people own, work at or brought in. Tap a dot.</p></div></div>
