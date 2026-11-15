@@ -542,9 +542,9 @@ let renderQueued=false;
 function queueRender(){ if(renderQueued) return; renderQueued=true; requestAnimationFrame(()=>{ renderQueued=false; render(); }); }
 
 const nz = v => (v===undefined||v===null||v==="") ? null : v;
-function companyFromRow(r){ return {id:r.id, name:r.name, tradingAs:r.trading_as, industry:r.industry, province:r.province, town:r.town, website:r.website, ebit:r.ebit, turnover:r.turnover, employees:r.employees, owners:r.owners||[], language:r.language, source:{channel:r.source_channel, contactId:r.source_contact_id||"", partner:r.source_partner, detail:r.source_detail}, partner:r.partner, status:r.status, followUpMonths:r.follow_up_months, nextCheckIn:r.next_check_in||"", lastContact:r.last_contact||"", notes:r.notes, log:r.log||[], example:r.example, hqCountry:r.hq_country, footprint:r.footprint, countries:r.countries, regNo:r.reg_no, ebitConfirmed:r.ebit_confirmed, turnoverConfirmed:r.turnover_confirmed, financialsYear:r.financials_year, fit:r.fit||{}, kind:r.kind||"target", signals:r.signals||{}, updatedByName:r.updated_by_name||"", createdBy:r.created_by, createdByName:r.created_by_name, createdAt:r.created_at, updatedAt:r.updated_at}; }
+function companyFromRow(r){ return {id:r.id, name:r.name, tradingAs:r.trading_as, industry:r.industry, province:r.province, town:r.town, website:r.website, ebit:r.ebit, turnover:r.turnover, employees:r.employees, owners:r.owners||[], language:r.language, source:{channel:r.source_channel, contactId:r.source_contact_id||"", partner:r.source_partner, detail:r.source_detail}, partner:r.partner, status:r.status, followUpMonths:r.follow_up_months, nextCheckIn:r.next_check_in||"", lastContact:r.last_contact||"", notes:r.notes, log:r.log||[], example:r.example, hqCountry:r.hq_country, footprint:r.footprint, countries:r.countries, regNo:r.reg_no, ebitConfirmed:r.ebit_confirmed, turnoverConfirmed:r.turnover_confirmed, financialsYear:r.financials_year, fit:r.fit||{}, kind:r.kind||"target", kindNote:r.kind_note||"", signals:r.signals||{}, updatedByName:r.updated_by_name||"", createdBy:r.created_by, createdByName:r.created_by_name, createdAt:r.created_at, updatedAt:r.updated_at}; }
 function contactFromRow(r){ return {id:r.id, name:r.name, tier:r.tier, type:r.type, firm:r.firm, partner:r.partner, ownsCompanyId:r.owns_company_id||"", companyId:r.company_id||r.owns_company_id||"", companyRole:r.company_role||(r.owns_company_id?"Owner":""), title:r.title||"", country:r.country||"", industry:r.industry||"", expertise:r.expertise||"", linkedin:r.linkedin||"", influence:r.influence||0, talent:r.talent||{}, hnwi:!!r.hnwi, wealthSource:r.wealth_source||"", doNotContact:!!r.do_not_contact, thanks:r.thanks||[], log:r.log||[], pastRoles:r.past_roles||[], updatedByName:r.updated_by_name||"", cell:r.cell, email:r.email, language:r.language, province:r.province, town:r.town, notes:r.notes, example:r.example, createdBy:r.created_by, createdAt:r.created_at, updatedAt:r.updated_at}; }
-const CMAP={name:"name",tradingAs:"trading_as",industry:"industry",province:"province",town:"town",website:"website",ebit:"ebit",turnover:"turnover",employees:"employees",owners:"owners",language:"language",partner:"partner",status:"status",followUpMonths:"follow_up_months",nextCheckIn:"next_check_in",lastContact:"last_contact",notes:"notes",log:"log",example:"example",createdByName:"created_by_name",hqCountry:"hq_country",footprint:"footprint",countries:"countries",regNo:"reg_no",ebitConfirmed:"ebit_confirmed",turnoverConfirmed:"turnover_confirmed",financialsYear:"financials_year",fit:"fit",kind:"kind",signals:"signals"};
+const CMAP={name:"name",tradingAs:"trading_as",industry:"industry",province:"province",town:"town",website:"website",ebit:"ebit",turnover:"turnover",employees:"employees",owners:"owners",language:"language",partner:"partner",status:"status",followUpMonths:"follow_up_months",nextCheckIn:"next_check_in",lastContact:"last_contact",notes:"notes",log:"log",example:"example",createdByName:"created_by_name",hqCountry:"hq_country",footprint:"footprint",countries:"countries",regNo:"reg_no",ebitConfirmed:"ebit_confirmed",turnoverConfirmed:"turnover_confirmed",financialsYear:"financials_year",fit:"fit",kind:"kind",kindNote:"kind_note",signals:"signals"};
 const KMAP={name:"name",tier:"tier",type:"type",firm:"firm",partner:"partner",ownsCompanyId:"owns_company_id",cell:"cell",email:"email",language:"language",province:"province",town:"town",notes:"notes",example:"example",companyId:"company_id",companyRole:"company_role",title:"title",country:"country",industry:"industry",expertise:"expertise",linkedin:"linkedin",influence:"influence",talent:"talent",hnwi:"hnwi",wealthSource:"wealth_source",doNotContact:"do_not_contact",thanks:"thanks",log:"log",pastRoles:"past_roles"};
 const NULLABLE=new Set(["next_check_in","last_contact","owns_company_id","source_contact_id","company_id","ebit_confirmed","turnover_confirmed"]);
 function toRow(table, d){
@@ -2428,7 +2428,7 @@ function renderSheet(){
     const due=dueInfo(c); const o=bizContact(c); const src=c.source||{}; const sk=src.contactId?S.contacts.get(src.contactId):null;
     const ppl=peopleAt(c); const fp=fitPct(c); const g=grp(c);
     el.innerHTML=`${ovHead(c.name,null,ro?"":`<button class="hbtn" data-act="edit-deal" data-id="${esc(c.id)}">Edit</button>`)}<div class="ovb">
-    <div class="hero">${fin?`<span class="avatar biz lg">${ic(pkIcon(c),30)}</span>`:avatarB(c,true)}<h2>${esc(c.name)}</h2><div class="sub">${esc([fin?"Partner · "+(PKINDS[c.kind]||""):(industryShort(c)!=="—"?industryShort(c):""),[c.town,c.province].filter(Boolean).join(", "),c.hqCountry&&c.hqCountry!=="South Africa"?c.hqCountry:""].filter(Boolean).join(" · ")||"No details yet")}</div><div class="pills">${fin?"":stagePill(c.status)}${c.partner?`<span class="pill">${esc(c.partner)}</span>`:""}${fin?"":fitPill(c)}${!fin&&likelySeller(c)?`<span class="pill soon">Likely seller</span>`:""}</div></div>
+    <div class="hero">${fin?`<span class="avatar biz lg">${ic(pkIcon(c),30)}</span>`:avatarB(c,true)}<h2>${esc(c.name)}</h2><div class="sub">${esc([fin?"Partner · "+(PKINDS[c.kind]||""):(industryShort(c)!=="—"?industryShort(c):""),[c.town,c.province].filter(Boolean).join(", "),c.hqCountry&&c.hqCountry!=="South Africa"?c.hqCountry:""].filter(Boolean).join(" · ")||"No details yet")}</div><div class="pills">${fin?"":stagePill(c.status)}${c.partner?`<span class="pill">${esc(c.partner)}</span>`:""}${fin?"":fitPill(c)}${!fin&&likelySeller(c)?`<span class="pill soon">Likely seller</span>`:""}${c.kind==="other"?`<span class="pill">${esc(c.kindNote||"Other")}</span>`:""}</div></div>
     <div class="bigacts">
       <a class="bigact" ${o?.cell?`href="${esc(telHref(o.cell))}"`:'aria-disabled="true"'}>${ic("phone",22)}Call</a>
       <a class="bigact" ${o?.cell?`href="${esc(waHref(o.cell))}" target="_blank" rel="noopener"`:'aria-disabled="true"'}>${ic("wa",22)}WhatsApp</a>
@@ -2611,7 +2611,7 @@ function dealForm(id, preset){
   showModal(`<form id="dealForm" novalidate style="display:contents">${formHead(id?"Edit":(isPartnerKind(c.kind)?"New partner":"New business"),"dealForm")}<div class="ovb">
   <div class="fsec">The business</div>
   <div class="fields">
-    <div class="fld"><label for="cKind">What is it?</label><select id="cKind">${opts(Object.entries(KINDS).map(([v,l])=>({v,l})),c.kind||"target")}</select></div>
+    ${isPartnerKind(c.kind)? `<div class="fld"><label for="cKind">What kind of partner?</label><select id="cKind">${opts(Object.entries(PKINDS).map(([v,l])=>({v,l})),c.kind)}</select></div>` : `<div class="fld"><label for="cKind">What is it?</label><select id="cKind">${opts(BIZSEL,bizSelOf(c))}</select></div><div class="fld" id="cKindNoteW" ${c.kind==="other"?"":"hidden"}><label for="cKindNote">Describe it</label><input id="cKindNote" value="${esc(c.kindNote)}" placeholder="What is this business to us?"></div>`}
     <div class="fld"><label for="cName">Name *</label><input id="cName" value="${esc(c.name)}" autocomplete="off" autocapitalize="words"></div>
     <div class="fld nofin"><label for="cIndustry">Industry</label><select id="cIndustry">${industryOpts(c.industry)}</select></div>
     <div class="fld"><label for="cTown">Town / city</label><input id="cTown" list="townList" value="${esc(c.town)}" autocomplete="off">${townList()}</div>
@@ -2659,11 +2659,11 @@ function dealForm(id, preset){
   drawOwners(); drawSrcExtra(src); kindVis(); cadVis(); if(fin||["target","active"].includes(stageOf(c.status).group)) autoNext(!c.nextCheckIn);
   setTimeout(()=>{ if(!id) $("#cName")?.focus(); },300);
 }
-function kindVis(){ const fin=isPartnerKind($("#cKind")?.value); document.querySelectorAll(".nofin").forEach(e=>e.hidden=fin); }
+function kindVis(){ const fin=isPartnerKind($("#cKind")?.value); const nw=$("#cKindNoteW"); if(nw) nw.hidden=$("#cKind")?.value!=="other"; document.querySelectorAll(".nofin").forEach(e=>e.hidden=fin); }
 function cadVis(){ const fin=isPartnerKind($("#cKind")?.value); const on=fin||["target","active"].includes(stageOf($("#cStage")?.value).group); document.querySelectorAll(".cadw").forEach(e=>e.hidden=!on); const o=$("#cadOff"); if(o) o.hidden=on||fin; const h=$("#nextHint"); if(h&&!on) h.textContent=""; if(!on){ const n=$("#cNext"); if(n) n.value=""; } }
 async function submitDeal(){
   const name=$("#cName").value.trim(); if(!name){ toast("Add the name"); $("#cName").focus(); return; }
-  const kind=$("#cKind").value; const fin=isPartnerKind(kind);
+  const kind=kindFromSel($("#cKind").value); const fin=isPartnerKind(kind);
   const channel=fin? "" : $("#sChannel").value; const ch=CHANNEL[channel]; const source={channel, detail:$("#sDetail")?.value.trim()||""};
   let newContact=null;
   if(ch&&ch.contact){
@@ -2679,7 +2679,7 @@ async function submitDeal(){
   const signals={}; document.querySelectorAll('input[name=cSig]:checked').forEach(x=>signals[x.value]=true);
   const town=$("#cTown").value.trim(); const g=gazFind(town); const cad=fin||["target","active"].includes(stageOf(status).group);
   const data={
-    name, kind, tradingAs:$("#cTrading").value.trim(), industry:fin? (PIND[kind]||"") : $("#cIndustry").value, province:autoProvince(town,$("#cProvince").value), town:g?g.name:town,
+    name, kind, kindNote:kind==="other"?($("#cKindNote")?.value.trim()||""):"", tradingAs:$("#cTrading").value.trim(), industry:fin? (PIND[kind]||"") : $("#cIndustry").value, province:autoProvince(town,$("#cProvince").value), town:g?g.name:town,
     website:$("#cWeb").value.trim(), ebit:$("#cEbit").value, turnover:$("#cTurnover").value.trim(), employees:$("#cEmp").value.trim(),
     hqCountry:$("#cHq").value, footprint:fin?"":$("#cFoot").value, countries:$("#cCountries").value.trim(), regNo:$("#cReg").value.trim(),
     ebitConfirmed:numOrNull($("#cEbitC").value), turnoverConfirmed:numOrNull($("#cTurnC").value), financialsYear:$("#cFy").value.trim(), fit, signals,
@@ -2761,7 +2761,8 @@ document.addEventListener("submit",e=>{ if(e.target.id==="nearForm"){ e.preventD
 document.addEventListener("change",e=>{
   const id=e.target.id;
   if(id==="voiceLang"){ try{ localStorage.setItem("munger-voice",e.target.value); }catch(_){} toast("Voice language saved"); }
-  if(id==="cKind"){ kindVis(); cadVis(); }
+  if(id==="cKind"){ const v=e.target.value, st=$("#cStage"); if(st){ if(v==="network") st.value="network"; else if(v==="acquire" && stageOf(st.value).group==="network") st.value="target"; } kindVis(); cadVis(); if(v==="acquire"){ const cc=$("#cCad"); if(cc&&!Number(cc.value)) cc.value="3"; autoNext(true); } }
+  if(id==="cStage"){ const k=$("#cKind"); const g=stageOf(e.target.value).group; if(k&&["network","acquire"].includes(k.value)) k.value= g==="network"?"network":"acquire"; }
   if(id==="cStage"){ cadVis(); }
   if(id==="qOut"){ const v=e.target.value; document.querySelectorAll(".qkeep").forEach(x=>x.hidden=v!=="keep"); $("#qSoldW").hidden=v!=="sold"; }
   if(id==="qCad"){ $("#qDate").value=addMonths(today(),Number(e.target.value)||3); }
@@ -2769,10 +2770,13 @@ document.addEventListener("change",e=>{
 });
 
 /* ================= Phase 4: People · Partners · Businesses ================= */
-const PKINDS={financier:"Bank / funder",accounting:"Accounting firm",legal:"Law firm",advisory:"Advisor / broker",other:"Other partner",service:"Other partner"};
+const PKINDS={financier:"Bank / funder",accounting:"Accounting firm",legal:"Law firm",advisory:"Advisor / broker",service:"Other partner"};
 const PIND={financier:"Business & financial services › Financial services & lending",accounting:"Business & financial services › Accounting & tax",legal:"Business & financial services › Legal",advisory:"Business & financial services › Consulting"};
 const PKW={financier:"bank banker financier funding finance lender credit loan",accounting:"accountant accounting audit auditor tax",legal:"attorney lawyer legal law conveyancer",advisory:"advisor adviser broker corporate finance consultant m&a",other:"",service:""};
-function isPartnerKind(k){ return !!k && k!=="target"; }
+function isPartnerKind(k){ return !!k && !["target","other","network","acquire"].includes(k); }
+const BIZSEL=[{v:"network",l:"Just in our network"},{v:"acquire",l:"We'd like to own it (target)"},{v:"other",l:"Other"}];
+function kindFromSel(v){ return v==="network"||v==="acquire"? "target" : (v||"target"); }
+function bizSelOf(c){ return c.kind==="other"? "other" : stageOf(c.status).group==="network"? "network" : "acquire"; }
 function isPartnerCo(c){ return !!c && isPartnerKind(c.kind); }
 function partnerHay(co){ return isPartnerCo(co)? `partner firm ${PKINDS[co.kind]||""} ${PKW[co.kind]||""}` : ""; }
 Object.keys(KINDS).forEach(k=>delete KINDS[k]);
@@ -2853,7 +2857,7 @@ function newCoChoice(d){ const w=$("#kNewCoWrap"); if(!w||w.hidden||!d.coName) r
 document.addEventListener("click",e=>{
   const t=e.target.closest("[data-act]"); if(!t) return; const a=t.dataset.act, k=t.dataset.k;
   if(a==="pf-kind"){ S.pf.kind=k; render(); }
-  if(a==="new-partner" && !S.readOnly){ dealForm(null,{kind:S.pf.kind&&S.pf.kind!=="other"?S.pf.kind:"financier", status:"network"}); }
+  if(a==="new-partner" && !S.readOnly){ dealForm(null,{kind:S.pf.kind? (S.pf.kind==="other"?"service":S.pf.kind) : "financier", status:"network"}); }
 });
 document.addEventListener("change",e=>{
   if(e.target.name==="kNewCo"){ FORM.ncTouched=true; $("#kNewCoKindW").hidden=e.target.value!=="partner"; }
