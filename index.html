@@ -292,6 +292,7 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 .stars{color:#b8862b;font-size:12px;letter-spacing:1px;vertical-align:1px}
 .likebox{margin-top:14px;border-color:var(--ink)}
 [hidden]{display:none!important}
+.cibtn{display:flex!important;flex-direction:row!important;align-items:center;gap:10px;flex-wrap:wrap;text-align:left;width:100%;margin-top:12px}.cibtn .tag{flex-basis:100%}
 .checklist{background:var(--surface);border:1px solid var(--line);border-radius:var(--r,16px);overflow:hidden}
 .checklist label{display:flex;align-items:center;gap:14px;min-height:54px;padding:10px 16px;border-bottom:1px solid var(--line);cursor:pointer;-webkit-tap-highlight-color:transparent}
 .checklist label:last-child{border-bottom:0}
@@ -556,9 +557,9 @@ function queueRender(){ if(renderQueued) return; renderQueued=true; requestAnima
 
 const nz = v => (v===undefined||v===null||v==="") ? null : v;
 function companyFromRow(r){ return {id:r.id, name:r.name, tradingAs:r.trading_as, industry:r.industry, province:r.province, town:r.town, website:r.website, ebit:r.ebit, turnover:r.turnover, employees:r.employees, owners:r.owners||[], language:r.language, source:{channel:r.source_channel, contactId:r.source_contact_id||"", partner:r.source_partner, detail:r.source_detail}, partner:r.partner, status:r.status, followUpMonths:r.follow_up_months, nextCheckIn:r.next_check_in||"", lastContact:r.last_contact||"", notes:r.notes, log:r.log||[], example:r.example, hqCountry:r.hq_country, footprint:r.footprint, countries:r.countries, regNo:r.reg_no, ebitConfirmed:r.ebit_confirmed, turnoverConfirmed:r.turnover_confirmed, financialsYear:r.financials_year, fit:r.fit||{}, kind:r.kind||"target", kindNote:r.kind_note||"", signals:r.signals||{}, updatedByName:r.updated_by_name||"", createdBy:r.created_by, createdByName:r.created_by_name, createdAt:r.created_at, updatedAt:r.updated_at}; }
-function contactFromRow(r){ return {id:r.id, name:r.name, tier:r.tier, type:r.type, firm:r.firm, partner:r.partner, ownsCompanyId:r.owns_company_id||"", companyId:r.company_id||r.owns_company_id||"", companyRole:r.company_role||(r.owns_company_id?"Owner":""), title:r.title||"", country:r.country||"", industry:r.industry||"", expertise:r.expertise||"", linkedin:r.linkedin||"", influence:r.influence||0, talent:r.talent||{}, hnwi:!!r.hnwi, wealthSource:r.wealth_source||"", doNotContact:!!r.do_not_contact, thanks:r.thanks||[], log:r.log||[], pastRoles:r.past_roles||[], updatedByName:r.updated_by_name||"", cell:r.cell, email:r.email, language:r.language, province:r.province, town:r.town, notes:r.notes, example:r.example, createdBy:r.created_by, createdAt:r.created_at, updatedAt:r.updated_at}; }
+function contactFromRow(r){ return {nextCheckIn:r.next_check_in||"", checkInWeeks:r.check_in_weeks||0, checkInRepeat:!!r.check_in_repeat, checkInNote:r.check_in_note||"", checkInOwner:r.check_in_owner||"", lastContact:r.last_contact||"", id:r.id, name:r.name, tier:r.tier, type:r.type, firm:r.firm, partner:r.partner, ownsCompanyId:r.owns_company_id||"", companyId:r.company_id||r.owns_company_id||"", companyRole:r.company_role||(r.owns_company_id?"Owner":""), title:r.title||"", country:r.country||"", industry:r.industry||"", expertise:r.expertise||"", linkedin:r.linkedin||"", influence:r.influence||0, talent:r.talent||{}, hnwi:!!r.hnwi, wealthSource:r.wealth_source||"", doNotContact:!!r.do_not_contact, thanks:r.thanks||[], log:r.log||[], pastRoles:r.past_roles||[], updatedByName:r.updated_by_name||"", cell:r.cell, email:r.email, language:r.language, province:r.province, town:r.town, notes:r.notes, example:r.example, createdBy:r.created_by, createdAt:r.created_at, updatedAt:r.updated_at}; }
 const CMAP={name:"name",tradingAs:"trading_as",industry:"industry",province:"province",town:"town",website:"website",ebit:"ebit",turnover:"turnover",employees:"employees",owners:"owners",language:"language",partner:"partner",status:"status",followUpMonths:"follow_up_months",nextCheckIn:"next_check_in",lastContact:"last_contact",notes:"notes",log:"log",example:"example",createdByName:"created_by_name",hqCountry:"hq_country",footprint:"footprint",countries:"countries",regNo:"reg_no",ebitConfirmed:"ebit_confirmed",turnoverConfirmed:"turnover_confirmed",financialsYear:"financials_year",fit:"fit",kind:"kind",kindNote:"kind_note",signals:"signals"};
-const KMAP={name:"name",tier:"tier",type:"type",firm:"firm",partner:"partner",ownsCompanyId:"owns_company_id",cell:"cell",email:"email",language:"language",province:"province",town:"town",notes:"notes",example:"example",companyId:"company_id",companyRole:"company_role",title:"title",country:"country",industry:"industry",expertise:"expertise",linkedin:"linkedin",influence:"influence",talent:"talent",hnwi:"hnwi",wealthSource:"wealth_source",doNotContact:"do_not_contact",thanks:"thanks",log:"log",pastRoles:"past_roles"};
+const KMAP={nextCheckIn:"next_check_in",checkInWeeks:"check_in_weeks",checkInRepeat:"check_in_repeat",checkInNote:"check_in_note",checkInOwner:"check_in_owner",lastContact:"last_contact",name:"name",tier:"tier",type:"type",firm:"firm",partner:"partner",ownsCompanyId:"owns_company_id",cell:"cell",email:"email",language:"language",province:"province",town:"town",notes:"notes",example:"example",companyId:"company_id",companyRole:"company_role",title:"title",country:"country",industry:"industry",expertise:"expertise",linkedin:"linkedin",influence:"influence",talent:"talent",hnwi:"hnwi",wealthSource:"wealth_source",doNotContact:"do_not_contact",thanks:"thanks",log:"log",pastRoles:"past_roles"};
 const NULLABLE=new Set(["next_check_in","last_contact","owns_company_id","source_contact_id","company_id","ebit_confirmed","turnover_confirmed"]);
 function toRow(table, d){
   const map=table==="companies"?CMAP:KMAP; const row={};
@@ -728,7 +729,7 @@ function currentView(){ const v=(location.hash||"").replace("#",""); return TITL
 function render(){
   S.view=currentView();
   if(S.scope===null && S.me) S.scope = companies().some(isMine)? "mine" : "team";
-  const due=S.me? companies().filter(c=>isOpen(c)&&(()=>{const n=daysUntil(c.nextCheckIn); return n!==null&&n<=7;})()).length : 0;
+  const due=S.me? [...companies().filter(isOpen),...peopleCheckins(false)].filter(c=>{const n=daysUntil(c.nextCheckIn); return n!==null&&n<=7;}).length : 0;
   const tabOf = v => ["checkins","network","import","lists","settings","meeting","talent","more"].includes(v)? "" : v==="funders"? "partners" : v==="near"? "today" : v==="ask"? "today" : v;
   $("#tabbar").innerHTML=TABS.map(([id,l,i])=> id==="+"? `<button class="plus" data-act="capture" aria-label="Capture a person or business">${ic("plus",26)}</button>` : `<a href="#${id}" class="${tabOf(S.view)===id?"on":""}">${ic(i,24)}<span>${l}</span>${id==="today"&&due?`<span class="dot">${due}</span>`:""}</a>`).join("");
   $("#rail").innerHTML=`<div class="brand"><svg viewBox="0 0 1000 836" aria-hidden="true"><polygon points="0,64 97,0 500,258 903,0 1000,64 1000,722 814,836 814,146 500,378 186,146 186,836 0,722"/></svg><b>MUNGER</b><span>All roads lead to Munger.</span></div>
@@ -2216,8 +2217,9 @@ function vToday(){
   const d=new Date(); const dateTxt=`${["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][d.getDay()]} ${d.getDate()} ${["January","February","March","April","May","June","July","August","September","October","November","December"][d.getMonth()]}`;
   const mine=S.scope==="mine"; const me=myPartner();
   const open=companies().filter(isOpen); const pool=mine? open.filter(isMine) : open;
-  const due=pool.filter(c=>{const n=daysUntil(c.nextCheckIn); return n!==null&&n<=7;}).sort((a,b)=>a.nextCheckIn.localeCompare(b.nextCheckIn));
-  const soon=pool.filter(c=>{const n=daysUntil(c.nextCheckIn); return n!==null&&n>7&&n<=30;}).sort((a,b)=>a.nextCheckIn.localeCompare(b.nextCheckIn));
+  const kpool=peopleCheckins(mine); const pool2=[...pool,...kpool];
+  const due=pool2.filter(c=>{const n=daysUntil(c.nextCheckIn); return n!==null&&n<=7;}).sort((a,b)=>a.nextCheckIn.localeCompare(b.nextCheckIn));
+  const soon=pool2.filter(c=>{const n=daysUntil(c.nextCheckIn); return n!==null&&n>7&&n<=30;}).sort((a,b)=>a.nextCheckIn.localeCompare(b.nextCheckIn));
   const targets=companies().filter(c=>!isPartnerCo(c)&&["target","active"].includes(grp(c))&&(!mine||isMine(c))).length;
   const ppl=mine? contacts().filter(isMineK) : contacts();
   const newNet=companies().filter(c=>grp(c)==="network" && !isPartnerCo(c) && daysSince(c.createdAt)<=21).length;
@@ -2237,19 +2239,20 @@ function vToday(){
   <div class="quick"><a class="act" href="#near">${ic("pin",18)}Near me</a><a class="act" href="#partners">${ic("bank",18)}Partners</a><a class="act" href="#talent">${ic("star",18)}Talent</a></div>
   ${contacts().length<15?`<div class="sec"><h2>Get started</h2></div><a class="card start" href="#import">${ic("upload",28)}<div><b>Start the network sweep</b><span>Import your phone contacts and tag the A, B and C people in one go.</span></div></a>`:""}
   <div class="sec"><h2>To call this week</h2>${due.length?`<a href="#checkins">All</a>`:""}</div>
-  ${due.length? due.map(dueCard).join("") : `<div class="card empty"><b>You're up to date</b>${soon.length?`Next up: ${esc(soon[0].name)} on ${esc(fmtD(soon[0].nextCheckIn))}.`:"Only targets you've liked get check-ins, so this list stays short."}</div>`}
+  ${due.length? due.map(anyDueCard).join("") : `<div class="card empty"><b>You're up to date</b>${soon.length?`Next up: ${esc(soon[0].name)} on ${esc(fmtD(soon[0].nextCheckIn))}.`:"Set check-ins on targets you like and on people you want to stay close to."}</div>`}
   ${cm.length?`<div class="sec"><h2>${mine?"My commitments":"Team commitments"}</h2><a href="#meeting">Meeting</a></div><div class="group">${cm.slice(0,6).map(cmtRow).join("")}</div>`:""}
   ${thx.length?`<div class="sec"><h2>Say thank you</h2></div><div class="group">${thx.map(k=>`<button class="rowi" data-contact="${esc(k.id)}">${avatarP(k)}<span class="main"><span class="t1" style="display:block">${esc(k.name)}</span><span class="t2" style="display:block">Introduced ${dealsFrom(k.id).length} lead${dealsFrom(k.id).length>1?"s":""} · ${(k.thanks||[]).length?"last thanked "+fmtD((k.thanks||[]).map(t=>t.d).sort().pop()):"not thanked yet"}</span></span>${ic("chev",18).replace('class="ic"','class="ic chev"')}</button>`).join("")}</div>`:""}
   ${newNet?`<div class="sec"><h2>New in our network</h2><a href="#businesses" data-act="biz-network">Review</a></div><div class="card box tag">${newNet} business${newNet>1?"es":""} added in the last three weeks. Open one and tap <b>We like it</b> to make it a target.</div>`:""}
   ${weak.length?`<div class="sec"><h2>Make these profiles stronger</h2></div><div class="group">${weak.map(({k,c})=>`<button class="rowi" data-act="complete-profile" data-id="${esc(k.id)}">${avatarP(k)}<span class="main"><span class="t1" style="display:block">${esc(k.name)}</span><span class="t2" style="display:block">Add ${esc(c.missing.slice(0,3).join(", "))}</span></span><span class="trail"><span class="pill soon">${c.pct}%</span></span></button>`).join("")}</div>`:""}
-  ${soon.length?`<div class="sec"><h2>Coming up</h2></div><div class="group">${soon.slice(0,5).map(bizRow).join("")}</div>`:""}
+  ${soon.length?`<div class="sec"><h2>Coming up</h2></div><div class="group">${soon.slice(0,6).map(anyRow).join("")}</div>`:""}
   ${recent.length?`<div class="sec"><h2>New from the team</h2></div><div class="group">${recent.map(r=>r.k==="company"?bizRow(r.x):personRow(r.x)).join("")}</div>`:""}
   <div style="text-align:center;margin-top:18px"><button class="btn sm" data-act="copy-week">Copy my week for WhatsApp</button></div>`;
 }
 function myWeekText(){
   const me=myPartner(); const due=companies().filter(c=>isOpen(c)&&isMine(c)&&daysUntil(c.nextCheckIn)!==null&&daysUntil(c.nextCheckIn)<=7);
+  const kd=peopleCheckins(true).filter(k=>daysUntil(k.nextCheckIn)<=7);
   const cm=S.commitments.filter(x=>x.status==="open"&&x.owner===me); const thx=thanksDue().filter(isMineK);
-  return `MUNGER · ${me||"My"} week (${fmtD(today())})\n\nCheck-ins\n${due.map(c=>`• ${c.name}${bizContact(c)?.name?` – ${bizContact(c).name}`:""} (${dueInfo(c).txt})`).join("\n")||"• None"}\n\nCommitments\n${cm.map(x=>`• ${x.action}${x.due?` (by ${fmtD(x.due)})`:""}`).join("\n")||"• None"}${thx.length?`\n\nSay thank you\n${thx.map(k=>`• ${k.name}`).join("\n")}`:""}`;
+  return `MUNGER · ${me||"My"} week (${fmtD(today())})\n\nCheck-ins\n${due.map(c=>`• ${c.name}${bizContact(c)?.name?` – ${bizContact(c).name}`:""} (${dueInfo(c).txt})`).join("\n")||"• None"}${kd.length?`\n\nPeople to check in with\n${kd.map(k=>`• ${k.name}${k.checkInNote?` – ${k.checkInNote}`:""} (${dueInfo(k).txt})`).join("\n")}`:""}\n\nCommitments\n${cm.map(x=>`• ${x.action}${x.due?` (by ${fmtD(x.due)})`:""}`).join("\n")||"• None"}${thx.length?`\n\nSay thank you\n${thx.map(k=>`• ${k.name}`).join("\n")}`:""}`;
 }
 
 /* ---------- People ---------- */
@@ -2488,6 +2491,7 @@ function renderSheet(){
       <a class="bigact" ${k.email&&!k.doNotContact?`href="mailto:${esc(k.email)}"`:'aria-disabled="true"'}>${ic("mail",22)}Email</a>
       <button class="bigact" data-act="new-deal-from" data-id="${esc(k.id)}" ${ro?'aria-disabled="true"':""}>${ic("bizplus",22)}${OWNER_ROLES.includes(k.companyRole)||t==="A"?"Their business":"Add lead"}</button>
     </div>
+    ${personCheckinCard(k)}
     ${k.doNotContact?`<div class="notice err" style="margin-top:12px"><span>This person asked not to be contacted. Respect it.</span></div>`:""}
     ${cp.pct<100&&!ro?`<button class="card box nudge" data-act="complete-profile" data-id="${esc(k.id)}"><div style="display:flex;justify-content:space-between;align-items:center"><b>Profile ${cp.pct}% complete</b><span class="pill soon">Add details</span></div><div class="meter"><span style="width:${cp.pct}%"></span></div><div class="tag">Missing: ${esc(cp.missing.join(", "))}. The more we capture, the better Ask the network works.</div></button>`:""}
     ${isTalent(k)?`<div class="fsec">Talent</div><div class="card box"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc((tal.roles||[]).join(", ")||"Potential leader")}</b>${stars(tal.rating)}</div>${tal.sectors?`<div class="tag">Could lead: ${esc(tal.sectors)}</div>`:""}${tal.availability?`<div><span class="pill ${tal.availability==="yes"?"won":tal.availability==="open"?"soon":""}">${esc(AVAIL[tal.availability])}</span></div>`:""}${tal.why?`<div style="white-space:pre-wrap">${esc(tal.why)}</div>`:""}</div>`:""}
@@ -2551,6 +2555,8 @@ function contactForm(id, preset){
   <div class="fsec">Who in our team knows them?</div>
   <div class="fields">${S.partners.map((p,i)=>`<div class="fld"><label for="rel${i}">${esc(p)}</label><select id="rel${i}" data-partner="${esc(p)}">${opts([{v:"",l:"Doesn't know them"},...Object.entries(RELS).map(([v,l])=>({v,l}))],rel[p]||"")}</select></div>`).join("")}</div>
   <div class="fields" style="margin-top:10px"><div class="fld"><label for="kInfl">How influential are they?</label><select id="kInfl">${opts([{v:0,l:"Not rated"},{v:1,l:"★ Some reach"},{v:2,l:"★★ Well connected locally"},{v:3,l:"★★★ Respected in their industry"},{v:4,l:"★★★★ Opens doors nationally"},{v:5,l:"★★★★★ Top of the network"}],k.influence||0)}</select></div></div>
+  <div class="fsec">Check in with them?</div>
+  ${ciFields(k)}
   <label class="check"><input type="checkbox" id="kHnwi" ${k.hnwi?"checked":""}> High net worth individual</label>
   <div class="fields" id="kWealthWrap" ${k.hnwi?"":"hidden"}><div class="fld"><label for="kWealth">Where their wealth comes from</label><input id="kWealth" value="${esc(k.wealthSource)}" placeholder="e.g. sold a logistics business; property; agri"></div></div>
   <label class="check"><input type="checkbox" id="kTal" ${tal.on||tier==="C"?"checked":""}> ★ We'd love to work with them (talent)</label>
@@ -2607,6 +2613,7 @@ async function submitContact(){
   const me=myPartner(); const primary=(d.conns.find(c=>c.partner===me)||d.conns[0]||{}).partner||"";
   const prev=FORM.id? S.contacts.get(FORM.id):null;
   const data={name:d.name, tier, firm:d.firm, type:d.type, partner:primary, companyId:d.companyId, companyRole:d.companyRole, ownsCompanyId: OWNER_ROLES.includes(d.companyRole)? d.companyId : "", title:d.title, country:d.country, industry:d.industry, expertise:d.expertise, linkedin:d.linkedin, cell:d.cell, email:d.email, language:d.language, province:d.province, town:d.town, notes:d.notes, influence:d.influence, hnwi:d.hnwi, wealthSource:d.hnwi?d.wealthSource:"", doNotContact:d.doNotContact, talent:d.talent, example:prev?.example||false};
+  Object.assign(data, ciRead());
   if(prev && prev.companyId && prev.companyId!==d.companyId){ const pc=S.companies.get(prev.companyId); data.pastRoles=[...(prev.pastRoles||[]),{company:pc?.name||"", role:prev.companyRole||prev.title||"", until:today()}]; }
   const id=FORM.id||newId();
   const nc=newCoChoice(d); let addBiz=false;
@@ -2922,6 +2929,95 @@ async function syncOwnersToPeople(cid, owners, biz, skipId){
 document.addEventListener("change",e=>{ if(e.target.name==="kTier" && e.target.value==="C"){ const c=$("#kTal"); if(c&&!c.checked){ c.checked=true; kFormUpdate(); } } });
 
 document.addEventListener("change",e=>{ if(e.target.id==="kNewCoKind") FORM.nkTouched=true; if(e.target.name==="kWhere") FORM.whereTouched=true; },true);
+
+/* ================= Phase 5: check-ins with people ================= */
+const CI_OPTS=[{v:0,l:"No check-in"},{v:1,l:"In 1 week"},{v:2,l:"In 2 weeks"},{v:3,l:"In 3 weeks"},{v:4,l:"In 4 weeks"},{v:6,l:"In 6 weeks"},{v:8,l:"In 2 months"},{v:13,l:"In 3 months"},{v:26,l:"In 6 months"},{v:52,l:"In a year"},{v:-1,l:"On a specific date"}];
+const addWeeks=(w)=>{ const d=new Date(); d.setDate(d.getDate()+7*w); return ymd(d); };
+const ciEveryTxt=w=>!w? "" : w===1? "every week" : w<8? `every ${w} weeks` : w===8? "every 2 months" : w===13? "every 3 months" : w===26? "every 6 months" : w===52? "every year" : `every ${w} weeks`;
+function peopleCheckins(mine){ const me=myPartner(); return contacts().filter(k=>k.nextCheckIn && (!mine || (k.checkInOwner||k.partner)===me)); }
+const isPersonRec=x=>S.contacts.has(x.id) && !S.companies.has(x.id);
+function personDueCard(k){
+  const d=dueInfo(k); const dnc=k.doNotContact;
+  return `<div class="card due"><div class="top" data-contact="${esc(k.id)}">${avatarP(k)}<div class="main" style="flex:1;min-width:0"><div class="t1" style="font-weight:600">${esc(k.name)}</div><div class="t2" style="color:var(--muted);font-size:14px">${esc([k.checkInNote||workLine(k)||TIERS[tierOf(k)].label, k.checkInOwner].filter(Boolean).join(" · "))}</div></div><span class="pill ${d.cls}">${esc(d.txt)}</span></div>
+  <div class="acts"><a class="act" ${k.cell&&!dnc?`href="${esc(telHref(k.cell))}"`:'aria-disabled="true"'}>${ic("phone",18)}Call</a><a class="act" ${k.cell&&!dnc?`href="${esc(waHref(k.cell))}" target="_blank" rel="noopener"`:'aria-disabled="true"'}>${ic("wa",18)}WhatsApp</a><button class="act dark" data-act="k-ci-done" data-id="${esc(k.id)}">${ic("check",18)}Done</button></div></div>`;
+}
+function personCiRow(k){ const d=dueInfo(k); return `<button class="rowi" data-contact="${esc(k.id)}">${avatarP(k)}<span class="main"><span class="t1" style="display:block">${esc(k.name)}</span><span class="t2" style="display:block">${esc([k.checkInNote||workLine(k), fmtD(k.nextCheckIn), k.checkInOwner].filter(Boolean).join(" · "))}</span></span><span class="trail">${d?`<span class="pill ${d.cls}">${esc(d.txt)}</span>`:""}</span></button>`; }
+const anyDueCard=x=>isPersonRec(x)? personDueCard(x) : dueCard(x);
+const anyRow=x=>isPersonRec(x)? personCiRow(x) : bizRow(x);
+
+function ciSel(k){ return k.nextCheckIn? (k.checkInWeeks||-1) : 0; }
+function ciFields(k,defRep){
+  const sel=ciSel(k), on=sel!==0;
+  return `<div class="fields">
+   <div class="fld"><label for="kCi">Check in</label><select id="kCi">${opts(CI_OPTS,sel)}</select></div>
+   <div class="fld kciw" ${on?"":"hidden"}><label for="kCiDate">Next check-in</label><input type="date" id="kCiDate" value="${esc(k.nextCheckIn||"")}"></div>
+   <div class="fld kciw" ${on?"":"hidden"}><label for="kCiNote">What to do</label><input id="kCiNote" value="${esc(k.checkInNote||"")}" placeholder="e.g. Coffee; ask about the Cape Town deal"></div>
+   <div class="fld kciw" ${on?"":"hidden"}><label for="kCiOwner">Who checks in</label><select id="kCiOwner">${opts(S.partners,k.checkInOwner||myPartner()||defaultPartner())}</select></div>
+  </div>
+  <label class="check kciw kcirep" ${on&&sel>0?"":"hidden"}><input type="checkbox" id="kCiRep" ${k.checkInRepeat||!k.nextCheckIn||defRep?"checked":""}> Keep checking in at this rhythm</label>`;
+}
+function ciVis(){ const v=Number($("#kCi")?.value||0); document.querySelectorAll(".kciw").forEach(e=>e.hidden=v===0); const r=document.querySelector(".kcirep"); if(r) r.hidden=!(v>0); }
+function ciRead(){
+  const s=$("#kCi"); if(!s) return {};
+  const v=Number(s.value||0);
+  if(!v) return {nextCheckIn:"", checkInWeeks:0, checkInRepeat:false};
+  const date=$("#kCiDate").value || (v>0? addWeeks(v) : "");
+  return {nextCheckIn:date, checkInWeeks:v>0?v:0, checkInRepeat:v>0 && $("#kCiRep").checked, checkInNote:$("#kCiNote").value.trim(), checkInOwner:$("#kCiOwner").value||myPartner()||""};
+}
+function personCheckinCard(k){
+  if(S.readOnly && !k.nextCheckIn) return "";
+  if(!k.nextCheckIn) return `<button class="card box nudge cibtn" data-act="k-ci-set" data-id="${esc(k.id)}">${ic("cal",20)} <b>Set a check-in</b><span class="tag">Remind us to get back to ${esc(k.name.split(" ")[0])} in a few weeks</span></button>`;
+  const d=dueInfo(k);
+  return `<div class="fsec">Check-in</div><div class="card box">
+   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div class="lbl">Next check-in</div><div class="next">${esc(fmtD(k.nextCheckIn))}</div></div>${d?`<span class="pill ${d.cls}">${esc(d.txt)}</span>`:""}</div>
+   ${k.checkInNote?`<div><b>To do:</b> ${esc(k.checkInNote)}</div>`:""}
+   <div class="tag">${esc([k.checkInOwner, k.checkInRepeat?ciEveryTxt(k.checkInWeeks):"once", k.lastContact?`last contact ${fmtD(k.lastContact)}`:""].filter(Boolean).join(" · "))}</div>
+   ${S.readOnly?"":`<div class="acts" style="grid-template-columns:2fr 1fr"><button class="act dark" data-act="k-ci-done" data-id="${esc(k.id)}">${ic("check",18)}Done</button><button class="act" data-act="k-ci-set" data-id="${esc(k.id)}">Change</button></div>`}
+  </div>`;
+}
+function ciSetModal(id){
+  const k=S.contacts.get(id); if(!k) return;
+  showModal(`${ovHead("Check-in",`<button class="hbtn" data-act="close-modal">Cancel</button>`)}<div class="ovb"><p style="margin:0 2px 12px;font-size:15.5px">When should we get back to <b>${esc(k.name)}</b>?</p>${ciFields(k.nextCheckIn?k:{...k,checkInWeeks:3,nextCheckIn:addWeeks(3)}, !k.nextCheckIn)}<div style="margin-top:14px"><button class="btn primary block" data-act="k-ci-save" data-id="${esc(id)}">Save</button></div></div>`, true);
+  ciVis();
+}
+function ciDoneModal(id){
+  const k=S.contacts.get(id); if(!k) return; const w=k.checkInWeeks||0;
+  const nextOpts=[...(w&&k.checkInRepeat?[{v:"same",l:`Again ${ciEveryTxt(w).replace("every","in")}`}]:[]),...CI_OPTS.filter(o=>o.v>0).map(o=>({v:String(o.v),l:o.l})),{v:"date",l:"On a specific date"},{v:"none",l:"No more check-ins"}];
+  showModal(`${ovHead("Log check-in",`<button class="hbtn" data-act="close-modal">Cancel</button>`)}<div class="ovb">
+   <p style="margin:0 2px 12px;font-size:15px">Caught up with <b>${esc(k.name)}</b>?</p>
+   <div class="fields">${fldNote("qkNote","What happened? (optional)","","Type or speak…",3)}
+    <div class="fld"><label for="qkNext">Next check-in</label><select id="qkNext">${opts(nextOpts, w&&k.checkInRepeat?"same":"none")}</select></div>
+    <div class="fld" id="qkDateW" hidden><label for="qkDate">Date</label><input type="date" id="qkDate"></div>
+    <div class="fld" id="qkTodoW" ${w&&k.checkInRepeat?"":"hidden"}><label for="qkTodo">What to do next time</label><input id="qkTodo" value="${esc(k.checkInNote||"")}"></div></div>
+   <div style="margin-top:14px"><button class="btn primary block" data-act="k-ci-log" data-id="${esc(id)}">${ic("check",18)} Save</button></div></div>`, true);
+}
+function vCheckins(){
+  const mine=S.scope==="mine";
+  const open=companies().filter(isOpen).filter(c=>!mine||isMine(c));
+  const sch=[...open.filter(c=>c.nextCheckIn), ...peopleCheckins(mine)].sort((a,b)=>a.nextCheckIn.localeCompare(b.nextCheckIn));
+  const B=[["Overdue",c=>daysUntil(c.nextCheckIn)<0],["This week",c=>{const n=daysUntil(c.nextCheckIn); return n>=0&&n<=7;}],["Next 30 days",c=>{const n=daysUntil(c.nextCheckIn); return n>7&&n<=30;}],["Next 3 months",c=>{const n=daysUntil(c.nextCheckIn); return n>30&&n<=92;}],["Later",c=>daysUntil(c.nextCheckIn)>92]];
+  const none=open.filter(c=>!c.nextCheckIn);
+  return `<div class="ph"><div><h1>Check-ins</h1><p>People and businesses we keep warm. Logging a check-in sets the next date.</p></div></div>
+  <div class="seg"><button class="${mine?"on":""}" data-act="scope" data-k="mine">Mine</button><button class="${!mine?"on":""}" data-act="scope" data-k="team">Whole team</button></div>
+  ${B.map(([l,fn])=>{ const it=sch.filter(fn); if(!it.length) return ""; return `<div class="sec"><h2>${l}</h2><span class="tag">${it.length}</span></div>${l==="Overdue"||l==="This week"? it.map(anyDueCard).join("") : `<div class="group">${it.map(anyRow).join("")}</div>`}`; }).join("") || `<div class="card empty"><b>Nothing scheduled</b>Open a person or a target business and set a check-in.</div>`}
+  ${none.length?`<div class="sec"><h2>Targets with no check-in set</h2><span class="tag">${none.length}</span></div><div class="group">${none.map(bizRow).join("")}</div>`:""}
+  <div style="text-align:center;margin-top:16px"><button class="btn sm" data-act="export-follow">${ic("dl",18)} Download business check-ins</button></div>`;
+}
+document.addEventListener("change",e=>{
+  if(e.target.id==="kCi"){ const v=Number(e.target.value); if(v>0) $("#kCiDate").value=addWeeks(v); if(v===0) $("#kCiDate").value=""; ciVis(); if(v===-1) setTimeout(()=>$("#kCiDate")?.focus(),50); }
+  if(e.target.id==="qkNext"){ const v=e.target.value; $("#qkDateW").hidden=v!=="date"; $("#qkTodoW").hidden=v==="none"; }
+});
+document.addEventListener("click",async e=>{
+  const t=e.target.closest("[data-act]"); if(!t) return; const a=t.dataset.act, id=t.dataset.id;
+  if(a==="k-ci-set"){ e.stopPropagation(); if(!S.readOnly) ciSetModal(id); }
+  if(a==="k-ci-done"){ e.stopPropagation(); if(!S.readOnly) ciDoneModal(id); }
+  if(a==="k-ci-save"){ const p=ciRead(); t.disabled=true; if(await dbUpdate("contacts/"+id,p)){ closeModal(); toast(p.nextCheckIn?`Check-in set for ${fmtD(p.nextCheckIn)}`:"Check-in removed"); } t.disabled=false; }
+  if(a==="k-ci-log"){ const k=S.contacts.get(id); if(!k) return; t.disabled=true; const by=await myName(); const v=$("#qkNext").value; const note=($("#qkNote")?.value||"").trim();
+    let next="", weeks=k.checkInWeeks||0, rep=k.checkInRepeat;
+    if(v==="same") next=addWeeks(weeks); else if(v==="date") { next=$("#qkDate").value||""; rep=false; } else if(v!=="none"){ weeks=Number(v); next=addWeeks(weeks); rep=true; }
+    const patch={lastContact:today(), nextCheckIn:next, checkInWeeks:next?weeks:0, checkInRepeat:!!next&&rep, checkInNote: next? ($("#qkTodo")?.value||"").trim() : "", log:[...(k.log||[]),{d:today(),by,text:`Checked in${note?`: ${note}`:""}${next?` · next ${fmtD(next)}`:""}`}].slice(-200)};
+    if(await dbUpdate("contacts/"+id,patch)){ closeModal(); toast(next?`Logged · next ${fmtD(next)}`:"Logged"); } t.disabled=false; }
+});
 
 
 function vNetwork(){
