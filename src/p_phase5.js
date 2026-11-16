@@ -39,8 +39,9 @@ function personCheckinCard(k){
   return `<div class="fsec">Check-in</div><div class="card box">
    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div class="lbl">Next check-in</div><div class="next">${esc(fmtD(k.nextCheckIn))}</div></div>${d?`<span class="pill ${d.cls}">${esc(d.txt)}</span>`:""}</div>
    ${k.checkInNote?`<div><b>To do:</b> ${esc(k.checkInNote)}</div>`:""}
+   ${lastNoteHTML(k)}
    <div class="tag">${esc([k.checkInOwner, k.checkInRepeat?ciEveryTxt(k.checkInWeeks):"once", k.lastContact?`last contact ${fmtD(k.lastContact)}`:""].filter(Boolean).join(" · "))}</div>
-   ${S.readOnly?"":`<div class="acts" style="grid-template-columns:2fr 1fr"><button class="act dark" data-act="k-ci-done" data-id="${esc(k.id)}">${ic("check",18)}Done</button><button class="act" data-act="k-ci-set" data-id="${esc(k.id)}">Change</button></div>`}
+   ${S.readOnly?"":`<div class="acts" style="grid-template-columns:2fr 1fr"><button class="act dark" data-act="k-ci-done" data-id="${esc(k.id)}">${ic("check",18)}Done</button><button class="act" data-act="ci-move" data-kind="k" data-id="${esc(k.id)}">Move / edit</button></div>`}
   </div>`;
 }
 function ciSetModal(id){
@@ -53,6 +54,7 @@ function ciDoneModal(id){
   const nextOpts=[...(w&&k.checkInRepeat?[{v:"same",l:`Again ${ciEveryTxt(w).replace("every","in")}`}]:[]),...CI_OPTS.filter(o=>o.v>0).map(o=>({v:String(o.v),l:o.l})),{v:"date",l:"On a specific date"},{v:"none",l:"No more check-ins"}];
   showModal(`${ovHead("Log check-in",`<button class="hbtn" data-act="close-modal">Cancel</button>`)}<div class="ovb">
    <p style="margin:0 2px 12px;font-size:15px">Caught up with <b>${esc(k.name)}</b>?</p>
+   ${historyHTML(k)}
    <div class="fields">${fldNote("qkNote","What happened? (optional)","","Type or speak…",3)}
     <div class="fld"><label for="qkNext">Next check-in</label><select id="qkNext">${opts(nextOpts, w&&k.checkInRepeat?"same":"none")}</select></div>
     <div class="fld" id="qkDateW" hidden><label for="qkDate">Date</label><input type="date" id="qkDate"></div>

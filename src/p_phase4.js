@@ -4,7 +4,7 @@ const FUNDING_KINDS=["financier","funder"];
 const PIND={financier:"Business & financial services › Financial services & lending",funder:"Business & financial services › Financial services & lending",broker:"Business & financial services › Consulting",accounting:"Business & financial services › Accounting & tax",legal:"Business & financial services › Legal",advisory:"Business & financial services › Consulting"};
 const PKW={financier:"bank banker financier funding finance lender credit loan",funder:"strategic funder funding finance capital investor private equity co-invest shortfall equity mezzanine",broker:"broker business broker deal sale m&a transfer",accounting:"accountant accounting audit auditor tax",legal:"attorney lawyer legal law conveyancer",advisory:"advisor adviser corporate finance consultant m&a",other:"",service:""};
 function isPartnerKind(k){ return !!k && !["target","other","network","acquire"].includes(k); }
-const BIZSEL=[{v:"network",l:"Prospect – we'd look at buying it"},{v:"acquire",l:"Target – we go full out"},{v:"other",l:"Not to buy – just where people work"}];
+const BIZSEL=[{v:"network",l:"Prospect – we'd look at buying it"},{v:"acquire",l:"Target – we go full out"},{v:"other",l:"Network company – not to buy"}];
 function kindFromSel(v){ return v==="network"||v==="acquire"? "target" : (v||"target"); }
 function bizSelOf(c){ return c.kind==="other"? "other" : stageOf(c.status).group==="network"? "network" : "acquire"; }
 function isPartnerCo(c){ return !!c && isPartnerKind(c.kind); }
@@ -98,7 +98,7 @@ function newCoUpdate(d){
   if(!FORM.whereTouched && !FORM.id){ const want=(d.tier==="A"||OWNER_ROLES.includes(d.companyRole))? "business" : d.tier==="B"? "partner" : null; if(want && !FORM.coInit && whereVal()!==want){ const r=document.querySelector(`input[name=kWhere][value=${want}]`); if(r){ r.checked=true; fillCoPick(); } } }
   if(!$("#kCoPick").options.length) fillCoPick();
   const w=whereVal(), v=$("#kCoPick").value;
-  $("#kCoPickW").hidden= w==="other"; $("#kFirmW").hidden= w!=="other";
+  $("#kCoPickW").hidden= w==="other"; $("#kFirmW").hidden= w!=="other" || !($("#kFirm")?.value);
   $("#kCoNewW").hidden= !(w!=="other" && v==="__new");
   const bw=$("#kBuyW"); if(bw) bw.hidden= !(w==="business" && v==="__new");
   const kw=$("#kNewCoKindW"), was=kw.hidden; kw.hidden= !(w==="partner" && v==="__new");

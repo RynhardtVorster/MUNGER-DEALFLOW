@@ -292,6 +292,9 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 .stars{color:#b8862b;font-size:12px;letter-spacing:1px;vertical-align:1px}
 .likebox{margin-top:14px;border-color:var(--ink)}
 [hidden]{display:none!important}
+.due-note{font-size:14.5px;line-height:1.35;margin:-2px 2px 8px}.due-note.muted{color:var(--muted)}
+.acts.four{grid-template-columns:repeat(4,1fr)!important}
+.seg a{flex:1;display:flex;align-items:center;justify-content:center;height:36px;border-radius:9px;font-weight:600;font-size:14.5px;color:var(--muted);text-decoration:none}.seg a.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .michint{margin:8px 0 2px;padding:10px 12px;border-radius:12px;background:var(--info-soft,#e2e9ef);color:var(--ink);font-size:14.5px;line-height:1.4}
 .importcard{margin:14px 0 4px;border-style:dashed}
 .pickrow{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-bottom:1px solid var(--line);cursor:pointer}
@@ -572,9 +575,9 @@ let renderQueued=false;
 function queueRender(){ if(renderQueued) return; renderQueued=true; requestAnimationFrame(()=>{ renderQueued=false; render(); }); }
 
 const nz = v => (v===undefined||v===null||v==="") ? null : v;
-function companyFromRow(r){ return {id:r.id, name:r.name, tradingAs:r.trading_as, industry:r.industry, province:r.province, town:r.town, website:r.website, ebit:r.ebit, turnover:r.turnover, employees:r.employees, owners:r.owners||[], language:r.language, source:{channel:r.source_channel, contactId:r.source_contact_id||"", partner:r.source_partner, detail:r.source_detail}, partner:r.partner, status:r.status, followUpMonths:r.follow_up_months, nextCheckIn:r.next_check_in||"", lastContact:r.last_contact||"", notes:r.notes, log:r.log||[], example:r.example, hqCountry:r.hq_country, footprint:r.footprint, countries:r.countries, regNo:r.reg_no, ebitConfirmed:r.ebit_confirmed, turnoverConfirmed:r.turnover_confirmed, financialsYear:r.financials_year, fit:r.fit||{}, kind:r.kind||"target", kindNote:r.kind_note||"", signals:r.signals||{}, updatedByName:r.updated_by_name||"", createdBy:r.created_by, createdByName:r.created_by_name, createdAt:r.created_at, updatedAt:r.updated_at}; }
+function companyFromRow(r){ return {id:r.id, name:r.name, tradingAs:r.trading_as, industry:r.industry, province:r.province, town:r.town, website:r.website, ebit:r.ebit, turnover:r.turnover, employees:r.employees, owners:r.owners||[], language:r.language, source:{channel:r.source_channel, contactId:r.source_contact_id||"", partner:r.source_partner, detail:r.source_detail}, partner:r.partner, status:r.status, followUpMonths:r.follow_up_months, nextCheckIn:r.next_check_in||"", lastContact:r.last_contact||"", notes:r.notes, log:r.log||[], example:r.example, hqCountry:r.hq_country, footprint:r.footprint, countries:r.countries, regNo:r.reg_no, ebitConfirmed:r.ebit_confirmed, turnoverConfirmed:r.turnover_confirmed, financialsYear:r.financials_year, fit:r.fit||{}, kind:r.kind||"target", kindNote:r.kind_note||"", checkInNote:r.check_in_note||"", signals:r.signals||{}, updatedByName:r.updated_by_name||"", createdBy:r.created_by, createdByName:r.created_by_name, createdAt:r.created_at, updatedAt:r.updated_at}; }
 function contactFromRow(r){ return {nextCheckIn:r.next_check_in||"", checkInWeeks:r.check_in_weeks||0, checkInRepeat:!!r.check_in_repeat, checkInNote:r.check_in_note||"", checkInOwner:r.check_in_owner||"", lastContact:r.last_contact||"", id:r.id, name:r.name, tier:r.tier, type:r.type, firm:r.firm, partner:r.partner, ownsCompanyId:r.owns_company_id||"", companyId:r.company_id||r.owns_company_id||"", companyRole:r.company_role||(r.owns_company_id?"Owner":""), title:r.title||"", country:r.country||"", industry:r.industry||"", expertise:r.expertise||"", linkedin:r.linkedin||"", influence:r.influence||0, talent:r.talent||{}, hnwi:!!r.hnwi, wealthSource:r.wealth_source||"", doNotContact:!!r.do_not_contact, thanks:r.thanks||[], log:r.log||[], pastRoles:r.past_roles||[], updatedByName:r.updated_by_name||"", cell:r.cell, email:r.email, language:r.language, province:r.province, town:r.town, notes:r.notes, example:r.example, createdBy:r.created_by, createdAt:r.created_at, updatedAt:r.updated_at}; }
-const CMAP={name:"name",tradingAs:"trading_as",industry:"industry",province:"province",town:"town",website:"website",ebit:"ebit",turnover:"turnover",employees:"employees",owners:"owners",language:"language",partner:"partner",status:"status",followUpMonths:"follow_up_months",nextCheckIn:"next_check_in",lastContact:"last_contact",notes:"notes",log:"log",example:"example",createdByName:"created_by_name",hqCountry:"hq_country",footprint:"footprint",countries:"countries",regNo:"reg_no",ebitConfirmed:"ebit_confirmed",turnoverConfirmed:"turnover_confirmed",financialsYear:"financials_year",fit:"fit",kind:"kind",kindNote:"kind_note",signals:"signals"};
+const CMAP={name:"name",tradingAs:"trading_as",industry:"industry",province:"province",town:"town",website:"website",ebit:"ebit",turnover:"turnover",employees:"employees",owners:"owners",language:"language",partner:"partner",status:"status",followUpMonths:"follow_up_months",nextCheckIn:"next_check_in",lastContact:"last_contact",notes:"notes",log:"log",example:"example",createdByName:"created_by_name",hqCountry:"hq_country",footprint:"footprint",countries:"countries",regNo:"reg_no",ebitConfirmed:"ebit_confirmed",turnoverConfirmed:"turnover_confirmed",financialsYear:"financials_year",fit:"fit",kind:"kind",kindNote:"kind_note",checkInNote:"check_in_note",signals:"signals"};
 const KMAP={nextCheckIn:"next_check_in",checkInWeeks:"check_in_weeks",checkInRepeat:"check_in_repeat",checkInNote:"check_in_note",checkInOwner:"check_in_owner",lastContact:"last_contact",name:"name",tier:"tier",type:"type",firm:"firm",partner:"partner",ownsCompanyId:"owns_company_id",cell:"cell",email:"email",language:"language",province:"province",town:"town",notes:"notes",example:"example",companyId:"company_id",companyRole:"company_role",title:"title",country:"country",industry:"industry",expertise:"expertise",linkedin:"linkedin",influence:"influence",talent:"talent",hnwi:"hnwi",wealthSource:"wealth_source",doNotContact:"do_not_contact",thanks:"thanks",log:"log",pastRoles:"past_roles"};
 const NULLABLE=new Set(["next_check_in","last_contact","owns_company_id","source_contact_id","company_id","ebit_confirmed","turnover_confirmed"]);
 function toRow(table, d){
@@ -747,7 +750,7 @@ function render(){
   S.view=currentView();
   if(S.scope===null && S.me) S.scope = companies().some(isMine)? "mine" : "team";
   const due=S.me? [...companies().filter(isOpen),...peopleCheckins(false)].filter(c=>{const n=daysUntil(c.nextCheckIn); return n!==null&&n<=7;}).length : 0;
-  const tabOf = v => ["checkins","network","import","lists","settings","meeting","talent","more"].includes(v)? "" : v==="funders"? "partners" : v==="near"? "today" : v==="ask"? "today" : v;
+  const tabOf = v => ["checkins","network","import","lists","settings","meeting","talent","more"].includes(v)? "" : v==="others"? "businesses" : v==="funders"? "partners" : v==="near"? "today" : v==="ask"? "today" : v;
   $("#tabbar").innerHTML=TABS.map(([id,l,i])=> id==="+"? `<button class="plus" data-act="capture" aria-label="Capture a person or business">${ic("plus",26)}</button>` : `<a href="#${id}" class="${tabOf(S.view)===id?"on":""}">${ic(i,24)}<span>${l}</span>${id==="today"&&due?`<span class="dot">${due}</span>`:""}</a>`).join("");
   $("#rail").innerHTML=`<div class="brand"><svg viewBox="0 0 1000 836" aria-hidden="true"><polygon points="0,64 97,0 500,258 903,0 1000,64 1000,722 814,836 814,146 500,378 186,146 186,836 0,722"/></svg><b>MUNGER</b><span>All roads lead to Munger.</span></div>
    <button class="cap" data-act="capture">${ic("plus",20)} Capture</button>
@@ -2475,6 +2478,7 @@ function renderSheet(){
     <div class="card box">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div class="lbl">Next check-in</div><div class="next">${c.nextCheckIn?esc(fmtD(c.nextCheckIn)):"Not scheduled"}</div></div>${due?`<span class="pill ${due.cls}">${esc(due.txt)}</span>`:""}</div>
       <div class="tag">${esc(CADENCE.find(x=>x.m===Number(c.followUpMonths))?.l||"No scheduled check-in")} · last contact ${esc(fmtD(c.lastContact))}</div>
+      ${ciMoreHTML(c,"c")}
       ${fin&&!ro?`<button class="btn sm" data-act="like" data-id="${esc(c.id)}">${c.nextCheckIn?"Change check-ins":"Set check-ins"}</button>`:""}
     </div>`:""}
     ${!fin&&!ro?`<div class="fields" style="margin-top:12px"><div class="fld"><label for="dStage">Stage</label><select id="dStage">${opts(STAGES.map(s=>({v:s.id,l:s.label})),stageOf(c.status).id)}</select></div></div>`:""}
@@ -2556,15 +2560,15 @@ function contactForm(id, preset){
    <div class="fld"><label for="kCell">Cell</label><input id="kCell" type="tel" inputmode="tel" value="${esc(k.cell)}" placeholder="082 123 4567"></div>
    <div class="fld"><label for="kEmail">Email</label><input id="kEmail" type="email" inputmode="email" autocapitalize="off" value="${esc(k.email)}"></div>
    <div class="fld"><label for="kTown">Town / city</label><input id="kTown" list="townList" value="${esc(k.town)}" autocomplete="off" placeholder="e.g. Pretoria, Stellenbosch">${townList()}</div>
-   <div class="fld"><label for="kCountry">Country</label><select id="kCountry">${opts(COUNTRIES,k.country||"South Africa")}</select></div>
+   <div class="fld"><label for="kCountry">Country</label><input id="kCountry" list="countryList" value="${esc(k.country||"South Africa")}" autocomplete="off" placeholder="Start typing a country">${countryList()}</div>
   </div><div id="kDup" class="warnline"></div>
   <div class="fsec">Where do they work?</div>
-  <div class="seg3 where" role="radiogroup" aria-label="Where do they work?"><label><input type="radio" name="kWhere" value="partner" ${whereInit==="partner"?"checked":""}><span>${ic("bank",18)} At a partner</span></label><label><input type="radio" name="kWhere" value="business" ${whereInit==="business"?"checked":""}><span>${ic("biz",18)} At a business</span></label><label><input type="radio" name="kWhere" value="other" ${whereInit==="other"?"checked":""}><span>Elsewhere / none</span></label></div>
+  <div class="seg3 where" role="radiogroup" aria-label="Where do they work?"><label><input type="radio" name="kWhere" value="partner" ${whereInit==="partner"?"checked":""}><span>${ic("bank",18)} At a partner</span></label><label><input type="radio" name="kWhere" value="business" ${whereInit==="business"?"checked":""}><span>${ic("biz",18)} At a business</span></label><label><input type="radio" name="kWhere" value="other" ${whereInit==="other"?"checked":""}><span>No company</span></label></div>
   <div class="fields" style="margin-top:10px">
    <div class="fld" id="kCoPickW"><label for="kCoPick" id="kCoPickL">Which partner?</label><select id="kCoPick"></select></div>
    <div class="fld" id="kCoNewW" hidden><label for="kCoNew" id="kCoNewL">Name of the new partner firm</label><input id="kCoNew" autocomplete="off" autocapitalize="words" value="${esc(!co&&k.firm&&whereInit!=="other"?k.firm:"")}"></div>
    <div id="kCoSim" class="warnline"></div>
-   <div class="fld" id="kBuyW" hidden><label for="kBuy">Would we like to buy this business?</label><select id="kBuy">${opts([{v:"no",l:"No – it's just where they work"},{v:"network",l:"Yes, a prospect – we'd look at it"},{v:"target",l:"Yes, a target – we go full out"}],"no")}</select></div>
+   <div class="fld" id="kBuyW" hidden><label for="kBuy">Would we like to buy this business?</label><select id="kBuy">${opts([{v:"no",l:"No – a network company (they just work there)"},{v:"network",l:"Yes, a prospect – we'd look at it"},{v:"target",l:"Yes, a target – we go full out"}],"no")}</select></div>
    <div class="fld" id="kNewCoKindW" hidden><label for="kNewCoKind">What kind of partner?</label><select id="kNewCoKind">${opts(Object.entries(PKINDS).map(([v,l])=>({v,l})),"")}</select></div>
    <div class="fld" id="kFirmW" hidden><label for="kFirm">Company (optional)</label><input id="kFirm" autocomplete="off" value="${esc(!co&&whereInit==="other"?k.firm:"")}" placeholder="Where they work, if anywhere"></div>
    <div class="fld"><label for="kRole">Role at the company</label><select id="kRole">${opts(ROLES,k.companyRole,"Choose…")}</select></div>
@@ -2662,7 +2666,7 @@ function dealForm(id, preset){
     <div class="fld"><label for="cName">Name *</label><input id="cName" value="${esc(c.name)}" autocomplete="off" autocapitalize="words"></div>
     <div class="fld nofin"><label for="cIndustry">Industry</label><select id="cIndustry">${industryOpts(c.industry)}</select></div>
     <div class="fld"><label for="cTown">Town / city</label><input id="cTown" list="townList" value="${esc(c.town)}" autocomplete="off">${townList()}</div>
-    <div class="fld"><label for="cHq">Head office country</label><select id="cHq">${opts(COUNTRIES,c.hqCountry||"South Africa")}</select></div>
+    <div class="fld"><label for="cHq">Head office country</label><input id="cHq" list="countryList" value="${esc(c.hqCountry||"South Africa")}" autocomplete="off" placeholder="Start typing a country">${countryList()}</div>
     <div class="fld nofin"><label for="cFoot">Where it operates</label><select id="cFoot">${opts(FOOTPRINTS,c.footprint,"Choose…")}</select></div>
   </div><div id="dupWarn" class="warnline"></div>
   <div class="nofin"><div id="owners"></div><button type="button" class="linkbtn" data-act="add-owner" id="addOwnerBtn">+ Add another owner</button></div>
@@ -2755,10 +2759,12 @@ function quickCheckin(id){
   const c=S.companies.get(id); if(!c) return; const m=Number(c.followUpMonths)||3; const fin=isPartnerCo(c);
   showModal(`${ovHead("Log check-in",`<button class="hbtn" data-act="close-modal">Cancel</button>`)}<div class="ovb">
    <p style="margin:0 2px 12px;font-size:15px">Spoke to <b>${esc(bizContact(c)?.name||c.name)}</b>?</p>
+   ${historyHTML(c)}
    <div class="fields">${fldNote("qNote","What was discussed? (optional)","","Still not selling, son joining the business…",3)}
    ${fin?"":`<div class="fld"><label for="qOut">Where does it stand?</label><select id="qOut">${opts([{v:"keep",l:"Keep following up"},{v:"won",l:"We did the deal"},{v:"sold",l:"Sold to someone else"},{v:"passed",l:"Not for us any more"}],"keep")}</select></div>`}
    <div class="fld qkeep"><label for="qCad">Check in again</label><select id="qCad">${opts(CADENCE.filter(x=>x.m).map(x=>({v:x.m,l:x.l})),m)}</select></div>
    <div class="fld qkeep"><label for="qDate">Next check-in</label><input id="qDate" type="date" value="${esc(addMonths(today(),m))}"></div>
+   <div class="fld qkeep"><label for="qTodo">What to do next time</label><input id="qTodo" value="${esc(c.checkInNote||"")}" placeholder="e.g. Ask about the son's plans; send NDA"></div>
    <div class="fld" id="qSoldW" hidden><label for="qSold">Sold to whom?</label><input id="qSold" placeholder="Buyer, if known"></div></div>
    <div style="margin-top:14px"><button class="btn primary block" data-act="do-checkin2" data-id="${esc(c.id)}">${ic("check",18)} Save</button></div></div>`, true);
 }
@@ -2792,6 +2798,7 @@ document.addEventListener("click", async e=>{
     case "left-company": { const kk=S.contacts.get(id); const co=companyOf(kk); confirmBox("No longer works there?", `${kk.name} will be unlinked from ${co?.name||kk.firm}. We'll keep it in their history.`, "Update", async()=>{ const past=[...(kk.pastRoles||[]),{company:co?.name||kk.firm, role:kk.companyRole||kk.title||"", until:today()}]; if(await dbUpdate("contacts/"+id,{companyId:"", companyRole:"", ownsCompanyId:"", firm:"", pastRoles:past, log:[...(kk.log||[]),{d:today(),by:await myName(),text:`Left ${co?.name||kk.firm}`}]})){ closeModal(); toast("Updated. Where are they now? Tap Edit."); } }); break; }
     case "do-checkin2": { const c=S.companies.get(id); if(!c) break; t.disabled=true; const by=await myName(); const note=($("#qNote")?.value||"").trim(); const out=$("#qOut")?.value||"keep";
       const patch={lastContact:today()}; let text="";
+      patch.checkInNote= out==="keep"? ($("#qTodo")?.value||"").trim() : "";
       if(out==="keep"){ patch.followUpMonths=Number($("#qCad").value)||3; patch.nextCheckIn=$("#qDate").value||addMonths(today(),patch.followUpMonths); text=`Checked in${note?`: ${note}`:""} · next ${fmtD(patch.nextCheckIn)}`; }
       if(out==="won"){ patch.status="won"; patch.nextCheckIn=""; text=`🎉 Deal done${note?`: ${note}`:""}`; }
       if(out==="sold"){ patch.status="sold"; patch.nextCheckIn=""; const to=$("#qSold").value.trim(); text=`Sold to ${to||"someone else"}${note?`: ${note}`:""}`; }
@@ -2822,7 +2829,7 @@ const FUNDING_KINDS=["financier","funder"];
 const PIND={financier:"Business & financial services › Financial services & lending",funder:"Business & financial services › Financial services & lending",broker:"Business & financial services › Consulting",accounting:"Business & financial services › Accounting & tax",legal:"Business & financial services › Legal",advisory:"Business & financial services › Consulting"};
 const PKW={financier:"bank banker financier funding finance lender credit loan",funder:"strategic funder funding finance capital investor private equity co-invest shortfall equity mezzanine",broker:"broker business broker deal sale m&a transfer",accounting:"accountant accounting audit auditor tax",legal:"attorney lawyer legal law conveyancer",advisory:"advisor adviser corporate finance consultant m&a",other:"",service:""};
 function isPartnerKind(k){ return !!k && !["target","other","network","acquire"].includes(k); }
-const BIZSEL=[{v:"network",l:"Prospect – we'd look at buying it"},{v:"acquire",l:"Target – we go full out"},{v:"other",l:"Not to buy – just where people work"}];
+const BIZSEL=[{v:"network",l:"Prospect – we'd look at buying it"},{v:"acquire",l:"Target – we go full out"},{v:"other",l:"Network company – not to buy"}];
 function kindFromSel(v){ return v==="network"||v==="acquire"? "target" : (v||"target"); }
 function bizSelOf(c){ return c.kind==="other"? "other" : stageOf(c.status).group==="network"? "network" : "acquire"; }
 function isPartnerCo(c){ return !!c && isPartnerKind(c.kind); }
@@ -2916,7 +2923,7 @@ function newCoUpdate(d){
   if(!FORM.whereTouched && !FORM.id){ const want=(d.tier==="A"||OWNER_ROLES.includes(d.companyRole))? "business" : d.tier==="B"? "partner" : null; if(want && !FORM.coInit && whereVal()!==want){ const r=document.querySelector(`input[name=kWhere][value=${want}]`); if(r){ r.checked=true; fillCoPick(); } } }
   if(!$("#kCoPick").options.length) fillCoPick();
   const w=whereVal(), v=$("#kCoPick").value;
-  $("#kCoPickW").hidden= w==="other"; $("#kFirmW").hidden= w!=="other";
+  $("#kCoPickW").hidden= w==="other"; $("#kFirmW").hidden= w!=="other" || !($("#kFirm")?.value);
   $("#kCoNewW").hidden= !(w!=="other" && v==="__new");
   const bw=$("#kBuyW"); if(bw) bw.hidden= !(w==="business" && v==="__new");
   const kw=$("#kNewCoKindW"), was=kw.hidden; kw.hidden= !(w==="partner" && v==="__new");
@@ -2996,8 +3003,9 @@ function personCheckinCard(k){
   return `<div class="fsec">Check-in</div><div class="card box">
    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div class="lbl">Next check-in</div><div class="next">${esc(fmtD(k.nextCheckIn))}</div></div>${d?`<span class="pill ${d.cls}">${esc(d.txt)}</span>`:""}</div>
    ${k.checkInNote?`<div><b>To do:</b> ${esc(k.checkInNote)}</div>`:""}
+   ${lastNoteHTML(k)}
    <div class="tag">${esc([k.checkInOwner, k.checkInRepeat?ciEveryTxt(k.checkInWeeks):"once", k.lastContact?`last contact ${fmtD(k.lastContact)}`:""].filter(Boolean).join(" · "))}</div>
-   ${S.readOnly?"":`<div class="acts" style="grid-template-columns:2fr 1fr"><button class="act dark" data-act="k-ci-done" data-id="${esc(k.id)}">${ic("check",18)}Done</button><button class="act" data-act="k-ci-set" data-id="${esc(k.id)}">Change</button></div>`}
+   ${S.readOnly?"":`<div class="acts" style="grid-template-columns:2fr 1fr"><button class="act dark" data-act="k-ci-done" data-id="${esc(k.id)}">${ic("check",18)}Done</button><button class="act" data-act="ci-move" data-kind="k" data-id="${esc(k.id)}">Move / edit</button></div>`}
   </div>`;
 }
 function ciSetModal(id){
@@ -3010,6 +3018,7 @@ function ciDoneModal(id){
   const nextOpts=[...(w&&k.checkInRepeat?[{v:"same",l:`Again ${ciEveryTxt(w).replace("every","in")}`}]:[]),...CI_OPTS.filter(o=>o.v>0).map(o=>({v:String(o.v),l:o.l})),{v:"date",l:"On a specific date"},{v:"none",l:"No more check-ins"}];
   showModal(`${ovHead("Log check-in",`<button class="hbtn" data-act="close-modal">Cancel</button>`)}<div class="ovb">
    <p style="margin:0 2px 12px;font-size:15px">Caught up with <b>${esc(k.name)}</b>?</p>
+   ${historyHTML(k)}
    <div class="fields">${fldNote("qkNote","What happened? (optional)","","Type or speak…",3)}
     <div class="fld"><label for="qkNext">Next check-in</label><select id="qkNext">${opts(nextOpts, w&&k.checkInRepeat?"same":"none")}</select></div>
     <div class="fld" id="qkDateW" hidden><label for="qkDate">Date</label><input type="date" id="qkDate"></div>
@@ -3585,6 +3594,82 @@ document.addEventListener("click",e=>{
   const t=e.target.closest("[data-act]"); if(!t) return; const a=t.dataset.act;
   if(a==="unlink-keep"){ closeDupBox(); const c=S.companies.get(t.dataset.id); if(!c) return; const r=document.querySelector(`input[name=kWhere][value=${isPartnerCo(c)?"partner":"business"}]`); if(r) r.checked=true; fillCoPick(); $("#kCoPick").value=c.id; kFormUpdate(); FORM.unlinkOk=false; submitContact(); }
   if(a==="unlink-ok"){ closeDupBox(); FORM.unlinkOk=true; submitContact(); }
+});
+
+/* ================= Phase 13: countries, network companies, check-ins with memory ================= */
+const COUNTRY_LIST=["South Africa","Namibia","Botswana","Zimbabwe","Mozambique","Zambia","Malawi","Eswatini","Lesotho","Angola","Mauritius","Madagascar","Seychelles","Kenya","Tanzania","Uganda","Rwanda","Ethiopia","DR Congo","Republic of the Congo","Gabon","Cameroon","Nigeria","Ghana","Côte d'Ivoire","Senegal","Mali","Burkina Faso","Benin","Togo","Sierra Leone","Liberia","Guinea","Gambia","Cabo Verde","Mauritania","Morocco","Algeria","Tunisia","Libya","Egypt","Sudan","South Sudan","Somalia","Djibouti","Eritrea","Burundi","Comoros","Chad","Niger","Central African Republic","Equatorial Guinea","São Tomé and Príncipe",
+"United Kingdom","Ireland","Netherlands","Belgium","Luxembourg","Germany","France","Switzerland","Austria","Italy","Spain","Portugal","Malta","Cyprus","Greece","Denmark","Norway","Sweden","Finland","Iceland","Poland","Czech Republic","Slovakia","Hungary","Romania","Bulgaria","Croatia","Slovenia","Serbia","Estonia","Latvia","Lithuania","Ukraine","Turkey","Monaco","Liechtenstein","Jersey","Guernsey","Isle of Man",
+"United States","Canada","Mexico","Brazil","Argentina","Chile","Colombia","Peru","Uruguay",
+"United Arab Emirates","Saudi Arabia","Qatar","Kuwait","Bahrain","Oman","Israel","Jordan",
+"India","China","Hong Kong","Singapore","Japan","South Korea","Taiwan","Malaysia","Indonesia","Thailand","Vietnam","Philippines","Pakistan","Bangladesh","Sri Lanka",
+"Australia","New Zealand","British Virgin Islands","Cayman Islands","Bermuda"];
+function countryList(){ return `<datalist id="countryList">${COUNTRY_LIST.map(c=>`<option value="${esc(c)}"></option>`).join("")}</datalist>`; }
+document.addEventListener("change",e=>{ if(e.target.id==="kCountry"||e.target.id==="cHq"){ const v=e.target.value.trim(); const hit=COUNTRY_LIST.find(c=>c.toLowerCase()===v.toLowerCase()); if(hit) e.target.value=hit; else if(v) e.target.value=v.replace(/\b\w/g,m=>m.toUpperCase()); } });
+
+/* ---- Network companies (not for acquisition) live under Businesses ---- */
+function bizSeg(on){ const n=companies().filter(c=>c.kind==="other").length; return `<div class="seg"><a class="${on==="acq"?"on":""}" href="#businesses">To acquire</a><a class="${on==="net"?"on":""}" href="#others">Network companies${n?` · ${n}`:""}</a></div>`; }
+{ const base=vBusinesses; vBusinesses=function(){ const h=base(); return h.replace('<div class="search">', bizSeg("acq")+'<div class="search">').replace(/<a class="linkbtn" href="#others"[\s\S]*?<\/a>/,""); }; }
+S.oq=S.oq||"";
+function vOthers(){
+  const q=S.oq.trim().toLowerCase();
+  const L=companies().filter(c=>c.kind==="other").filter(c=>!q||[c.name,c.town,c.industry,...peopleAt(c).map(k=>k.name)].join(" ").toLowerCase().includes(q)).sort((a,b)=>peopleAt(b).length-peopleAt(a).length||a.name.localeCompare(b.name));
+  return `<div class="ph"><div><h1>Businesses</h1><p>Network companies: where people we know work. Part of our network, but not businesses we want to buy.</p></div><button class="btn sm primary" data-act="new-netco">${ic("plus",18)} Add</button></div>
+  ${bizSeg("net")}
+  <div class="search">${ic("search",20)}<input id="oq" type="search" placeholder="Search company or person…" value="${esc(S.oq)}" autocomplete="off" aria-label="Search network companies"></div>
+  ${L.length?`<div class="group">${L.map(c=>{ const ppl=peopleAt(c); return `<button class="rowi" data-open="${esc(c.id)}"><span class="avatar biz">${ic("biz",20)}</span><span class="main"><span class="t1" style="display:block">${esc(c.name)}</span><span class="t2" style="display:block">${esc([ppl.map(k=>k.name).join(", ")||"Nobody linked yet", c.town].filter(Boolean).join(" · "))}</span></span>${ppl.length?`<span class="pill">${ppl.length}</span>`:""}</button>`; }).join("")}</div>
+   <p class="tag" style="margin:12px 2px">Want to buy one after all? Open it, tap Edit and change “What is it?” to Prospect or Target.</p>`:`<div class="card empty"><b>No network companies yet</b>When you add a person at a company we don't want to buy, it lands here.</div>`}`;
+}
+TITLES.others="BUSINESSES";
+document.addEventListener("input",e=>{ if(e.target.id==="oq"){ S.oq=e.target.value; const pos=e.target.selectionStart; render(); const i=$("#oq"); if(i){ i.focus(); try{ i.setSelectionRange(pos,pos); }catch(_){} } } });
+document.addEventListener("click",e=>{ const t=e.target.closest("[data-act=new-netco]"); if(t && !S.readOnly) dealForm(null,{kind:"other",status:"network"}); });
+{ const base=fillCoPick; fillCoPick=function(){ base(); const w=whereVal(), sel=$("#kCoPick"); if(!sel||w!=="business") return; const cur=sel.value;
+  const acq=companies().filter(isAcq).sort((a,b)=>a.name.localeCompare(b.name)), net=companies().filter(c=>c.kind==="other").sort((a,b)=>a.name.localeCompare(b.name));
+  const o=c=>`<option value="${esc(c.id)}">${esc(c.name)}${isAcq(c)?` · ${grp(c)==="network"?"Prospect":"Target"}`:""}</option>`;
+  sel.innerHTML=`<option value="">Choose…</option>${net.length?`<optgroup label="Network companies (not to buy)">${net.map(o).join("")}</optgroup>`:""}${acq.length?`<optgroup label="Businesses we want to buy">${acq.map(o).join("")}</optgroup>`:""}<option value="__new">+ New business…</option>`;
+  sel.value=cur; }; }
+
+/* ---- Check-ins that remember what was said ---- */
+function histEntries(rec,n){ return [...(rec.log||[])].reverse().filter(e=>!/^(Captured|Added as|Details added|Stage:)/.test(e.text)).slice(0,n||3); }
+function historyHTML(rec){ const H=histEntries(rec,3); const plan=rec.checkInNote?`<div class="card box" style="margin-bottom:12px"><div class="lbl">Planned for this check-in</div><div>${esc(rec.checkInNote)}</div></div>`:""; if(!H.length) return plan+`<div class="card box tag" style="margin-bottom:12px">No earlier notes yet. What you write now will show here next time.</div>`;
+  return `<div class="lbl" style="margin:0 2px 6px">Last time</div><div class="group log" style="margin-bottom:12px">${H.map(e=>`<div class="e"><small>${esc(fmtD(e.d))}${e.by?` · ${esc(e.by)}`:""}</small>${esc(e.text)}</div>`).join("")}</div>${rec.checkInNote?`<div class="card box" style="margin-bottom:12px"><div class="lbl">Planned for this check-in</div><div>${esc(rec.checkInNote)}</div></div>`:""}`; }
+function lastNoteHTML(rec){ const e=histEntries(rec,1)[0]; return e? `<div class="tag"><b>Last:</b> ${esc(fmtD(e.d))} · ${esc(e.text.length>140?e.text.slice(0,140)+"…":e.text)}</div>` : ""; }
+function ciMoreHTML(c){ if(!c.nextCheckIn && !c.checkInNote) return lastNoteHTML(c); return `${c.checkInNote?`<div><b>To do:</b> ${esc(c.checkInNote)}</div>`:""}${lastNoteHTML(c)}${S.readOnly?"":`<div class="acts" style="grid-template-columns:2fr 1fr"><button class="act dark" data-act="quick-checkin" data-id="${esc(c.id)}">${ic("check",18)}Log check-in</button><button class="act" data-act="ci-move" data-kind="c" data-id="${esc(c.id)}">Move / edit</button></div>`}`; }
+dueCard=function(c){
+  const d=dueInfo(c); const o=bizContact(c); const last=histEntries(c,1)[0];
+  return `<div class="card due"><div class="top" data-open="${esc(c.id)}">${avatarB(c)}<div class="main" style="flex:1;min-width:0"><div class="t1" style="font-weight:600">${esc(c.name)}</div><div class="t2" style="color:var(--muted);font-size:14px">${esc([o?.name||"No owner captured", c.partner].filter(Boolean).join(" · "))}</div></div><span class="pill ${d.cls}">${esc(d.txt)}</span></div>
+  ${c.checkInNote?`<div class="due-note"><b>To do:</b> ${esc(c.checkInNote)}</div>`:""}${last?`<div class="due-note muted"><b>Last:</b> ${esc(fmtD(last.d))} · ${esc(last.text.length>110?last.text.slice(0,110)+"…":last.text)}</div>`:""}
+  <div class="acts four"><a class="act" ${o?.cell?`href="${esc(telHref(o.cell))}"`:'aria-disabled="true"'}>${ic("phone",18)}Call</a><a class="act" ${o?.cell?`href="${esc(waHref(o.cell))}" target="_blank" rel="noopener"`:'aria-disabled="true"'}>${ic("wa",18)}WhatsApp</a><button class="act" data-act="ci-move" data-kind="c" data-id="${esc(c.id)}">${ic("cal",18)}Move</button><button class="act dark" data-act="quick-checkin" data-id="${esc(c.id)}">${ic("check",18)}Done</button></div></div>`;
+};
+personDueCard=function(k){
+  const d=dueInfo(k); const dnc=k.doNotContact; const last=histEntries(k,1)[0];
+  return `<div class="card due"><div class="top" data-contact="${esc(k.id)}">${avatarP(k)}<div class="main" style="flex:1;min-width:0"><div class="t1" style="font-weight:600">${esc(k.name)}</div><div class="t2" style="color:var(--muted);font-size:14px">${esc([workLine(k)||TIERS[tierOf(k)].label, k.checkInOwner].filter(Boolean).join(" · "))}</div></div><span class="pill ${d.cls}">${esc(d.txt)}</span></div>
+  ${k.checkInNote?`<div class="due-note"><b>To do:</b> ${esc(k.checkInNote)}</div>`:""}${last?`<div class="due-note muted"><b>Last:</b> ${esc(fmtD(last.d))} · ${esc(last.text.length>110?last.text.slice(0,110)+"…":last.text)}</div>`:""}
+  <div class="acts four"><a class="act" ${k.cell&&!dnc?`href="${esc(telHref(k.cell))}"`:'aria-disabled="true"'}>${ic("phone",18)}Call</a><a class="act" ${k.cell&&!dnc?`href="${esc(waHref(k.cell))}" target="_blank" rel="noopener"`:'aria-disabled="true"'}>${ic("wa",18)}WhatsApp</a><button class="act" data-act="ci-move" data-kind="k" data-id="${esc(k.id)}">${ic("cal",18)}Move</button><button class="act dark" data-act="k-ci-done" data-id="${esc(k.id)}">${ic("check",18)}Done</button></div></div>`;
+};
+function addDays(n){ const d=new Date(); d.setDate(d.getDate()+n); return ymd(d); }
+function moveModal(kind,id){
+  const rec= kind==="k"? S.contacts.get(id) : S.companies.get(id); if(!rec) return;
+  const ownerOpts=S.partners; const owner= kind==="k"? (rec.checkInOwner||myPartner()) : (rec.partner||myPartner());
+  showModal(`${ovHead("Move or edit check-in",`<button class="hbtn" data-act="close-modal">Cancel</button>`)}<div class="ovb">
+   <p style="margin:0 2px 10px;font-size:15.5px"><b>${esc(rec.name)}</b>${rec.nextCheckIn?` · now ${esc(fmtD(rec.nextCheckIn))}`:""}</p>
+   <div class="chips" style="margin-bottom:8px">${[["Tomorrow",1],["+3 days",3],["+1 week",7],["+2 weeks",14],["+1 month",30],["+3 months",91]].map(([l,n])=>`<button class="chip" data-act="mv-quick" data-k="${addDays(n)}">${l}</button>`).join("")}</div>
+   <div class="fields">
+    <div class="fld"><label for="mvDate">Next check-in</label><input type="date" id="mvDate" value="${esc(rec.nextCheckIn||addDays(7))}"></div>
+    <div class="fld"><label for="mvTodo">What to do</label><input id="mvTodo" value="${esc(rec.checkInNote||"")}" placeholder="e.g. Ask about the expansion; send NDA"></div>
+    <div class="fld"><label for="mvOwner">${kind==="k"?"Who checks in":"Lead (our team)"}</label><select id="mvOwner">${opts(ownerOpts,owner)}</select></div>
+   </div>
+   ${historyHTML(rec).replace('margin-bottom:12px','margin:12px 0')}
+   <div style="margin-top:14px;display:grid;gap:10px"><button class="btn primary block" data-act="mv-save" data-kind="${kind}" data-id="${esc(id)}">Save</button><button class="linkbtn" style="color:var(--bad,#b3261e)" data-act="mv-clear" data-kind="${kind}" data-id="${esc(id)}">Stop checking in</button></div></div>`, true);
+}
+document.addEventListener("click",async e=>{
+  const t=e.target.closest("[data-act]"); if(!t) return; const a=t.dataset.act;
+  if(a==="ci-move"){ e.stopPropagation(); e.preventDefault(); if(!S.readOnly) moveModal(t.dataset.kind,t.dataset.id); }
+  if(a==="mv-quick"){ $("#mvDate").value=t.dataset.k; document.querySelectorAll("[data-act=mv-quick]").forEach(b=>b.classList.toggle("on",b===t)); }
+  if(a==="mv-save"||a==="mv-clear"){ const kind=t.dataset.kind, id=t.dataset.id; const path=(kind==="k"?"contacts/":"companies/")+id; const clear=a==="mv-clear";
+    const patch= clear? {nextCheckIn:"", checkInNote:""} : {nextCheckIn:$("#mvDate").value||"", checkInNote:$("#mvTodo").value.trim()};
+    if(!clear){ if(kind==="k") patch.checkInOwner=$("#mvOwner").value; else patch.partner=$("#mvOwner").value; }
+    if(clear && kind==="k"){ patch.checkInWeeks=0; patch.checkInRepeat=false; }
+    t.disabled=true; if(await dbUpdate(path,patch)){ closeModal(); toast(clear?"Check-in stopped":`Check-in on ${fmtD(patch.nextCheckIn)}`); } t.disabled=false; }
 });
 
 

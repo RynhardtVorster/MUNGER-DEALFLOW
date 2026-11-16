@@ -330,6 +330,7 @@ function renderSheet(){
     <div class="card box">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div class="lbl">Next check-in</div><div class="next">${c.nextCheckIn?esc(fmtD(c.nextCheckIn)):"Not scheduled"}</div></div>${due?`<span class="pill ${due.cls}">${esc(due.txt)}</span>`:""}</div>
       <div class="tag">${esc(CADENCE.find(x=>x.m===Number(c.followUpMonths))?.l||"No scheduled check-in")} · last contact ${esc(fmtD(c.lastContact))}</div>
+      ${ciMoreHTML(c,"c")}
       ${fin&&!ro?`<button class="btn sm" data-act="like" data-id="${esc(c.id)}">${c.nextCheckIn?"Change check-ins":"Set check-ins"}</button>`:""}
     </div>`:""}
     ${!fin&&!ro?`<div class="fields" style="margin-top:12px"><div class="fld"><label for="dStage">Stage</label><select id="dStage">${opts(STAGES.map(s=>({v:s.id,l:s.label})),stageOf(c.status).id)}</select></div></div>`:""}
@@ -411,15 +412,15 @@ function contactForm(id, preset){
    <div class="fld"><label for="kCell">Cell</label><input id="kCell" type="tel" inputmode="tel" value="${esc(k.cell)}" placeholder="082 123 4567"></div>
    <div class="fld"><label for="kEmail">Email</label><input id="kEmail" type="email" inputmode="email" autocapitalize="off" value="${esc(k.email)}"></div>
    <div class="fld"><label for="kTown">Town / city</label><input id="kTown" list="townList" value="${esc(k.town)}" autocomplete="off" placeholder="e.g. Pretoria, Stellenbosch">${townList()}</div>
-   <div class="fld"><label for="kCountry">Country</label><select id="kCountry">${opts(COUNTRIES,k.country||"South Africa")}</select></div>
+   <div class="fld"><label for="kCountry">Country</label><input id="kCountry" list="countryList" value="${esc(k.country||"South Africa")}" autocomplete="off" placeholder="Start typing a country">${countryList()}</div>
   </div><div id="kDup" class="warnline"></div>
   <div class="fsec">Where do they work?</div>
-  <div class="seg3 where" role="radiogroup" aria-label="Where do they work?"><label><input type="radio" name="kWhere" value="partner" ${whereInit==="partner"?"checked":""}><span>${ic("bank",18)} At a partner</span></label><label><input type="radio" name="kWhere" value="business" ${whereInit==="business"?"checked":""}><span>${ic("biz",18)} At a business</span></label><label><input type="radio" name="kWhere" value="other" ${whereInit==="other"?"checked":""}><span>Elsewhere / none</span></label></div>
+  <div class="seg3 where" role="radiogroup" aria-label="Where do they work?"><label><input type="radio" name="kWhere" value="partner" ${whereInit==="partner"?"checked":""}><span>${ic("bank",18)} At a partner</span></label><label><input type="radio" name="kWhere" value="business" ${whereInit==="business"?"checked":""}><span>${ic("biz",18)} At a business</span></label><label><input type="radio" name="kWhere" value="other" ${whereInit==="other"?"checked":""}><span>No company</span></label></div>
   <div class="fields" style="margin-top:10px">
    <div class="fld" id="kCoPickW"><label for="kCoPick" id="kCoPickL">Which partner?</label><select id="kCoPick"></select></div>
    <div class="fld" id="kCoNewW" hidden><label for="kCoNew" id="kCoNewL">Name of the new partner firm</label><input id="kCoNew" autocomplete="off" autocapitalize="words" value="${esc(!co&&k.firm&&whereInit!=="other"?k.firm:"")}"></div>
    <div id="kCoSim" class="warnline"></div>
-   <div class="fld" id="kBuyW" hidden><label for="kBuy">Would we like to buy this business?</label><select id="kBuy">${opts([{v:"no",l:"No – it's just where they work"},{v:"network",l:"Yes, a prospect – we'd look at it"},{v:"target",l:"Yes, a target – we go full out"}],"no")}</select></div>
+   <div class="fld" id="kBuyW" hidden><label for="kBuy">Would we like to buy this business?</label><select id="kBuy">${opts([{v:"no",l:"No – a network company (they just work there)"},{v:"network",l:"Yes, a prospect – we'd look at it"},{v:"target",l:"Yes, a target – we go full out"}],"no")}</select></div>
    <div class="fld" id="kNewCoKindW" hidden><label for="kNewCoKind">What kind of partner?</label><select id="kNewCoKind">${opts(Object.entries(PKINDS).map(([v,l])=>({v,l})),"")}</select></div>
    <div class="fld" id="kFirmW" hidden><label for="kFirm">Company (optional)</label><input id="kFirm" autocomplete="off" value="${esc(!co&&whereInit==="other"?k.firm:"")}" placeholder="Where they work, if anywhere"></div>
    <div class="fld"><label for="kRole">Role at the company</label><select id="kRole">${opts(ROLES,k.companyRole,"Choose…")}</select></div>
@@ -517,7 +518,7 @@ function dealForm(id, preset){
     <div class="fld"><label for="cName">Name *</label><input id="cName" value="${esc(c.name)}" autocomplete="off" autocapitalize="words"></div>
     <div class="fld nofin"><label for="cIndustry">Industry</label><select id="cIndustry">${industryOpts(c.industry)}</select></div>
     <div class="fld"><label for="cTown">Town / city</label><input id="cTown" list="townList" value="${esc(c.town)}" autocomplete="off">${townList()}</div>
-    <div class="fld"><label for="cHq">Head office country</label><select id="cHq">${opts(COUNTRIES,c.hqCountry||"South Africa")}</select></div>
+    <div class="fld"><label for="cHq">Head office country</label><input id="cHq" list="countryList" value="${esc(c.hqCountry||"South Africa")}" autocomplete="off" placeholder="Start typing a country">${countryList()}</div>
     <div class="fld nofin"><label for="cFoot">Where it operates</label><select id="cFoot">${opts(FOOTPRINTS,c.footprint,"Choose…")}</select></div>
   </div><div id="dupWarn" class="warnline"></div>
   <div class="nofin"><div id="owners"></div><button type="button" class="linkbtn" data-act="add-owner" id="addOwnerBtn">+ Add another owner</button></div>
@@ -610,10 +611,12 @@ function quickCheckin(id){
   const c=S.companies.get(id); if(!c) return; const m=Number(c.followUpMonths)||3; const fin=isPartnerCo(c);
   showModal(`${ovHead("Log check-in",`<button class="hbtn" data-act="close-modal">Cancel</button>`)}<div class="ovb">
    <p style="margin:0 2px 12px;font-size:15px">Spoke to <b>${esc(bizContact(c)?.name||c.name)}</b>?</p>
+   ${historyHTML(c)}
    <div class="fields">${fldNote("qNote","What was discussed? (optional)","","Still not selling, son joining the business…",3)}
    ${fin?"":`<div class="fld"><label for="qOut">Where does it stand?</label><select id="qOut">${opts([{v:"keep",l:"Keep following up"},{v:"won",l:"We did the deal"},{v:"sold",l:"Sold to someone else"},{v:"passed",l:"Not for us any more"}],"keep")}</select></div>`}
    <div class="fld qkeep"><label for="qCad">Check in again</label><select id="qCad">${opts(CADENCE.filter(x=>x.m).map(x=>({v:x.m,l:x.l})),m)}</select></div>
    <div class="fld qkeep"><label for="qDate">Next check-in</label><input id="qDate" type="date" value="${esc(addMonths(today(),m))}"></div>
+   <div class="fld qkeep"><label for="qTodo">What to do next time</label><input id="qTodo" value="${esc(c.checkInNote||"")}" placeholder="e.g. Ask about the son's plans; send NDA"></div>
    <div class="fld" id="qSoldW" hidden><label for="qSold">Sold to whom?</label><input id="qSold" placeholder="Buyer, if known"></div></div>
    <div style="margin-top:14px"><button class="btn primary block" data-act="do-checkin2" data-id="${esc(c.id)}">${ic("check",18)} Save</button></div></div>`, true);
 }
@@ -647,6 +650,7 @@ document.addEventListener("click", async e=>{
     case "left-company": { const kk=S.contacts.get(id); const co=companyOf(kk); confirmBox("No longer works there?", `${kk.name} will be unlinked from ${co?.name||kk.firm}. We'll keep it in their history.`, "Update", async()=>{ const past=[...(kk.pastRoles||[]),{company:co?.name||kk.firm, role:kk.companyRole||kk.title||"", until:today()}]; if(await dbUpdate("contacts/"+id,{companyId:"", companyRole:"", ownsCompanyId:"", firm:"", pastRoles:past, log:[...(kk.log||[]),{d:today(),by:await myName(),text:`Left ${co?.name||kk.firm}`}]})){ closeModal(); toast("Updated. Where are they now? Tap Edit."); } }); break; }
     case "do-checkin2": { const c=S.companies.get(id); if(!c) break; t.disabled=true; const by=await myName(); const note=($("#qNote")?.value||"").trim(); const out=$("#qOut")?.value||"keep";
       const patch={lastContact:today()}; let text="";
+      patch.checkInNote= out==="keep"? ($("#qTodo")?.value||"").trim() : "";
       if(out==="keep"){ patch.followUpMonths=Number($("#qCad").value)||3; patch.nextCheckIn=$("#qDate").value||addMonths(today(),patch.followUpMonths); text=`Checked in${note?`: ${note}`:""} · next ${fmtD(patch.nextCheckIn)}`; }
       if(out==="won"){ patch.status="won"; patch.nextCheckIn=""; text=`🎉 Deal done${note?`: ${note}`:""}`; }
       if(out==="sold"){ patch.status="sold"; patch.nextCheckIn=""; const to=$("#qSold").value.trim(); text=`Sold to ${to||"someone else"}${note?`: ${note}`:""}`; }
