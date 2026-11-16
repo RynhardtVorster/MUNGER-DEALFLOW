@@ -491,7 +491,7 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 <script src="supabase.js"></script>
 <script>
 "use strict";
-const APP_V="v48";
+const APP_V="v49";
 /* ---------------- Reference data ---------------- */
 const STAGES = [
   {id:"network", label:"Prospect – we'd look at it", group:"network"},
@@ -2556,7 +2556,7 @@ function renderSheet(){
     ${!fin&&g!=="network"?`<div class="fsec">Our way in</div>${wayInHTML(c)}`:""}
     <div class="fsec">People we know here</div>
     ${(c.owners||[]).length||ppl.length? `<div class="group">${(c.owners||[]).filter(w=>!ppl.some(k=>k.name.toLowerCase()===String(w.name||"").toLowerCase())).map(w=>`<div class="rowi"><span class="avatar biz">${esc(initials(w.name))}</span><span class="main"><span class="t1" style="display:block">${esc(w.name||"Unnamed")} ${langTag(w.language)}</span><span class="t2" style="display:block">${esc([w.role||"Owner",w.cell,w.email].filter(Boolean).join(" · "))}</span></span>${w.cell?`<a class="btn sm" href="${esc(telHref(w.cell))}" aria-label="Call ${esc(w.name)}">${ic("phone",18)}</a>`:""}</div>`).join("")}${ppl.map(k=>`<button class="rowi" data-contact="${esc(k.id)}">${avatarP(k)}<span class="main"><span class="t1" style="display:block">${esc(k.name)}</span><span class="t2" style="display:block">${esc([k.companyRole||k.title||"Works here", knowers(k).length?"known by "+knowers(k).map(x=>x.partner.split(" ")[0]).join(", "):""].filter(Boolean).join(" · "))}</span></span>${ic("chev",18).replace('class="ic"','class="ic chev"')}</button>`).join("")}</div>` : `<div class="card empty">${fin?"Nobody we know here yet. Add the bankers, partners or advisors we deal with.":"Nobody linked yet."}</div>`}
-    ${ro?"":`<button class="linkbtn" data-act="person-at" data-id="${esc(c.id)}">+ Add someone who works here</button>`}
+    ${ro?"":`<button class="btn block" data-act="link19" data-mode="c" data-id="${esc(c.id)}" style="margin-top:8px">+ Add owner or employee</button>`}
     ${fin?partnerLeadsHTML(c):""}
     ${!fin?`<div class="fsec">Sale signals</div>${sigCount(c)?`<div class="card box"><div class="sigs">${SIGNALS.filter(([s])=>(c.signals||{})[s]).map(([,l])=>`<span class="pill soon">${esc(l)}</span>`).join("")}</div></div>`:`<div class="card box tag">None captured. Edit the business to tick what you know: owner's age, no successor, wants out…</div>`}
     <div class="fsec">Size & mandate fit</div>
@@ -4661,6 +4661,73 @@ function otherVis(){ if(!$("#dealForm")) return; markNoOther(); const other=$("#
 { const base=dealForm; dealForm=function(id,preset){ base(id,preset); otherVis(); }; }
 { const base=dbSet; dbSet=async function(path,data){ if(String(path).startsWith("companies/") && data && "name" in data && $("#dealForm") && $("#cKind")?.value==="other") data={...data,responsible:[],status:"network",followUpMonths:0,nextCheckIn:""}; return base(path,data); }; }
 { const base=cadVis; cadVis=function(){ base(); if($("#cKind")?.value==="other"){ ["#cadOff","#nextHint"].forEach(s=>{ const e=$(s); if(e) e.hidden=true; }); } }; }
+
+/* ---------- 23. Link people and companies from either side: search, or add new on the spot ---------- */
+const OWNERISH=["Owner","Co-owner","Shareholder"];
+{ const base=ownsLine; ownsLine=function(k){ const h=base(k); if(S.readOnly) return h;
+  return (h||`<div class="fsec">Other companies</div>`)+`<button class="btn block" data-act="link19" data-mode="k" data-id="${esc(k.id)}" style="margin-top:8px">+ Link to another company</button>`; }; }
+function linkModal(mode,id){
+  const rec= mode==="k"? S.contacts.get(id) : S.companies.get(id); if(!rec) return; const first=rec.name.split(" ")[0];
+  const what= mode==="k"? "company" : "person";
+  showModal(`${ovHead(mode==="k"?`Link ${first} to a company`:`Add someone at ${rec.name}`,`<button class="hbtn" data-act="close-modal">Cancel</button>`)}<div class="ovb">
+   <div class="fields"><div class="fld"><label for="lnRole">${mode==="k"?`${esc(first)}'s role there`:"Their role"}</label><select id="lnRole">${opts(XR_ROLES,"Owner")}</select></div></div>
+   <div class="seg" style="margin:10px 0"><button type="button" class="on" data-act="ln-mode" data-k="find">Already in Munger</button><button type="button" data-act="ln-mode" data-k="new">New ${what}</button></div>
+   <div id="lnFind"><input type="search" id="lnQ" class="ss-input" placeholder="Type a ${what} name…" autocomplete="off"><div id="lnHits" class="group"></div></div>
+   <div id="lnNew" hidden><div class="fields">${mode==="k"?`
+     <div class="fld"><label for="lnName">Company name</label><input id="lnName" autocapitalize="words" autocomplete="off"></div>
+     <div class="fld"><label for="lnKind">What is it?</label><select id="lnKind">${opts(XR_KINDS.map(([v,l])=>({v,l})),"network")}</select></div>
+     <div class="fld"><label for="lnTown">Town (optional)</label><input id="lnTown" list="townList" autocomplete="off">${townList()}</div>`:`
+     <div class="fld"><label for="lnName">Full name</label><input id="lnName" autocapitalize="words" autocomplete="off"></div>
+     <div class="fld"><label for="lnCell">Cell (optional)</label><input id="lnCell" type="tel" inputmode="tel" placeholder="082 123 4567"></div>
+     <div class="fld"><label for="lnEmail">Email (optional)</label><input id="lnEmail" type="email" inputmode="email" autocapitalize="off"></div>`}
+    </div><div id="lnSim" class="warnline"></div>
+    <button type="button" class="btn primary block" data-act="ln-addnew" data-mode="${mode}" data-id="${esc(id)}" style="margin-top:12px">Add and link</button>
+    <p class="tag" style="margin:8px 4px 0">${mode==="k"?"You can fill in the rest of the company later.":"You can complete their profile later (tags, who knows them, notes)."}</p></div></div>`, true);
+  lnHits(mode,id,""); setTimeout(()=>$("#lnQ")?.focus(),60);
+}
+function lnLinked(mode,id){ if(mode==="k"){ const k=S.contacts.get(id); return new Set([k.companyId,...(k.otherRoles||[]).map(r=>r.companyId)].filter(Boolean)); }
+  const c=S.companies.get(id); return new Set(peopleAt(c).map(k=>k.id)); }
+function lnHits(mode,id,q){ const box=$("#lnHits"); if(!box) return; const taken=lnLinked(mode,id); const w=ssNorm(q).trim().split(/\s+/).filter(Boolean);
+  const pool= mode==="k"? companies().filter(c=>!taken.has(c.id)) : contacts().filter(k=>!taken.has(k.id));
+  const L=pool.filter(x=>w.every(t=>ssNorm(x.name+" "+(x.tradingAs||"")).includes(t))).sort((a,b)=>a.name.localeCompare(b.name)).slice(0,8);
+  const sub=x=> mode==="k"? [xrLabel(x),x.town].filter(Boolean).join(" · ") : (workLine(x)||TIERS[tierOf(x)]?.label||"");
+  box.innerHTML=L.map(x=>`<button type="button" class="rowi" data-act="ln-pick" data-mode="${mode}" data-id="${esc(id)}" data-o="${esc(x.id)}">${mode==="k"?`<span class="avatar biz">${ic(isPartnerCo(x)?"bank":"biz",18)}</span>`:avatarP(x)}<span class="main"><span class="t1" style="display:block">${esc(x.name)}</span><span class="t2" style="display:block">${esc(sub(x))}</span></span></button>`).join("")
+   + (q.trim()? `<button type="button" class="rowi" data-act="ln-mode" data-k="new" data-name="${esc(q.trim())}"><span class="avatar biz">${ic("plus",18)}</span><span class="main"><span class="t1" style="display:block">Add “${esc(q.trim())}” as a new ${mode==="k"?"company":"person"}</span><span class="t2" style="display:block">Not in Munger yet</span></span></button>` : (L.length?"":`<div class="rowi tag">Nothing yet – add a new one.</div>`)); }
+async function linkPC(kid,cid,role){ const k=S.contacts.get(kid), c=S.companies.get(cid); if(!k||!c) return false; const by=await myName(); const own=OWNERISH.includes(role);
+  const patch={};
+  if(k.companyId===cid){ patch.companyRole=role; }
+  else if(!k.companyId){ patch.companyId=cid; patch.companyRole=role; if(own) patch.ownsCompanyId=cid; }
+  else patch.otherRoles=[...(k.otherRoles||[]).filter(r=>r.companyId!==cid),{companyId:cid,role}];
+  if(own && !isPartnerCo(c) && c.kind!=="other"){ const t=tagsOf(k); if(!t.includes("A")){ patch.tags=TIER_PRIO.filter(x=>[...t,"A"].includes(x)); patch.tier=patch.tags[0]; } }
+  patch.log=[...(k.log||[]),{d:today(),by,text:`Linked to ${c.name} (${role})`}].slice(-200);
+  if(!await dbUpdate("contacts/"+kid,patch)) return false;
+  if(own && !isPartnerCo(c) && !(c.owners||[]).some(o=>normName(o.name)===normName(k.name))){
+    const owners=[...(c.owners||[]).filter(o=>o.name),{name:k.name,cell:k.cell||"",email:k.email||"",language:k.language||"af",role}];
+    await dbUpdate("companies/"+cid,{owners,log:[...(c.log||[]),{d:today(),by,text:`${k.name} added as ${role.toLowerCase()}`}].slice(-200)}); }
+  return true; }
+async function lnDone(mode,id,other){ closeModal(); toast("Linked"); try{ renderSheet(); }catch(_){} }
+document.addEventListener("input",e=>{ if(e.target.id==="lnQ"){ const b=document.querySelector('[data-act="ln-addnew"]'); lnHits(b.dataset.mode,b.dataset.id,e.target.value); }
+  if(e.target.id==="lnName"){ const b=document.querySelector('[data-act="ln-addnew"]'); const nm=e.target.value.trim(); const box=$("#lnSim"); if(!box) return;
+    if(nm.length<3){ box.innerHTML=""; return; }
+    const L= b.dataset.mode==="k"? [companies().find(c=>normName(c.name)===normName(nm)),...fuzzyCompanies(nm)].filter(Boolean) : contacts().filter(k=>normName(k.name)===normName(nm)||ssNorm(k.name).includes(ssNorm(nm)));
+    box.innerHTML=[...new Map(L.map(x=>[x.id,x])).values()].slice(0,3).map(x=>`<div>Already in Munger: <b>${esc(x.name)}</b>? <button type="button" class="btn sm" data-act="ln-pick" data-mode="${b.dataset.mode}" data-id="${esc(b.dataset.id)}" data-o="${esc(x.id)}">Use it</button></div>`).join(""); } });
+document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act="link19"],[data-act^="ln-"]'); if(!t) return; e.preventDefault(); e.stopPropagation(); const a=t.dataset.act;
+  if(a==="link19"){ if(!S.readOnly) linkModal(t.dataset.mode,t.dataset.id); return; }
+  if(a==="ln-mode"){ const nw=t.dataset.k==="new"; document.querySelectorAll('#modal .seg button').forEach(b=>b.classList.toggle("on",b.dataset.k===t.dataset.k)); $("#lnFind").hidden=nw; $("#lnNew").hidden=!nw;
+    if(nw){ if(t.dataset.name) $("#lnName").value=t.dataset.name.replace(/\b\p{L}/gu,m=>m.toUpperCase()); $("#lnName").focus(); $("#lnName").dispatchEvent(new Event("input",{bubbles:true})); } else $("#lnQ").focus(); return; }
+  const mode=t.dataset.mode, id=t.dataset.id, role=$("#lnRole")?.value||"Owner";
+  if(a==="ln-pick"){ t.disabled=true; const ok= mode==="k"? await linkPC(id,t.dataset.o,role) : await linkPC(t.dataset.o,id,role); t.disabled=false; if(ok) lnDone(); return; }
+  if(a==="ln-addnew"){ const nm=($("#lnName")?.value||"").trim(); if(!nm){ toast("Type the name"); $("#lnName").focus(); return; } t.disabled=true; const by=await myName(); const nid=newId();
+    if(mode==="k"){ const ex=companies().find(c=>normName(c.name)===normName(nm)); let cid=ex?.id;
+      if(!cid){ cid=nid; const kind=$("#lnKind").value; const pk=kind.startsWith("pk:")?kind.slice(3):null; const g=gazFind($("#lnTown").value||"");
+        if(!await dbSet("companies/"+cid,{name:nm, kind:pk||(kind==="other"?"other":"target"), status:kind==="target"?"target":"network", town:g?g.name:($("#lnTown").value||"").trim(), province:g?.region||"", partner:myPartner()||"", responsible:(pk||kind==="other")?[]:[defaultResp()], owners:[], hqCountry:"South Africa", log:[{d:today(),by,text:`Captured · linked to ${S.contacts.get(id)?.name||""}`}], createdByName:by})){ t.disabled=false; return; } }
+      if(await linkPC(id,cid,role)) lnDone(); }
+    else { const c=S.companies.get(id); const own=OWNERISH.includes(role); const tier= own && !isPartnerCo(c) && c.kind!=="other"? "A" : "B";
+      const ex=contacts().find(k=>normName(k.name)===normName(nm)); let kid=ex?.id;
+      if(!kid){ kid=nid; if(!await dbSet("contacts/"+kid,{name:nm, cell:($("#lnCell").value||"").trim(), email:($("#lnEmail").value||"").trim().toLowerCase(), tier, tags:[tier], partner:myPartner()||"", language:c?.language||"af", country:"South Africa", town:c?.town||"", province:c?.province||"", log:[{d:today(),by,text:`Captured at ${c?.name||""}`}]})){ t.disabled=false; return; } }
+      if(await linkPC(kid,id,role)) lnDone(); }
+    t.disabled=false; }
+},true);
 
 
 function vNetwork(){
