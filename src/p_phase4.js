@@ -79,11 +79,11 @@ const PROLES=["Partner / director","Relationship manager / banker","Investment m
 function whereVal(){ return (document.querySelector("input[name=kWhere]:checked")||{}).value||"other"; }
 function fillCoPick(){
   const w=whereVal(), sel=$("#kCoPick"); if(!sel) return; const cur=sel.value||FORM.coInit||"";
-  const list=companies().filter(c=> w==="partner"? isPartnerCo(c) : w==="company"? c.kind==="other" : isAcq(c)).sort((a,b)=>a.name.localeCompare(b.name));
-  sel.innerHTML=`<option value="">Choose…</option>${list.map(c=>`<option value="${esc(c.id)}"${c.id===cur?" selected":""}>${esc(c.name)}${w==="partner"?` · ${esc(PKINDS[c.kind]||"")}`:w==="company"?"":` · ${grp(c)==="network"?"Prospect":"Target"}`}</option>`).join("")}<option value="__new"${cur==="__new"?" selected":""}>+ New ${w==="partner"?"partner firm":w==="company"?"company":"business to buy"}…</option>`;
+  const list=companies().filter(c=> w==="partner"? isPartnerCo(c) : !isPartnerCo(c)).sort((a,b)=>a.name.localeCompare(b.name));
+  sel.innerHTML=`<option value="">Choose…</option>${list.map(c=>`<option value="${esc(c.id)}"${c.id===cur?" selected":""}>${esc(c.name)}${w==="partner"?` · ${esc(PKINDS[c.kind]||"")}`:c.kind==="other"?"":` · ${grp(c)==="network"?"Prospect":"Target"}`}</option>`).join("")}<option value="__new"${cur==="__new"?" selected":""}>+ New ${w==="partner"?"partner firm":"business"}…</option>`;
   if(!list.some(c=>c.id===cur) && cur!=="__new" && $("#kCoNew")?.value) sel.value="__new";
-  $("#kCoPickL").textContent= w==="partner"? "Which partner firm?" : w==="company"? "Which company?" : "Which business?";
-  $("#kCoNewL").textContent= w==="partner"? "Name of the new partner firm" : w==="company"? "Name of the company" : "Name of the business";
+  $("#kCoPickL").textContent= w==="partner"? "Which partner?" : "Which business?";
+  $("#kCoNewL").textContent= w==="partner"? "Name of the new partner firm" : "Name of the business";
   const role=$("#kRole"); if(role){ const rv=role.value; const L=w==="partner"? PROLES : ROLES; role.innerHTML=opts(L.includes(rv)||!rv? L : [rv,...L], rv, "Choose…"); }
 }
 function whereRead(){
@@ -104,7 +104,7 @@ function newCoUpdate(d){
   const kw=$("#kNewCoKindW"), was=kw.hidden; kw.hidden= !(w==="partner" && v==="__new");
   if(was && !kw.hidden && !FORM.nkTouched) $("#kNewCoKind").value=guessPKind(d);
 }
-function newCoChoice(d){ const W=whereRead(); if(!W.isNew) return {what:"none"}; return {what:W.where==="partner"?"partner":"business", kind:$("#kNewCoKind")?.value||"advisory", buy: W.where==="company"? "no" : ($("#kBuy")?.value||"network")}; }
+function newCoChoice(d){ const W=whereRead(); if(!W.isNew) return {what:"none"}; return {what:W.where==="partner"?"partner":"business", kind:$("#kNewCoKind")?.value||"advisory", buy:$("#kBuy")?.value||"no"}; }
 
 /* ---------- Events ---------- */
 document.addEventListener("click",e=>{
