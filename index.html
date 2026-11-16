@@ -307,6 +307,9 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 .log .e[data-act="log-edit"]::after{content:"✎";position:absolute;right:10px;top:10px;opacity:.45;font-size:15px}
 .rowi.done19 .t1::after{content:" ✓ opened";color:var(--good,#2e7d32);font-weight:500}
 
+.xrole .xq{display:block;width:100%;margin:0 0 6px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:16px;background:var(--paper,#fff)}
+.xrole .xnew{display:grid;gap:6px;margin-top:6px}
+.xrole .xnew input,.xrole .xnew select{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:16px;background:var(--paper,#fff)}
 .mdot-wrap{background:none;border:0}
 .mdot{border-radius:50%;background:var(--tierA,#b5651d);color:#fff;display:grid;place-items:center;font:700 12.5px/1 "Source Sans 3",system-ui,sans-serif;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);opacity:.93}
 .mdot.sel{background:var(--ink,#1d2b36);transform:scale(1.12)}
@@ -480,7 +483,7 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 <script src="supabase.js"></script>
 <script>
 "use strict";
-const APP_V="v43";
+const APP_V="v44";
 /* ---------------- Reference data ---------------- */
 const STAGES = [
   {id:"network", label:"Prospect – we'd look at it", group:"network"},
@@ -3885,7 +3888,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-act]"); i
   if(a==="pl-ask"){ const q=`Who in our network is connected to ${S.pl.val}?`; location.hash="ask"; setTimeout(()=>runAsk(q),80); } });
 
 /* ================= Phase 16: several types per person, industry search, smarter Ask ================= */
-const TIER_PRIO=["A","C","D","B"];
+const TIER_PRIO=["A","D","C","B"];
 function tagsOf(k){ const t=(k&&Array.isArray(k.tags)&&k.tags.length)? k.tags.filter(x=>TIERS[x]) : [tierOf(k)]; return TIER_PRIO.filter(x=>t.includes(x)); }
 function hasTag(k,t){ return tagsOf(k).includes(t); }
 function indList(){ return `<datalist id="indList">${SECTORS.flatMap(g=>INDUSTRIES[g].map(i=>`<option value="${esc(g+" › "+i)}"></option>`)).join("")}</datalist>`; }
@@ -4530,6 +4533,34 @@ function respFields(c,isNew){ if(!S.partners.length) return "";
 function respRead(){ const box=document.querySelector("#dealForm #cResp"); if(!box) return null; return [...box.querySelectorAll("input[name=cResp]:checked")].map(x=>x.value); }
 { const base=dbSet; dbSet=async function(path,data){ if(String(path).startsWith("companies/") && data && "name" in data && document.querySelector("#dealForm #cResp")){ const R=respRead(); if(R) data={...data,responsible:R}; } return base(path,data); }; }
 { const base=dbUpdate; dbUpdate=async function(path,patch){ if(String(path).startsWith("companies/") && patch && "name" in patch && document.querySelector("#dealForm #cResp")){ const R=respRead(); if(R) patch={...patch,responsible:R}; } return base(path,patch); }; }
+
+/* ---------- 17. Network map: people at the same company are connected to each other ---------- */
+{ const base=netBuildGraph; netBuildGraph=function(){ base(); if(!G.byId) return;
+  const groups=new Map(); contacts().forEach(k=>{ if(!G.byId.has("k:"+k.id)) return; [k.companyId,...(k.otherRoles||[]).map(r=>r.companyId)].filter(Boolean).forEach(cid=>{ if(!groups.has(cid)) groups.set(cid,new Set()); groups.get(cid).add(k.id); }); });
+  const have=new Set(G.edges.map(e=>[e.a.id,e.b.id].sort().join("|")));
+  const add=(a,b)=>{ const A=G.byId.get("k:"+a), B=G.byId.get("k:"+b); const key=[A.id,B.id].sort().join("|"); if(have.has(key)) return; have.add(key); G.edges.push({a:A,b:B,kind:"colleague"}); A.deg=(A.deg||0)+1; B.deg=(B.deg||0)+1; };
+  groups.forEach(set=>{ const ids=[...set]; if(ids.length<2) return; if(ids.length<=6){ for(let i=0;i<ids.length;i++) for(let j=i+1;j<ids.length;j++) add(ids[i],ids[j]); } else ids.forEach((id,i)=>add(id,ids[(i+1)%ids.length])); }); }; }
+
+/* ---------- 18. "Also owns or works at": search every company, or add a new one on the spot ---------- */
+const XR_ROLES=["Owner","Co-owner","Shareholder","Director","CEO / MD","Chair","Board member / NED","Employee","Advisor","Investor"];
+roleRow=function(r){ const cos=companies().sort((a,b)=>a.name.localeCompare(b.name)); const lab=c=>c.name+(isPartnerCo(c)?` · ${PKINDS[c.kind]||"Partner"}`:c.kind==="other"?" · Network company":isAcq(c)?` · ${grp(c)==="network"?"Prospect":grp(c)==="target"?"Target":"Business"}`:"");
+  return `<div class="fld xrow xrole"><input type="search" class="xq" placeholder="Search companies…" autocomplete="off" aria-label="Search companies">
+   <div class="xin"><select class="xco" data-ss="1" aria-label="Company"><option value="">Choose company…</option>${cos.map(c=>`<option value="${esc(c.id)}"${c.id===r?.companyId?" selected":""}>${esc(lab(c))}</option>`).join("")}<option value="__new">+ New company…</option></select><select class="xrl" aria-label="Role">${opts(XR_ROLES,r?.role||"Owner")}</select><button type="button" class="xdel" data-act="x-del" aria-label="Remove">✕</button></div>
+   <div class="xnew" hidden><input class="xnm" placeholder="Name of the company" autocapitalize="words" autocomplete="off"><select class="xbuy" aria-label="What is it?">${opts([{v:"network",l:"A business we'd look at buying (prospect)"},{v:"target",l:"A target – we go full out"},{v:"other",l:"Network company – not to buy"}],"network")}</select></div></div>`; };
+document.addEventListener("input",e=>{ if(!e.target.classList?.contains("xq")) return; const row=e.target.closest(".xrole"); const sel=row.querySelector(".xco"); const q=e.target.value.trim();
+  ssFilter(sel,e.target); const hit=[...sel.options].some(o=>o.value && o.value!=="__new" && o.value===sel.value);
+  if(q && !hit){ sel.value="__new"; row.querySelector(".xnew").hidden=false; row.querySelector(".xnm").value=q.replace(/\b\w/g,m=>m.toUpperCase()); } else row.querySelector(".xnew").hidden= sel.value!=="__new"; });
+document.addEventListener("change",e=>{ if(!e.target.classList?.contains("xco")) return; const row=e.target.closest(".xrole"); const nw=row.querySelector(".xnew"); nw.hidden= e.target.value!=="__new"; if(!nw.hidden && !row.querySelector(".xnm").value) row.querySelector(".xnm").focus(); });
+{ const base=submitContact; submitContact=async function(){
+  const rows=[...document.querySelectorAll("#contactForm .xrole")].filter(r=>r.querySelector(".xco").value==="__new");
+  for(const r of rows){ const nm=r.querySelector(".xnm").value.trim(); if(!nm){ toast("Type the name of the new company, or remove that row"); r.querySelector(".xnm").focus(); return; }
+    const ex=companies().find(c=>normName(c.name)===normName(nm)); let id=ex?.id;
+    if(!id){ id=newId(); const buy=r.querySelector(".xbuy").value; const role=r.querySelector(".xrl").value; const pname=($("#kName")?.value||"").trim(); const by=await myName();
+      const owner=["Owner","Co-owner","Shareholder"].includes(role) && pname? [{name:pname, cell:($("#kCell")?.value||"").trim(), email:($("#kEmail")?.value||"").trim(), role, language:"af"}] : [];
+      const ok=await dbSet("companies/"+id,{name:nm, kind:buy==="other"?"other":"target", status:buy==="target"?"target":"network", partner:myPartner()||"", responsible:buy==="other"?[]:[defaultResp()], owners:owner, hqCountry:"South Africa", log:[{d:today(),by,text:`Captured · added with ${pname||"a person"}`}], createdByName:by});
+      if(!ok) return; }
+    const sel=r.querySelector(".xco"); if(![...sel.options].some(o=>o.value===id)) sel.insertAdjacentHTML("beforeend",`<option value="${esc(id)}">${esc(nm)}</option>`); sel.value=id; r.querySelector(".xnew").hidden=true; }
+  return base(); }; }
 
 
 function vNetwork(){
