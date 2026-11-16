@@ -2558,6 +2558,7 @@ function contactForm(id, preset){
   <div class="fields" style="margin-top:10px">
    <div class="fld" id="kCoPickW"><label for="kCoPick" id="kCoPickL">Which partner?</label><select id="kCoPick"></select></div>
    <div class="fld" id="kCoNewW" hidden><label for="kCoNew" id="kCoNewL">Name of the new partner firm</label><input id="kCoNew" autocomplete="off" autocapitalize="words" value="${esc(!co&&k.firm&&whereInit!=="other"?k.firm:"")}"></div>
+   <div id="kCoSim" class="warnline"></div>
    <div class="fld" id="kBuyW" hidden><label for="kBuy">Would we like to buy this business?</label><select id="kBuy">${opts([{v:"no",l:"No – it's just where they work"},{v:"network",l:"Yes, a prospect – we'd look at it"},{v:"target",l:"Yes, a target – we go full out"}],"no")}</select></div>
    <div class="fld" id="kNewCoKindW" hidden><label for="kNewCoKind">What kind of partner?</label><select id="kNewCoKind">${opts(Object.entries(PKINDS).map(([v,l])=>({v,l})),"")}</select></div>
    <div class="fld" id="kFirmW" hidden><label for="kFirm">Company (optional)</label><input id="kFirm" autocomplete="off" value="${esc(!co&&whereInit==="other"?k.firm:"")}" placeholder="Where they work, if anywhere"></div>
@@ -3237,7 +3238,7 @@ function dupCompany(name, exceptId){ const n=normName(name); return n? companies
 function contactDupCheck(){
   const w=$("#kDup"); if(!w) return;
   const hits=dupPeople({name:$("#kName").value, cell:$("#kCell").value, email:$("#kEmail")?.value}, FORM.id);
-  w.innerHTML=hits.length? hits.slice(0,3).map(h=>`<div>${h.strong?"⚠ ":""}Already in Munger: <a href="#" data-act="open-dup-contact" data-id="${esc(h.k.id)}">${esc(h.k.name)}</a> (${esc(h.why.join(", "))}${h.k.companyId&&S.companies.get(h.k.companyId)?` · ${esc(S.companies.get(h.k.companyId).name)}`:""})</div>`).join("") : "";
+  w.innerHTML=hits.length? hits.slice(0,3).map(h=>`<div>${h.strong?"⚠ Already in Munger: ":h.why.includes("same name")?"Already in Munger: ":"Did you mean "}<a href="#" data-act="open-dup-contact" data-id="${esc(h.k.id)}">${esc(h.k.name)}</a> (${esc(h.why.join(", "))}${h.k.companyId&&S.companies.get(h.k.companyId)?` · ${esc(S.companies.get(h.k.companyId).name)}`:""})</div>`).join("") : "";
 }
 function dupCheck(){
   const w=$("#dupWarn"); if(!w) return; const hit=dupCompany($("#cName").value, FORM.id);
@@ -3249,13 +3250,13 @@ function dupModal(hits, onNew){
   const formEl=$("#contactForm"); if(formEl) formEl.style.display="none";
   const box=document.createElement("div"); box.className="dupbox"; box.id="dupBox";
   box.innerHTML=`${ovHead("Already in Munger?",`<button class="hbtn" data-act="dup-back">Back</button>`)}<div class="ovb">
-   <p style="margin:0 2px 12px;font-size:15.5px">${strong?"This person is already in the network.":"Someone with this name is already in the network."} Update them instead of adding a duplicate.</p>
+   <p style="margin:0 2px 12px;font-size:15.5px">${strong?"This person is already in the network. Update them instead of adding a duplicate.":hits.some(h=>h.why.includes("same name"))?"Someone with this name is already in the network. Is it the same person?":"Did you mean one of these people? If so, update them instead of adding a duplicate."}</p>
    <div class="group">${hits.slice(0,4).map(h=>`<div class="rowi" style="flex-wrap:wrap;gap:8px">${avatarP(h.k)}<span class="main" style="min-width:150px"><span class="t1" style="display:block">${esc(h.k.name)}</span><span class="t2" style="display:block">${esc([h.why.join(", "), workLine(h.k), h.k.cell, knowsTxt(h.k)].filter(Boolean).join(" · "))}</span></span><span style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm primary" data-act="dup-merge" data-id="${esc(h.k.id)}">Add my details to them</button><button class="btn sm" data-act="dup-open" data-id="${esc(h.k.id)}">Open</button></span></div>`).join("")}</div>
    ${strong?`<p class="tag" style="margin:12px 2px">The same cell number or email can't be saved twice.</p>`:`<div style="margin-top:14px"><button class="btn block" data-act="dup-new">It's a different person – add them</button></div>`}
   </div>`;
   formEl.parentNode.appendChild(box);
 }
-function closeDupBox(){ $("#dupBox")?.remove(); const f=$("#contactForm"); if(f) f.style.display="contents"; }
+function closeDupBox(){ $("#dupBox")?.remove(); ["#contactForm","#dealForm"].forEach(s=>{ const f=$(s); if(f) f.style.display="contents"; }); }
 async function mergeIntoExisting(id){
   const k=S.contacts.get(id); if(!k) return; const d=kFormRead(); const by=await myName();
   const patch={}; const fill=(f,v)=>{ if(v && !k[f]) patch[f]=v; };
@@ -3318,6 +3319,88 @@ document.addEventListener("click",e=>{
   const t=e.target.closest("[data-act]"); if(!t) return; const a=t.dataset.act;
   if(a==="m8-dl"){ const m=meetById(t.dataset.id); if(m) dlText(`Munger target meeting ${m.held_on}.txt`, minutesText(m)); }
   if(a==="m8-dl-all"){ const all=S.meetings.filter(x=>x.status==="done").sort((a,b)=>b.held_on.localeCompare(a.held_on)); dlText(`Munger target meetings – all minutes (${today()}).txt`, all.map(minutesText).join("\n\n"+"=".repeat(40)+"\n\n")); }
+});
+
+/* ================= Phase 9: "Did you mean…?" for near-matches ================= */
+const CO_STOP=new Set(["pty","ltd","limited","inc","incorporated","sa","cc","co","company","group","holdings","holding","the","rf","plc","llc","and","south","africa","za","pvt","proprietary"]);
+function lev(a,b){ if(a===b) return 0; const m=a.length,n=b.length; if(!m) return n; if(!n) return m; let prev=Array.from({length:n+1},(_,j)=>j); for(let i=1;i<=m;i++){ const cur=[i]; for(let j=1;j<=n;j++) cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1)); prev=cur; } return prev[n]; }
+const coTokens=s=>normName(s).split(" ").filter(t=>t&&!CO_STOP.has(t));
+function similarCo(a,b){
+  const ta=coTokens(a), tb=coTokens(b); if(!ta.length||!tb.length) return false;
+  const A=ta.join(" "), B=tb.join(" "); if(A===B) return true;
+  if(A.replace(/ /g,"")===B.replace(/ /g,"")) return true;
+  const [sh,lo]=ta.length<=tb.length?[ta,tb]:[tb,ta];
+  if(sh[0]===lo[0] && sh.every(t=>lo.includes(t)) && sh.join("").length>=3) return true;
+  const L=Math.max(A.length,B.length); return L>=5 && (1-lev(A,B)/L)>=0.8;
+}
+function fuzzyCompanies(name, exceptId){ const n=normName(name); if(!n||n.length<3) return []; return companies().filter(c=>c.id!==exceptId && normName(c.name)!==n && similarCo(name,c.name)).slice(0,4); }
+function similarPerson(a,b){
+  const ta=normName(a).split(" ").filter(Boolean), tb=normName(b).split(" ").filter(Boolean); if(!ta.length||!tb.length) return false;
+  const A=ta.join(" "), B=tb.join(" "); if(A===B) return false;
+  if(ta.length>=2 && tb.length>=2){ const la=ta[ta.length-1], lb=tb[tb.length-1], fa=ta[0], fb=tb[0];
+    const ml=Math.min(la.length,lb.length); const lastOk= la===lb || (ml>=4 && lev(la,lb)<=(ml>=6?2:1));
+    const firstOk= fa===fb || lev(fa,fb)<=2 || (Math.min(fa.length,fb.length)>=2 && (fa.startsWith(fb)||fb.startsWith(fa)));
+    if(lastOk && firstOk) return true; }
+  const L=Math.max(A.length,B.length); return L>=6 && (1-lev(A,B)/L)>=0.85;
+}
+{ const base=dupPeople;
+  dupPeople=function(d, exceptId){
+    const out=base(d, exceptId); if(!d.name) return out;
+    contacts().forEach(k=>{ if(k.id===exceptId || out.some(h=>h.k.id===k.id)) return; if(similarPerson(d.name,k.name)) out.push({k, why:["similar name"], strong:false}); });
+    return out.slice(0,5);
+  };
+}
+function coLabel(c){ return isPartnerCo(c)? "Partner · "+(PKINDS[c.kind]||"") : c.kind==="other"? "Other company" : (grp(c)==="network"?"Prospect":STAGE[c.status]?.label||"Business"); }
+{ const base=dupCheck;
+  dupCheck=function(){ base(); const w=$("#dupWarn"); if(!w||w.innerHTML) return; const L=fuzzyCompanies($("#cName")?.value||"", FORM.id);
+    w.innerHTML=L.map(c=>`<div>Did you mean <a href="#" data-act="open-dup" data-id="${esc(c.id)}">${esc(c.name)}</a>? (${esc(coLabel(c))})</div>`).join(""); };
+}
+function coSimCheck(){
+  const w=$("#kCoSim"); if(!w) return; const nm=$("#kCoNew")?.value||""; const vis=!$("#kCoNewW")?.hidden;
+  const ex=vis&&nm? companies().find(c=>normName(c.name)===normName(nm)) : null;
+  const L=vis? fuzzyCompanies(nm) : [];
+  w.innerHTML= ex? `<div>Already in Munger: <b>${esc(ex.name)}</b> (${esc(coLabel(ex))}) – they'll be linked to it.</div>` : L.map(c=>`<div>Did you mean <b>${esc(c.name)}</b> (${esc(coLabel(c))})? <button type="button" class="btn sm" data-act="co-use" data-id="${esc(c.id)}">Use this</button></div>`).join("");
+}
+function useCompany(id){
+  const c=S.companies.get(id); if(!c) return; const want=isPartnerCo(c)?"partner":"business";
+  const r=document.querySelector(`input[name=kWhere][value=${want}]`); if(r) r.checked=true; FORM.whereTouched=true;
+  $("#kCoNew").value=""; fillCoPick(); $("#kCoPick").value=id; kFormUpdate(); coSimCheck(); toast(`Linked to ${c.name}`);
+}
+function fuzzyBox(formSel, title, msg, list, btns){
+  const f=$(formSel); if(!f) return; f.style.display="none";
+  const box=document.createElement("div"); box.className="dupbox"; box.id="dupBox";
+  box.innerHTML=`${ovHead(title,`<button class="hbtn" data-act="dup-back">Back</button>`)}<div class="ovb"><p style="margin:0 2px 12px;font-size:15.5px">${msg}</p><div class="group">${list}</div><div style="margin-top:14px">${btns}</div></div>`;
+  f.parentNode.appendChild(box);
+}
+{ const base=submitDeal;
+  submitDeal=async function(){
+    const nm=$("#cName")?.value||""; const L=FORM.coFuzzyOk? [] : fuzzyCompanies(nm, FORM.id);
+    if(L.length && !dupCompany(nm, FORM.id)){
+      fuzzyBox("#dealForm","Did you mean…?",`Something similar to <b>${esc(nm)}</b> is already in Munger.`,
+        L.map(c=>`<div class="rowi"><span class="main"><span class="t1" style="display:block">${esc(c.name)}</span><span class="t2" style="display:block">${esc([coLabel(c),c.town].filter(Boolean).join(" · "))}</span></span><button class="btn sm primary" data-act="open-dup" data-id="${esc(c.id)}">Open it</button></div>`).join(""),
+        `<button class="btn block" data-act="co-fuzzy-ok" data-k="deal">It's a different company – save it</button>`);
+      return;
+    }
+    FORM.coFuzzyOk=false; return base();
+  };
+}
+{ const base=submitContact;
+  submitContact=async function(){
+    const W=typeof whereRead==="function"? whereRead() : null;
+    if(W && W.isNew && !FORM.coFuzzyOk){ const L=fuzzyCompanies(W.coName);
+      if(L.length){ fuzzyBox("#contactForm","Did you mean…?",`Something similar to <b>${esc(W.coName)}</b> is already in Munger. Link them to it instead?`,
+        L.map(c=>`<div class="rowi"><span class="main"><span class="t1" style="display:block">${esc(c.name)}</span><span class="t2" style="display:block">${esc(coLabel(c))}</span></span><button class="btn sm primary" data-act="co-use-save" data-id="${esc(c.id)}">Use this</button></div>`).join(""),
+        `<button class="btn block" data-act="co-fuzzy-ok" data-k="contact">It's a new company – carry on</button>`); return; } }
+    return base();
+  };
+}
+document.addEventListener("input",e=>{ if(e.target.id==="kCoNew") coSimCheck(); });
+document.addEventListener("change",e=>{ if(e.target.id==="kCoPick"||e.target.name==="kWhere") setTimeout(coSimCheck,0); });
+document.addEventListener("click",e=>{
+  const t=e.target.closest("[data-act]"); if(!t) return; const a=t.dataset.act;
+  if(a==="co-use"){ e.preventDefault(); useCompany(t.dataset.id); }
+  if(a==="co-use-save"){ closeDupBox(); useCompany(t.dataset.id); FORM.coFuzzyOk=false; submitContact(); }
+  if(a==="co-fuzzy-ok"){ closeDupBox(); FORM.coFuzzyOk=true; if(t.dataset.k==="deal") submitDeal(); else submitContact(); }
 });
 
 

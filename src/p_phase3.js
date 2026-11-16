@@ -417,6 +417,7 @@ function contactForm(id, preset){
   <div class="fields" style="margin-top:10px">
    <div class="fld" id="kCoPickW"><label for="kCoPick" id="kCoPickL">Which partner?</label><select id="kCoPick"></select></div>
    <div class="fld" id="kCoNewW" hidden><label for="kCoNew" id="kCoNewL">Name of the new partner firm</label><input id="kCoNew" autocomplete="off" autocapitalize="words" value="${esc(!co&&k.firm&&whereInit!=="other"?k.firm:"")}"></div>
+   <div id="kCoSim" class="warnline"></div>
    <div class="fld" id="kBuyW" hidden><label for="kBuy">Would we like to buy this business?</label><select id="kBuy">${opts([{v:"no",l:"No – it's just where they work"},{v:"network",l:"Yes, a prospect – we'd look at it"},{v:"target",l:"Yes, a target – we go full out"}],"no")}</select></div>
    <div class="fld" id="kNewCoKindW" hidden><label for="kNewCoKind">What kind of partner?</label><select id="kNewCoKind">${opts(Object.entries(PKINDS).map(([v,l])=>({v,l})),"")}</select></div>
    <div class="fld" id="kFirmW" hidden><label for="kFirm">Company (optional)</label><input id="kFirm" autocomplete="off" value="${esc(!co&&whereInit==="other"?k.firm:"")}" placeholder="Where they work, if anywhere"></div>

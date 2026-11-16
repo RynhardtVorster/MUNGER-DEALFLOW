@@ -14,7 +14,7 @@ function dupCompany(name, exceptId){ const n=normName(name); return n? companies
 function contactDupCheck(){
   const w=$("#kDup"); if(!w) return;
   const hits=dupPeople({name:$("#kName").value, cell:$("#kCell").value, email:$("#kEmail")?.value}, FORM.id);
-  w.innerHTML=hits.length? hits.slice(0,3).map(h=>`<div>${h.strong?"⚠ ":""}Already in Munger: <a href="#" data-act="open-dup-contact" data-id="${esc(h.k.id)}">${esc(h.k.name)}</a> (${esc(h.why.join(", "))}${h.k.companyId&&S.companies.get(h.k.companyId)?` · ${esc(S.companies.get(h.k.companyId).name)}`:""})</div>`).join("") : "";
+  w.innerHTML=hits.length? hits.slice(0,3).map(h=>`<div>${h.strong?"⚠ Already in Munger: ":h.why.includes("same name")?"Already in Munger: ":"Did you mean "}<a href="#" data-act="open-dup-contact" data-id="${esc(h.k.id)}">${esc(h.k.name)}</a> (${esc(h.why.join(", "))}${h.k.companyId&&S.companies.get(h.k.companyId)?` · ${esc(S.companies.get(h.k.companyId).name)}`:""})</div>`).join("") : "";
 }
 function dupCheck(){
   const w=$("#dupWarn"); if(!w) return; const hit=dupCompany($("#cName").value, FORM.id);
@@ -26,13 +26,13 @@ function dupModal(hits, onNew){
   const formEl=$("#contactForm"); if(formEl) formEl.style.display="none";
   const box=document.createElement("div"); box.className="dupbox"; box.id="dupBox";
   box.innerHTML=`${ovHead("Already in Munger?",`<button class="hbtn" data-act="dup-back">Back</button>`)}<div class="ovb">
-   <p style="margin:0 2px 12px;font-size:15.5px">${strong?"This person is already in the network.":"Someone with this name is already in the network."} Update them instead of adding a duplicate.</p>
+   <p style="margin:0 2px 12px;font-size:15.5px">${strong?"This person is already in the network. Update them instead of adding a duplicate.":hits.some(h=>h.why.includes("same name"))?"Someone with this name is already in the network. Is it the same person?":"Did you mean one of these people? If so, update them instead of adding a duplicate."}</p>
    <div class="group">${hits.slice(0,4).map(h=>`<div class="rowi" style="flex-wrap:wrap;gap:8px">${avatarP(h.k)}<span class="main" style="min-width:150px"><span class="t1" style="display:block">${esc(h.k.name)}</span><span class="t2" style="display:block">${esc([h.why.join(", "), workLine(h.k), h.k.cell, knowsTxt(h.k)].filter(Boolean).join(" · "))}</span></span><span style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm primary" data-act="dup-merge" data-id="${esc(h.k.id)}">Add my details to them</button><button class="btn sm" data-act="dup-open" data-id="${esc(h.k.id)}">Open</button></span></div>`).join("")}</div>
    ${strong?`<p class="tag" style="margin:12px 2px">The same cell number or email can't be saved twice.</p>`:`<div style="margin-top:14px"><button class="btn block" data-act="dup-new">It's a different person – add them</button></div>`}
   </div>`;
   formEl.parentNode.appendChild(box);
 }
-function closeDupBox(){ $("#dupBox")?.remove(); const f=$("#contactForm"); if(f) f.style.display="contents"; }
+function closeDupBox(){ $("#dupBox")?.remove(); ["#contactForm","#dealForm"].forEach(s=>{ const f=$(s); if(f) f.style.display="contents"; }); }
 async function mergeIntoExisting(id){
   const k=S.contacts.get(id); if(!k) return; const d=kFormRead(); const by=await myName();
   const patch={}; const fill=(f,v)=>{ if(v && !k[f]) patch[f]=v; };
