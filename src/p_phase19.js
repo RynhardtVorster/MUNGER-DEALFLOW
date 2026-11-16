@@ -496,7 +496,7 @@ function defaultResp(){ return S.partners.find(p=>/^rynhardt/i.test(p)) || myPar
 function respFields(c,isNew){ if(!S.partners.length) return "";
   const R=new Set(Array.isArray(c.responsible)&&c.responsible.length? c.responsible : isNew? [defaultResp()] : (c.partner?[c.partner]:[]));
   return `<div class="fld" style="grid-column:1/-1"><label>Responsible to follow up (one or more)</label><div class="rolechips" id="cResp" style="margin-top:6px">${S.partners.map(p=>`<label><input type="checkbox" name="cResp" value="${esc(p)}" ${R.has(p)?"checked":""}><span>${esc(p.split(" ")[0])}</span></label>`).join("")}</div></div>`; }
-function respRead(){ const box=document.querySelector("#dealForm #cResp"); if(!box) return null; return [...box.querySelectorAll("input[name=cResp]:checked")].map(x=>x.value); }
+function respRead(){ const box=document.querySelector("#dealForm #cResp"); if(!box) return null; if($("#cKind")?.value==="other") return []; return [...box.querySelectorAll("input[name=cResp]:checked")].map(x=>x.value); }
 { const base=dbSet; dbSet=async function(path,data){ if(String(path).startsWith("companies/") && data && "name" in data && document.querySelector("#dealForm #cResp")){ const R=respRead(); if(R) data={...data,responsible:R}; } return base(path,data); }; }
 { const base=dbUpdate; dbUpdate=async function(path,patch){ if(String(path).startsWith("companies/") && patch && "name" in patch && document.querySelector("#dealForm #cResp")){ const R=respRead(); if(R) patch={...patch,responsible:R}; } return base(path,patch); }; }
 
@@ -599,3 +599,22 @@ document.addEventListener("change",async e=>{ const t=e.target;
   if(t.classList?.contains("tc-resp")){ const id=t.dataset.id; const R=[...document.querySelectorAll(`.tc-resp[data-id="${id}"]:checked`)].map(x=>x.value);
     if(!R.length){ t.checked=true; toast("At least one partner must be responsible"); return; }
     if(await dbUpdate("companies/"+id,{responsible:R})) toast(`Responsible: ${R.map(p=>p.split(" ")[0]).join(" & ")}`); } });
+
+/* ---------- 22. Network company (not to buy): no Munger / stage / check-in / sale-signal questions ---------- */
+function markNoOther(){ const f=$("#dealForm"); if(!f || f.dataset.no19) return; f.dataset.no19="1";
+  const fs=[...f.querySelectorAll(".fsec")];
+  const tag=el=>el&&el.classList.add("noother");
+  fs.forEach(s=>{ const t=s.textContent.trim();
+    if(t==="Munger"){ tag(s); tag(s.nextElementSibling); }
+    if(t==="Who brought it to us?") tag(s.parentElement);
+    if(t==="Sale signals") tag(s.parentElement);
+    if(/^Mandate fit/.test(t)){ tag(s); tag(s.nextElementSibling); } });
+  tag($("#nextHint")); tag($("#cadOff")); }
+function otherVis(){ if(!$("#dealForm")) return; markNoOther(); const other=$("#cKind")?.value==="other";
+  document.querySelectorAll("#dealForm .noother").forEach(el=>{ if(other){ el.dataset.wasHidden=el.hidden?"1":""; el.hidden=true; } else if(el.dataset.wasHidden!==undefined){ el.hidden=el.dataset.wasHidden==="1"; delete el.dataset.wasHidden; } });
+  if(other){ const st=$("#cStage"); if(st) st.value="network"; const cc=$("#cCad"); if(cc) cc.value="0"; const cn=$("#cNext"); if(cn) cn.value=""; }
+  const t=document.querySelector("#dealForm .ovh h2, #dealForm header h2"); }
+{ const base=kindVis; kindVis=function(){ base(); otherVis(); }; }
+{ const base=dealForm; dealForm=function(id,preset){ base(id,preset); otherVis(); }; }
+{ const base=dbSet; dbSet=async function(path,data){ if(String(path).startsWith("companies/") && data && "name" in data && $("#dealForm") && $("#cKind")?.value==="other") data={...data,responsible:[],status:"network",followUpMonths:0,nextCheckIn:""}; return base(path,data); }; }
+{ const base=cadVis; cadVis=function(){ base(); if($("#cKind")?.value==="other"){ ["#cadOff","#nextHint"].forEach(s=>{ const e=$(s); if(e) e.hidden=true; }); } }; }
