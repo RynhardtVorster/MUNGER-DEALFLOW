@@ -405,7 +405,7 @@ function contactForm(id, preset){
   const tier=id? tierOf(k) : (k.tier||"D");
   FORM={kind:"contact", id};
   const co=k.companyId? S.companies.get(k.companyId) : null; const tal=k.talent||{};
-  const whereInit= co? (isPartnerCo(co)?"partner":"business") : k.firm? "other" : tier==="B"? "partner" : tier==="A"? "business" : "other"; FORM.coInit=co?co.id:"";
+  const whereInit= co? (isPartnerCo(co)?"partner":co.kind==="other"?"company":"business") : k.firm? "other" : tier==="B"? "partner" : tier==="A"? "business" : "other"; FORM.coInit=co?co.id:"";
   const rel={}; (id? knowers(k) : [{partner:defaultPartner(),relation:""}]).forEach(x=>rel[x.partner]=x.relation||"business");
   showModal(`<form id="contactForm" novalidate style="display:contents">${formHead(id?"Edit person":"New person","contactForm")}<div class="ovb">
   <div class="scorebar" id="kScore"></div>
@@ -425,12 +425,12 @@ function contactForm(id, preset){
    <div class="fld"><label for="kCountry">Country</label><input id="kCountry" list="countryList" value="${esc(k.country||"South Africa")}" autocomplete="off" placeholder="Start typing a country">${countryList()}</div>
   </div><div id="kDup" class="warnline"></div>
   <div class="fsec">Where do they work?</div>
-  <div class="seg3 where" role="radiogroup" aria-label="Where do they work?"><label><input type="radio" name="kWhere" value="partner" ${whereInit==="partner"?"checked":""}><span>${ic("bank",18)} At a partner</span></label><label><input type="radio" name="kWhere" value="business" ${whereInit==="business"?"checked":""}><span>${ic("biz",18)} At a business</span></label><label><input type="radio" name="kWhere" value="other" ${whereInit==="other"?"checked":""}><span>No company</span></label></div>
+  <div class="seg3 where where4" role="radiogroup" aria-label="Where do they work?">${[["partner","bank","At a partner firm"],["business","bizplus","At a business we'd buy"],["company","biz","At another company"],["other","","No company"]].map(([v,i,l])=>`<label><input type="radio" name="kWhere" value="${v}" ${whereInit===v?"checked":""}><span>${i?ic(i,18)+" ":""}${l}</span></label>`).join("")}</div>
   <div class="fields" style="margin-top:10px">
    <div class="fld" id="kCoPickW"><label for="kCoPick" id="kCoPickL">Which partner?</label><select id="kCoPick"></select></div>
    <div class="fld" id="kCoNewW" hidden><label for="kCoNew" id="kCoNewL">Name of the new partner firm</label><input id="kCoNew" autocomplete="off" autocapitalize="words" value="${esc(!co&&k.firm&&whereInit!=="other"?k.firm:"")}"></div>
    <div id="kCoSim" class="warnline"></div>
-   <div class="fld" id="kBuyW" hidden><label for="kBuy">Would we like to buy this business?</label><select id="kBuy">${opts([{v:"no",l:"No – a network company (they just work there)"},{v:"network",l:"Yes, a prospect – we'd look at it"},{v:"target",l:"Yes, a target – we go full out"}],"no")}</select></div>
+   <div class="fld" id="kBuyW" hidden><label for="kBuy">How keen are we?</label><select id="kBuy">${opts([{v:"network",l:"A prospect – we'd look at it"},{v:"target",l:"A target – we go full out"}],"network")}</select></div>
    <div class="fld" id="kNewCoKindW" hidden><label for="kNewCoKind">What kind of partner?</label><select id="kNewCoKind">${opts(Object.entries(PKINDS).map(([v,l])=>({v,l})),"")}</select></div>
    <div class="fld" id="kFirmW" hidden><label for="kFirm">Company (optional)</label><input id="kFirm" autocomplete="off" value="${esc(!co&&whereInit==="other"?k.firm:"")}" placeholder="Where they work, if anywhere"></div>
    <div class="fld"><label for="kRole">Role at the company</label><select id="kRole">${opts(ROLES,k.companyRole,"Choose…")}</select></div>

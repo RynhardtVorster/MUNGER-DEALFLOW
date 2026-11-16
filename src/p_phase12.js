@@ -29,6 +29,6 @@ function ownsLine(k){
 }
 document.addEventListener("click",e=>{
   const t=e.target.closest("[data-act]"); if(!t) return; const a=t.dataset.act;
-  if(a==="unlink-keep"){ closeDupBox(); const c=S.companies.get(t.dataset.id); if(!c) return; const r=document.querySelector(`input[name=kWhere][value=${isPartnerCo(c)?"partner":"business"}]`); if(r) r.checked=true; fillCoPick(); $("#kCoPick").value=c.id; kFormUpdate(); FORM.unlinkOk=false; submitContact(); }
+  if(a==="unlink-keep"){ closeDupBox(); const c=S.companies.get(t.dataset.id); if(!c) return; const r=document.querySelector(`input[name=kWhere][value=${isPartnerCo(c)?"partner":c.kind==="other"?"company":"business"}]`); if(r) r.checked=true; fillCoPick(); $("#kCoPick").value=c.id; kFormUpdate(); FORM.unlinkOk=false; submitContact(); }
   if(a==="unlink-ok"){ closeDupBox(); FORM.unlinkOk=true; submitContact(); }
 });

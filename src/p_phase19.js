@@ -482,3 +482,6 @@ function famRead19(){ return [...document.querySelectorAll(".famrow19")].map(r=>
   const have=new Set((S.links||[]).filter(l=>l.a===id||l.b===id).map(l=>l.a===id?l.b:l.a)); const rows=fam.filter(x=>x.o!==id && !have.has(x.o)).map(x=>({a:id,b:x.o,a_is:x.aIs,b_is:x.bIs,note:""}));
   if(rows.length){ const {error}=await sb.from("person_links").insert(rows); if(error) writeErr(error); else { await loadLinks(); toast(rows.length===1?"Family member linked":`${rows.length} family members linked`); try{ if(sheetOpen()) renderSheet(); }catch(_){} } }
   return r; }; }
+
+/* ---------- 14. Show the app version in settings ---------- */
+{ const base=vSettings; vSettings=function(){ return base()+`<p class="tag" style="text-align:center;margin-top:14px">Munger app ${typeof APP_V!=="undefined"?APP_V:""} · updates load by themselves when you open the app</p>`; }; }

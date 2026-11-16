@@ -24,7 +24,7 @@ function vOthers(){
 TITLES.others="BUSINESSES";
 document.addEventListener("input",e=>{ if(e.target.id==="oq"){ S.oq=e.target.value; const pos=e.target.selectionStart; render(); const i=$("#oq"); if(i){ i.focus(); try{ i.setSelectionRange(pos,pos); }catch(_){} } } });
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-act=new-netco]"); if(t && !S.readOnly) dealForm(null,{kind:"other",status:"network"}); });
-{ const base=fillCoPick; fillCoPick=function(){ base(); const w=whereVal(), sel=$("#kCoPick"); if(!sel||w!=="business") return; const cur=sel.value;
+{ const base=fillCoPick; fillCoPick=function(){ base(); const w=whereVal(), sel=$("#kCoPick"); if(!sel||true) return; const cur=sel.value;
   const acq=companies().filter(isAcq).sort((a,b)=>a.name.localeCompare(b.name)), net=companies().filter(c=>c.kind==="other").sort((a,b)=>a.name.localeCompare(b.name));
   const o=c=>`<option value="${esc(c.id)}">${esc(c.name)}${isAcq(c)?` · ${grp(c)==="network"?"Prospect":"Target"}`:""}</option>`;
   sel.innerHTML=`<option value="">Choose…</option>${net.length?`<optgroup label="Network companies (not to buy)">${net.map(o).join("")}</optgroup>`:""}${acq.length?`<optgroup label="Businesses we want to buy">${acq.map(o).join("")}</optgroup>`:""}<option value="__new">+ New business…</option>`;

@@ -306,6 +306,7 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 .log .e[data-act="log-edit"]{cursor:pointer;position:relative;padding-right:30px}
 .log .e[data-act="log-edit"]::after{content:"✎";position:absolute;right:10px;top:10px;opacity:.45;font-size:15px}
 .rowi.done19 .t1::after{content:" ✓ opened";color:var(--good,#2e7d32);font-weight:500}
+.seg3.where4{grid-template-columns:1fr 1fr}
 .mdot-wrap{background:none;border:0}
 .mdot{border-radius:50%;background:var(--tierA,#b5651d);color:#fff;display:grid;place-items:center;font:700 12.5px/1 "Source Sans 3",system-ui,sans-serif;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);opacity:.93}
 .mdot.sel{background:var(--ink,#1d2b36);transform:scale(1.12)}
@@ -479,6 +480,7 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 <script src="supabase.js"></script>
 <script>
 "use strict";
+const APP_V="v40";
 /* ---------------- Reference data ---------------- */
 const STAGES = [
   {id:"network", label:"Prospect – we'd look at it", group:"network"},
@@ -2607,7 +2609,7 @@ function contactForm(id, preset){
   const tier=id? tierOf(k) : (k.tier||"D");
   FORM={kind:"contact", id};
   const co=k.companyId? S.companies.get(k.companyId) : null; const tal=k.talent||{};
-  const whereInit= co? (isPartnerCo(co)?"partner":"business") : k.firm? "other" : tier==="B"? "partner" : tier==="A"? "business" : "other"; FORM.coInit=co?co.id:"";
+  const whereInit= co? (isPartnerCo(co)?"partner":co.kind==="other"?"company":"business") : k.firm? "other" : tier==="B"? "partner" : tier==="A"? "business" : "other"; FORM.coInit=co?co.id:"";
   const rel={}; (id? knowers(k) : [{partner:defaultPartner(),relation:""}]).forEach(x=>rel[x.partner]=x.relation||"business");
   showModal(`<form id="contactForm" novalidate style="display:contents">${formHead(id?"Edit person":"New person","contactForm")}<div class="ovb">
   <div class="scorebar" id="kScore"></div>
@@ -2627,12 +2629,12 @@ function contactForm(id, preset){
    <div class="fld"><label for="kCountry">Country</label><input id="kCountry" list="countryList" value="${esc(k.country||"South Africa")}" autocomplete="off" placeholder="Start typing a country">${countryList()}</div>
   </div><div id="kDup" class="warnline"></div>
   <div class="fsec">Where do they work?</div>
-  <div class="seg3 where" role="radiogroup" aria-label="Where do they work?"><label><input type="radio" name="kWhere" value="partner" ${whereInit==="partner"?"checked":""}><span>${ic("bank",18)} At a partner</span></label><label><input type="radio" name="kWhere" value="business" ${whereInit==="business"?"checked":""}><span>${ic("biz",18)} At a business</span></label><label><input type="radio" name="kWhere" value="other" ${whereInit==="other"?"checked":""}><span>No company</span></label></div>
+  <div class="seg3 where where4" role="radiogroup" aria-label="Where do they work?">${[["partner","bank","At a partner firm"],["business","bizplus","At a business we'd buy"],["company","biz","At another company"],["other","","No company"]].map(([v,i,l])=>`<label><input type="radio" name="kWhere" value="${v}" ${whereInit===v?"checked":""}><span>${i?ic(i,18)+" ":""}${l}</span></label>`).join("")}</div>
   <div class="fields" style="margin-top:10px">
    <div class="fld" id="kCoPickW"><label for="kCoPick" id="kCoPickL">Which partner?</label><select id="kCoPick"></select></div>
    <div class="fld" id="kCoNewW" hidden><label for="kCoNew" id="kCoNewL">Name of the new partner firm</label><input id="kCoNew" autocomplete="off" autocapitalize="words" value="${esc(!co&&k.firm&&whereInit!=="other"?k.firm:"")}"></div>
    <div id="kCoSim" class="warnline"></div>
-   <div class="fld" id="kBuyW" hidden><label for="kBuy">Would we like to buy this business?</label><select id="kBuy">${opts([{v:"no",l:"No – a network company (they just work there)"},{v:"network",l:"Yes, a prospect – we'd look at it"},{v:"target",l:"Yes, a target – we go full out"}],"no")}</select></div>
+   <div class="fld" id="kBuyW" hidden><label for="kBuy">How keen are we?</label><select id="kBuy">${opts([{v:"network",l:"A prospect – we'd look at it"},{v:"target",l:"A target – we go full out"}],"network")}</select></div>
    <div class="fld" id="kNewCoKindW" hidden><label for="kNewCoKind">What kind of partner?</label><select id="kNewCoKind">${opts(Object.entries(PKINDS).map(([v,l])=>({v,l})),"")}</select></div>
    <div class="fld" id="kFirmW" hidden><label for="kFirm">Company (optional)</label><input id="kFirm" autocomplete="off" value="${esc(!co&&whereInit==="other"?k.firm:"")}" placeholder="Where they work, if anywhere"></div>
    <div class="fld"><label for="kRole">Role at the company</label><select id="kRole">${opts(ROLES,k.companyRole,"Choose…")}</select></div>
@@ -2971,11 +2973,11 @@ const PROLES=["Partner / director","Relationship manager / banker","Investment m
 function whereVal(){ return (document.querySelector("input[name=kWhere]:checked")||{}).value||"other"; }
 function fillCoPick(){
   const w=whereVal(), sel=$("#kCoPick"); if(!sel) return; const cur=sel.value||FORM.coInit||"";
-  const list=companies().filter(c=> w==="partner"? isPartnerCo(c) : !isPartnerCo(c)).sort((a,b)=>a.name.localeCompare(b.name));
-  sel.innerHTML=`<option value="">Choose…</option>${list.map(c=>`<option value="${esc(c.id)}"${c.id===cur?" selected":""}>${esc(c.name)}${w==="partner"?` · ${esc(PKINDS[c.kind]||"")}`:c.kind==="other"?"":` · ${grp(c)==="network"?"Prospect":"Target"}`}</option>`).join("")}<option value="__new"${cur==="__new"?" selected":""}>+ New ${w==="partner"?"partner firm":"business"}…</option>`;
+  const list=companies().filter(c=> w==="partner"? isPartnerCo(c) : w==="company"? c.kind==="other" : isAcq(c)).sort((a,b)=>a.name.localeCompare(b.name));
+  sel.innerHTML=`<option value="">Choose…</option>${list.map(c=>`<option value="${esc(c.id)}"${c.id===cur?" selected":""}>${esc(c.name)}${w==="partner"?` · ${esc(PKINDS[c.kind]||"")}`:w==="company"?"":` · ${grp(c)==="network"?"Prospect":"Target"}`}</option>`).join("")}<option value="__new"${cur==="__new"?" selected":""}>+ New ${w==="partner"?"partner firm":w==="company"?"company":"business to buy"}…</option>`;
   if(!list.some(c=>c.id===cur) && cur!=="__new" && $("#kCoNew")?.value) sel.value="__new";
-  $("#kCoPickL").textContent= w==="partner"? "Which partner?" : "Which business?";
-  $("#kCoNewL").textContent= w==="partner"? "Name of the new partner firm" : "Name of the business";
+  $("#kCoPickL").textContent= w==="partner"? "Which partner firm?" : w==="company"? "Which company?" : "Which business?";
+  $("#kCoNewL").textContent= w==="partner"? "Name of the new partner firm" : w==="company"? "Name of the company" : "Name of the business";
   const role=$("#kRole"); if(role){ const rv=role.value; const L=w==="partner"? PROLES : ROLES; role.innerHTML=opts(L.includes(rv)||!rv? L : [rv,...L], rv, "Choose…"); }
 }
 function whereRead(){
@@ -2996,7 +2998,7 @@ function newCoUpdate(d){
   const kw=$("#kNewCoKindW"), was=kw.hidden; kw.hidden= !(w==="partner" && v==="__new");
   if(was && !kw.hidden && !FORM.nkTouched) $("#kNewCoKind").value=guessPKind(d);
 }
-function newCoChoice(d){ const W=whereRead(); if(!W.isNew) return {what:"none"}; return {what:W.where==="partner"?"partner":"business", kind:$("#kNewCoKind")?.value||"advisory", buy:$("#kBuy")?.value||"no"}; }
+function newCoChoice(d){ const W=whereRead(); if(!W.isNew) return {what:"none"}; return {what:W.where==="partner"?"partner":"business", kind:$("#kNewCoKind")?.value||"advisory", buy: W.where==="company"? "no" : ($("#kBuy")?.value||"network")}; }
 
 /* ---------- Events ---------- */
 document.addEventListener("click",e=>{
@@ -3446,7 +3448,7 @@ function coSimCheck(){
   w.innerHTML= ex? `<div>Already in Munger: <b>${esc(ex.name)}</b> (${esc(coLabel(ex))}) – they'll be linked to it.</div>` : L.map(c=>`<div>Did you mean <b>${esc(c.name)}</b> (${esc(coLabel(c))})? <button type="button" class="btn sm" data-act="co-use" data-id="${esc(c.id)}">Use this</button></div>`).join("");
 }
 function useCompany(id){
-  const c=S.companies.get(id); if(!c) return; const want=isPartnerCo(c)?"partner":"business";
+  const c=S.companies.get(id); if(!c) return; const want=isPartnerCo(c)?"partner":c.kind==="other"?"company":"business";
   const r=document.querySelector(`input[name=kWhere][value=${want}]`); if(r) r.checked=true; FORM.whereTouched=true;
   $("#kCoNew").value=""; fillCoPick(); $("#kCoPick").value=id; kFormUpdate(); coSimCheck(); toast(`Linked to ${c.name}`);
 }
@@ -3660,7 +3662,7 @@ function ownsLine(k){
 }
 document.addEventListener("click",e=>{
   const t=e.target.closest("[data-act]"); if(!t) return; const a=t.dataset.act;
-  if(a==="unlink-keep"){ closeDupBox(); const c=S.companies.get(t.dataset.id); if(!c) return; const r=document.querySelector(`input[name=kWhere][value=${isPartnerCo(c)?"partner":"business"}]`); if(r) r.checked=true; fillCoPick(); $("#kCoPick").value=c.id; kFormUpdate(); FORM.unlinkOk=false; submitContact(); }
+  if(a==="unlink-keep"){ closeDupBox(); const c=S.companies.get(t.dataset.id); if(!c) return; const r=document.querySelector(`input[name=kWhere][value=${isPartnerCo(c)?"partner":c.kind==="other"?"company":"business"}]`); if(r) r.checked=true; fillCoPick(); $("#kCoPick").value=c.id; kFormUpdate(); FORM.unlinkOk=false; submitContact(); }
   if(a==="unlink-ok"){ closeDupBox(); FORM.unlinkOk=true; submitContact(); }
 });
 
@@ -3690,7 +3692,7 @@ function vOthers(){
 TITLES.others="BUSINESSES";
 document.addEventListener("input",e=>{ if(e.target.id==="oq"){ S.oq=e.target.value; const pos=e.target.selectionStart; render(); const i=$("#oq"); if(i){ i.focus(); try{ i.setSelectionRange(pos,pos); }catch(_){} } } });
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-act=new-netco]"); if(t && !S.readOnly) dealForm(null,{kind:"other",status:"network"}); });
-{ const base=fillCoPick; fillCoPick=function(){ base(); const w=whereVal(), sel=$("#kCoPick"); if(!sel||w!=="business") return; const cur=sel.value;
+{ const base=fillCoPick; fillCoPick=function(){ base(); const w=whereVal(), sel=$("#kCoPick"); if(!sel||true) return; const cur=sel.value;
   const acq=companies().filter(isAcq).sort((a,b)=>a.name.localeCompare(b.name)), net=companies().filter(c=>c.kind==="other").sort((a,b)=>a.name.localeCompare(b.name));
   const o=c=>`<option value="${esc(c.id)}">${esc(c.name)}${isAcq(c)?` · ${grp(c)==="network"?"Prospect":"Target"}`:""}</option>`;
   sel.innerHTML=`<option value="">Choose…</option>${net.length?`<optgroup label="Network companies (not to buy)">${net.map(o).join("")}</optgroup>`:""}${acq.length?`<optgroup label="Businesses we want to buy">${acq.map(o).join("")}</optgroup>`:""}<option value="__new">+ New business…</option>`;
@@ -4512,6 +4514,9 @@ function famRead19(){ return [...document.querySelectorAll(".famrow19")].map(r=>
   if(rows.length){ const {error}=await sb.from("person_links").insert(rows); if(error) writeErr(error); else { await loadLinks(); toast(rows.length===1?"Family member linked":`${rows.length} family members linked`); try{ if(sheetOpen()) renderSheet(); }catch(_){} } }
   return r; }; }
 
+/* ---------- 14. Show the app version in settings ---------- */
+{ const base=vSettings; vSettings=function(){ return base()+`<p class="tag" style="text-align:center;margin-top:14px">Munger app ${typeof APP_V!=="undefined"?APP_V:""} · updates load by themselves when you open the app</p>`; }; }
+
 
 function vNetwork(){
   return `<div class="ph"><div><h1>Network map</h1><p>Every partner, everyone they know, and the businesses those people own, work at or brought in. Tap a dot.</p></div></div>
@@ -4586,7 +4591,8 @@ function netInit(){
 window.addEventListener("hashchange",()=>{ document.body.classList.remove("netfull"); document.documentElement.classList.remove("netdark"); });
 
 init();
-if("serviceWorker" in navigator){ window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{})); }
+if("serviceWorker" in navigator){ window.addEventListener("load",()=>{ navigator.serviceWorker.register("sw.js").then(reg=>{ document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") reg.update().catch(()=>{}); }); setInterval(()=>reg.update().catch(()=>{}),30*60*1000); }).catch(()=>{}); });
+  let swReloaded=false; const hadCtl=!!navigator.serviceWorker.controller; navigator.serviceWorker.addEventListener("controllerchange",()=>{ if(!hadCtl||swReloaded) return; swReloaded=true; if(!document.querySelector("#modal.on")) location.reload(); else toast("A new version of Munger is ready – it loads next time you open the app"); }); }
 </script>
 </body>
 </html>

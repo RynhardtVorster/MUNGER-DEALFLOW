@@ -39,7 +39,7 @@ function coSimCheck(){
   w.innerHTML= ex? `<div>Already in Munger: <b>${esc(ex.name)}</b> (${esc(coLabel(ex))}) – they'll be linked to it.</div>` : L.map(c=>`<div>Did you mean <b>${esc(c.name)}</b> (${esc(coLabel(c))})? <button type="button" class="btn sm" data-act="co-use" data-id="${esc(c.id)}">Use this</button></div>`).join("");
 }
 function useCompany(id){
-  const c=S.companies.get(id); if(!c) return; const want=isPartnerCo(c)?"partner":"business";
+  const c=S.companies.get(id); if(!c) return; const want=isPartnerCo(c)?"partner":c.kind==="other"?"company":"business";
   const r=document.querySelector(`input[name=kWhere][value=${want}]`); if(r) r.checked=true; FORM.whereTouched=true;
   $("#kCoNew").value=""; fillCoPick(); $("#kCoPick").value=id; kFormUpdate(); coSimCheck(); toast(`Linked to ${c.name}`);
 }
