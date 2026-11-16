@@ -1,5 +1,5 @@
 /* ================= Phase 16: several types per person, industry search, smarter Ask ================= */
-const TIER_PRIO=["A","C","B","D"];
+const TIER_PRIO=["A","C","D","B"];
 function tagsOf(k){ const t=(k&&Array.isArray(k.tags)&&k.tags.length)? k.tags.filter(x=>TIERS[x]) : [tierOf(k)]; return TIER_PRIO.filter(x=>t.includes(x)); }
 function hasTag(k,t){ return tagsOf(k).includes(t); }
 function indList(){ return `<datalist id="indList">${SECTORS.flatMap(g=>INDUSTRIES[g].map(i=>`<option value="${esc(g+" › "+i)}"></option>`)).join("")}</datalist>`; }

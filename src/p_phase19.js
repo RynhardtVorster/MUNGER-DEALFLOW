@@ -485,3 +485,6 @@ function famRead19(){ return [...document.querySelectorAll(".famrow19")].map(r=>
 
 /* ---------- 14. Show the app version in settings ---------- */
 { const base=vSettings; vSettings=function(){ return base()+`<p class="tag" style="text-align:center;margin-top:14px">Munger app ${typeof APP_V!=="undefined"?APP_V:""} · updates load by themselves when you open the app</p>`; }; }
+
+/* ---------- 15. A person's lead type follows their tags: Owner > Potential hire > Great contact > Employee ---------- */
+{ const base=tierOf; tierOf=function(k){ const t=k&&Array.isArray(k.tags)? k.tags.filter(x=>TIERS[x]) : []; return t.length? TIER_PRIO.find(x=>t.includes(x)) : base(k); }; }
