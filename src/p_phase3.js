@@ -158,7 +158,7 @@ function filteredDeals(){
   return companies().filter(c=>{
     if(kind==="financier"? !isPartnerCo(c) : isPartnerCo(c)) return false;
     const g=grp(c);
-    if(kind!=="financier"){ if(f.group==="likely"){ if(!likelySeller(c)||g==="closed"||g==="won") return false; } else if(f.group==="won"){ if(g!=="won"&&g!=="closed") return false; } else if(f.group && g!==f.group) return false; }
+    if(kind!=="financier"){ if(f.group==="likely"){ if(!likelySeller(c)||g==="closed"||g==="won") return false; } else if(f.group && g!==f.group) return false; }
     if(f.mine && !isMine(c)) return false;
     if(f.sector && sectorOf(c)!==f.sector) return false;
     if(f.partner && c.partner!==f.partner) return false;
@@ -184,7 +184,7 @@ function vBusinesses(){
   return `<div class="ph"><div><h1>Businesses</h1><p>Companies in our network, the ones we like, and where we stand.</p></div><button class="btn sm primary" data-act="new-deal">${ic("plus",18)} Add</button></div>${head}
   <div class="search">${ic("search",20)}<input id="fq" type="search" placeholder="Search business, owner, town…" value="${esc(f.q)}" autocomplete="off" aria-label="Search businesses"></div>
   <div class="chips">
-    ${[["","All"],["target","Targets"],["active","In discussions"],["network","In our network"],["likely","Likely sellers"],["won","Deal done"]].map(([g,l])=>`<button class="chip ${f.group===g?"on":""}" data-act="f-group" data-k="${g}">${l} <span class="n">${g==="likely"?acq.filter(c=>likelySeller(c)&&!["closed","won"].includes(grp(c))).length:g?n(g):acq.length}</span></button>`).join("")}
+    ${[["","All"],["target","Targets"],["active","In discussions"],["network","In our network"],["likely","Likely sellers"],["won","Deal done"],["closed","Not for us"]].map(([g,l])=>`<button class="chip ${f.group===g?"on":""}" data-act="f-group" data-k="${g}">${l} <span class="n">${g==="likely"?acq.filter(c=>likelySeller(c)&&!["closed","won"].includes(grp(c))).length:g?n(g):acq.length}</span></button>`).join("")}
     ${myPartner()?`<button class="chip ${f.mine?"on":""}" data-act="f-mine">Mine</button>`:""}
     <button class="chip ${nf?"on":""}" data-act="f-sheet">${ic("sliders",16)} Filters${nf?` · ${nf}`:""}</button>
   </div>
