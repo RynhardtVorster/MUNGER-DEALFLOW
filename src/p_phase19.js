@@ -705,3 +705,13 @@ document.addEventListener("click",e=>{ const a=e.target.closest('a[href="#busine
 document.addEventListener("click",e=>{ const t=e.target.closest('[data-act="wealth19"],[data-act="wealth19-save"]'); if(!t) return; e.preventDefault(); e.stopPropagation(); const k=S.contacts.get(t.dataset.id); if(!k) return;
   if(t.dataset.act==="wealth19"){ showModal(`${ovHead("Wealth source",`<button class="hbtn" data-act="close-modal">Cancel</button>`)}<div class="ovb"><p style="margin:0 2px 10px"><b>${esc(k.name)}</b></p><div class="fields">${fldNote("wsText","Where does their wealth come from?",k.wealthSource||"","e.g. sold a logistics business in 2019; family farming trust; property portfolio in the Boland",4)}</div><button class="btn primary block" data-act="wealth19-save" data-id="${esc(k.id)}" style="margin-top:14px">Save</button></div>`,true); setTimeout(()=>$("#wsText")?.focus(),60); return; }
   (async()=>{ if(await dbUpdate("contacts/"+k.id,{wealthSource:$("#wsText").value.trim(),hnwi:true})){ closeModal(); toast("Wealth source saved"); try{ renderSheet(); }catch(_){} } })(); },true);
+
+/* ---------- 26. Main contact per company: the person the Call / WhatsApp / Email buttons use ---------- */
+{ const base=bizContact; bizContact=function(c){ const m=c?.mainContactId && S.contacts.get(c.mainContactId); return m || base(c); }; }
+function mainContactHTML(c,ro){ const ppl=peopleAt(c).filter(k=>!k.doNotContact); if(!ppl.length) return ""; const cur=c.mainContactId&&S.contacts.has(c.mainContactId)? c.mainContactId : "";
+  const auto=bizContact({...c,mainContactId:""});
+  return `<div class="card box" style="margin-top:10px"><div class="fld"><label for="mc19">Main contact for ${esc(c.name)}</label>
+   ${ro?`<b>${esc((cur?S.contacts.get(cur):auto)?.name||"Not set")}</b>`:`<select id="mc19" data-id="${esc(c.id)}">${opts(ppl.sort((a,b)=>a.name.localeCompare(b.name)).map(k=>({v:k.id,l:`${k.name}${k.companyRole||k.title?` · ${k.companyRole||k.title}`:""}`})),cur,`Automatic${auto?.name?` (${auto.name})`:""}`)}</select>`}</div>
+   <div class="tag" style="margin-top:6px">Call, WhatsApp and Email at the top of this page go to this person. To reach anyone else here, open their own profile.</div></div>`; }
+document.addEventListener("change",async e=>{ if(e.target.id!=="mc19") return; const id=e.target.dataset.id; const v=e.target.value;
+  if(await dbUpdate("companies/"+id,{mainContactId:v})){ toast(v?`Main contact: ${S.contacts.get(v)?.name||""}`:"Main contact set to automatic"); try{ renderSheet(); }catch(_){} } });
