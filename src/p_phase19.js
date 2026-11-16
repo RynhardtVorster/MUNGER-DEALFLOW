@@ -527,3 +527,12 @@ document.addEventListener("change",e=>{ if(!e.target.classList?.contains("xco"))
       if(!ok) return; }
     const sel=r.querySelector(".xco"); if(![...sel.options].some(o=>o.value===id)) sel.insertAdjacentHTML("beforeend",`<option value="${esc(id)}">${esc(nm)}</option>`); sel.value=id; r.querySelector(".xnew").hidden=true; }
   return base(); }; }
+
+/* ---------- 19. "No company": no company questions (role, job title, company name) ---------- */
+function noCoToggle(){ if(!$("#contactForm")) return; const none=whereVal()==="other";
+  ["#kRole","#kTitle"].forEach(s=>{ const f=$(s)?.closest(".fld"); if(f) f.hidden=none; });
+  const fw=$("#kFirmW"); if(fw && none) fw.hidden=true;
+  if(none && $("#kRole")) $("#kRole").value=""; }
+{ const base=newCoUpdate; newCoUpdate=function(d){ base(d); noCoToggle(); }; }
+{ const base=contactForm; contactForm=function(id,preset){ base(id,preset); noCoToggle(); }; }
+document.addEventListener("change",e=>{ if(e.target.name==="kWhere") setTimeout(noCoToggle,0); });
