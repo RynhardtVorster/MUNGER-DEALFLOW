@@ -52,6 +52,7 @@ function meetRun(m){
   <div class="lbl" style="margin:12px 4px 6px">Who's here?</div>
   <div class="rolechips">${S.partners.map(p=>`<label><input type="checkbox" name="m6Att" value="${esc(p)}" ${att.includes(p)?"checked":""}><span>${esc(p)}</span></label>`).join("")}</div>
 
+  ${S.readOnly?"":importCard(m)}
   ${sec("m-last",1,"Last time",prev?fmtD(prev.held_on):"")}
   ${prev? `<div class="card box">
     ${prev.title?`<div><b>${esc(prev.title)}</b></div>`:""}
