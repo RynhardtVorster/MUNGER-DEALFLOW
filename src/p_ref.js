@@ -1,7 +1,7 @@
 /* ---------------- Reference data ---------------- */
 const STAGES = [
-  {id:"network", label:"In our network", group:"network"},
-  {id:"target", label:"Target – we like it", group:"target"},
+  {id:"network", label:"Prospect – we'd look at it", group:"network"},
+  {id:"target", label:"Target – going for it", group:"target"},
   {id:"talks", label:"In discussions", group:"active"},
   {id:"won", label:"Deal done", group:"won"},
   {id:"sold", label:"Sold to someone else", group:"closed"},
@@ -10,7 +10,7 @@ const STAGES = [
 const STAGE = Object.fromEntries(STAGES.map(s=>[s.id,s]));
 const LEGACY_STAGE={info:"talks",eval:"talks",offer:"talks",dd:"talks",lead:"network",research:"network",contacted:"network",parked:"network",nurture:"target"};
 function stageOf(id){ return STAGE[id]||STAGE[LEGACY_STAGE[id]]||STAGE.network; }
-const GROUPS = {network:"In our network", target:"Targets", active:"In discussions", won:"Deal done", closed:"Closed"};
+const GROUPS = {network:"Prospects", target:"Targets", active:"In discussions", won:"Deal done", closed:"Closed"};
 
 let CHANNELS = [
   {id:"direct", label:"Direct marketing"},

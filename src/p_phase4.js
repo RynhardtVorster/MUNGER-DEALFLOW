@@ -3,7 +3,7 @@ const PKINDS={financier:"Bank / funder",accounting:"Accounting firm",legal:"Law 
 const PIND={financier:"Business & financial services › Financial services & lending",accounting:"Business & financial services › Accounting & tax",legal:"Business & financial services › Legal",advisory:"Business & financial services › Consulting"};
 const PKW={financier:"bank banker financier funding finance lender credit loan",accounting:"accountant accounting audit auditor tax",legal:"attorney lawyer legal law conveyancer",advisory:"advisor adviser broker corporate finance consultant m&a",other:"",service:""};
 function isPartnerKind(k){ return !!k && !["target","other","network","acquire"].includes(k); }
-const BIZSEL=[{v:"network",l:"Just in our network"},{v:"acquire",l:"We'd like to own it (target)"},{v:"other",l:"Other"}];
+const BIZSEL=[{v:"network",l:"Prospect – we'd look at buying it"},{v:"acquire",l:"Target – we go full out"},{v:"other",l:"Not to buy – just where people work"}];
 function kindFromSel(v){ return v==="network"||v==="acquire"? "target" : (v||"target"); }
 function bizSelOf(c){ return c.kind==="other"? "other" : stageOf(c.status).group==="network"? "network" : "acquire"; }
 function isPartnerCo(c){ return !!c && isPartnerKind(c.kind); }
@@ -43,7 +43,7 @@ function vPartners(){
 function filteredDeals(){
   const f=S.f, q=f.q.trim().toLowerCase();
   return companies().filter(c=>{
-    if(isPartnerCo(c)) return false;
+    if(!isAcq(c)) return false;
     const g=grp(c);
     if(f.group==="likely"){ if(!likelySeller(c)||g==="closed"||g==="won") return false; } else if(f.group && g!==f.group) return false;
     if(f.mine && !isMine(c)) return false;
@@ -57,17 +57,18 @@ function filteredDeals(){
   }).sort((a,b)=>{ const x=a.nextCheckIn||"9999", y=b.nextCheckIn||"9999"; return x.localeCompare(y) || (a.name||"").localeCompare(b.name||""); });
 }
 function vBusinesses(){
-  const f=S.f; const arr=filteredDeals(); const acq=companies().filter(c=>!isPartnerCo(c)); const n=g=>acq.filter(c=>grp(c)===g).length;
+  const f=S.f; const arr=filteredDeals(); const acq=companies().filter(isAcq); const nOther=companies().filter(c=>c.kind==="other").length; const n=g=>acq.filter(c=>grp(c)===g).length;
   const nf=["sector","partner","province","channel","lang"].filter(x=>f[x]).length;
-  return `<div class="ph"><div><h1>Businesses</h1><p>Companies we might buy: in our network, the ones we like, and where we stand.</p></div><button class="btn sm primary" data-act="new-deal">${ic("plus",18)} Add</button></div>
+  return `<div class="ph"><div><h1>Businesses</h1><p>Only companies we want to buy: prospects we'd look at, and targets we go full out for.</p></div><button class="btn sm primary" data-act="new-deal">${ic("plus",18)} Add</button></div>
   <div class="search">${ic("search",20)}<input id="fq" type="search" placeholder="Search business, owner, town…" value="${esc(f.q)}" autocomplete="off" aria-label="Search businesses"></div>
   <div class="chips">
-    ${[["target","Targets"],["active","In discussions"],["network","In our network"],["likely","Likely sellers"],["won","Deal done"],["closed","Closed"],["","All"]].map(([g,l])=>`<button class="chip ${f.group===g?"on":""}" data-act="f-group" data-k="${g}">${l} <span class="n">${g==="likely"?acq.filter(c=>likelySeller(c)&&!["closed","won"].includes(grp(c))).length:g?n(g):acq.length}</span></button>`).join("")}
+    ${[["target","Targets"],["active","In discussions"],["network","Prospects"],["likely","Likely sellers"],["won","Deal done"],["closed","Closed"],["","All"]].map(([g,l])=>`<button class="chip ${f.group===g?"on":""}" data-act="f-group" data-k="${g}">${l} <span class="n">${g==="likely"?acq.filter(c=>likelySeller(c)&&!["closed","won"].includes(grp(c))).length:g?n(g):acq.length}</span></button>`).join("")}
     ${myPartner()?`<button class="chip ${f.mine?"on":""}" data-act="f-mine">Mine</button>`:""}
     <button class="chip ${nf?"on":""}" data-act="f-sheet">${ic("sliders",16)} Filters${nf?` · ${nf}`:""}</button>
   </div>
-  ${arr.length? `<div class="group">${arr.map(bizRow).join("")}</div>` : `<div class="card empty">${f.group==="target"?"<b>No targets yet</b>Open a business that's in our network and tap <b>We like it</b>.":"<b>Nothing here</b>Try another tab or clear the filters."}</div>`}
-  ${arr.length?`<div style="text-align:center;margin-top:14px"><button class="btn sm" data-act="export-deals">${ic("dl",18)} Download this list</button></div>`:""}`;
+  ${arr.length? `<div class="group">${arr.map(bizRow).join("")}</div>` : `<div class="card empty">${f.group==="target"?"<b>No targets yet</b>Open a prospect and tap <b>Make it a target</b>, or add a business as a target.":"<b>Nothing here</b>Try another tab or clear the filters."}</div>`}
+  ${arr.length?`<div style="text-align:center;margin-top:14px"><button class="btn sm" data-act="export-deals">${ic("dl",18)} Download this list</button></div>`:""}
+  ${nOther?`<a class="linkbtn" href="#others" style="display:block;text-align:center;margin-top:14px">${nOther} other compan${nOther===1?"y":"ies"} where people we know work (not for acquisition) →</a>`:""}`;
 }
 
 /* ---------- Person form: new company → partner firm or business ---------- */
@@ -78,7 +79,7 @@ function whereVal(){ return (document.querySelector("input[name=kWhere]:checked"
 function fillCoPick(){
   const w=whereVal(), sel=$("#kCoPick"); if(!sel) return; const cur=sel.value||FORM.coInit||"";
   const list=companies().filter(c=> w==="partner"? isPartnerCo(c) : !isPartnerCo(c)).sort((a,b)=>a.name.localeCompare(b.name));
-  sel.innerHTML=`<option value="">Choose…</option>${list.map(c=>`<option value="${esc(c.id)}"${c.id===cur?" selected":""}>${esc(c.name)}${w==="partner"?` · ${esc(PKINDS[c.kind]||"")}`:""}</option>`).join("")}<option value="__new"${cur==="__new"?" selected":""}>+ New ${w==="partner"?"partner firm":"business"}…</option>`;
+  sel.innerHTML=`<option value="">Choose…</option>${list.map(c=>`<option value="${esc(c.id)}"${c.id===cur?" selected":""}>${esc(c.name)}${w==="partner"?` · ${esc(PKINDS[c.kind]||"")}`:c.kind==="other"?"":` · ${grp(c)==="network"?"Prospect":"Target"}`}</option>`).join("")}<option value="__new"${cur==="__new"?" selected":""}>+ New ${w==="partner"?"partner firm":"business"}…</option>`;
   if(!list.some(c=>c.id===cur) && cur!=="__new" && $("#kCoNew")?.value) sel.value="__new";
   $("#kCoPickL").textContent= w==="partner"? "Which partner?" : "Which business?";
   $("#kCoNewL").textContent= w==="partner"? "Name of the new partner firm" : "Name of the business";
@@ -98,10 +99,11 @@ function newCoUpdate(d){
   const w=whereVal(), v=$("#kCoPick").value;
   $("#kCoPickW").hidden= w==="other"; $("#kFirmW").hidden= w!=="other";
   $("#kCoNewW").hidden= !(w!=="other" && v==="__new");
+  const bw=$("#kBuyW"); if(bw) bw.hidden= !(w==="business" && v==="__new");
   const kw=$("#kNewCoKindW"), was=kw.hidden; kw.hidden= !(w==="partner" && v==="__new");
   if(was && !kw.hidden && !FORM.nkTouched) $("#kNewCoKind").value=guessPKind(d);
 }
-function newCoChoice(d){ const W=whereRead(); if(!W.isNew) return {what:"none"}; return {what:W.where==="partner"?"partner":"business", kind:$("#kNewCoKind")?.value||"advisory"}; }
+function newCoChoice(d){ const W=whereRead(); if(!W.isNew) return {what:"none"}; return {what:W.where==="partner"?"partner":"business", kind:$("#kNewCoKind")?.value||"advisory", buy:$("#kBuy")?.value||"no"}; }
 
 /* ---------- Events ---------- */
 document.addEventListener("click",e=>{

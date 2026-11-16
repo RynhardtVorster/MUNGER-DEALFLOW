@@ -94,7 +94,7 @@ function vToday(){
   const soon=pool2.filter(c=>{const n=daysUntil(c.nextCheckIn); return n!==null&&n>7&&n<=30;}).sort((a,b)=>a.nextCheckIn.localeCompare(b.nextCheckIn));
   const targets=companies().filter(c=>!isPartnerCo(c)&&["target","active"].includes(grp(c))&&(!mine||isMine(c))).length;
   const ppl=mine? contacts().filter(isMineK) : contacts();
-  const newNet=companies().filter(c=>grp(c)==="network" && !isPartnerCo(c) && daysSince(c.createdAt)<=21).length;
+  const newNet=companies().filter(c=>grp(c)==="network" && isAcq(c) && daysSince(c.createdAt)<=21).length;
   const cm=S.commitments.filter(x=>x.status==="open" && (!mine || x.owner===me)).sort((a,b)=>(a.due||"9999").localeCompare(b.due||"9999"));
   const weak=contacts().filter(k=>isMineK(k)||k.createdBy===S.uid).map(k=>({k,c:completeness(k)})).filter(x=>x.c.pct<60).sort((a,b)=>a.c.pct-b.c.pct).slice(0,4);
   const thx=thanksDue().filter(k=>!mine||isMineK(k)).slice(0,4);
@@ -110,11 +110,12 @@ function vToday(){
   </div>
   <div class="quick"><a class="act" href="#near">${ic("pin",18)}Near me</a><a class="act" href="#partners">${ic("bank",18)}Partners</a><a class="act" href="#talent">${ic("star",18)}Talent</a></div>
   ${contacts().length<15?`<div class="sec"><h2>Get started</h2></div><a class="card start" href="#import">${ic("upload",28)}<div><b>Start the network sweep</b><span>Import your phone contacts and tag the A, B and C people in one go.</span></div></a>`:""}
+  ${targetsBlock(mine)}
   <div class="sec"><h2>To call this week</h2>${due.length?`<a href="#checkins">All</a>`:""}</div>
   ${due.length? due.map(anyDueCard).join("") : `<div class="card empty"><b>You're up to date</b>${soon.length?`Next up: ${esc(soon[0].name)} on ${esc(fmtD(soon[0].nextCheckIn))}.`:"Set check-ins on targets you like and on people you want to stay close to."}</div>`}
   ${cm.length?`<div class="sec"><h2>${mine?"My commitments":"Team commitments"}</h2><a href="#meeting">Meeting</a></div><div class="group">${cm.slice(0,6).map(cmtRow).join("")}</div>`:""}
   ${thx.length?`<div class="sec"><h2>Say thank you</h2></div><div class="group">${thx.map(k=>`<button class="rowi" data-contact="${esc(k.id)}">${avatarP(k)}<span class="main"><span class="t1" style="display:block">${esc(k.name)}</span><span class="t2" style="display:block">Introduced ${dealsFrom(k.id).length} lead${dealsFrom(k.id).length>1?"s":""} · ${(k.thanks||[]).length?"last thanked "+fmtD((k.thanks||[]).map(t=>t.d).sort().pop()):"not thanked yet"}</span></span>${ic("chev",18).replace('class="ic"','class="ic chev"')}</button>`).join("")}</div>`:""}
-  ${newNet?`<div class="sec"><h2>New in our network</h2><a href="#businesses" data-act="biz-network">Review</a></div><div class="card box tag">${newNet} business${newNet>1?"es":""} added in the last three weeks. Open one and tap <b>We like it</b> to make it a target.</div>`:""}
+  ${newNet?`<div class="sec"><h2>New prospects</h2><a href="#businesses" data-act="biz-network">Review</a></div><div class="card box tag">${newNet} prospect${newNet>1?"s":""} added in the last three weeks. Open one and tap <b>Make it a target</b> if we want to go for it.</div>`:""}
   ${weak.length?`<div class="sec"><h2>Make these profiles stronger</h2></div><div class="group">${weak.map(({k,c})=>`<button class="rowi" data-act="complete-profile" data-id="${esc(k.id)}">${avatarP(k)}<span class="main"><span class="t1" style="display:block">${esc(k.name)}</span><span class="t2" style="display:block">Add ${esc(c.missing.slice(0,3).join(", "))}</span></span><span class="trail"><span class="pill soon">${c.pct}%</span></span></button>`).join("")}</div>`:""}
   ${soon.length?`<div class="sec"><h2>Coming up</h2></div><div class="group">${soon.slice(0,6).map(anyRow).join("")}</div>`:""}
   ${recent.length?`<div class="sec"><h2>New from the team</h2></div><div class="group">${recent.map(r=>r.k==="company"?bizRow(r.x):personRow(r.x)).join("")}</div>`:""}
@@ -197,7 +198,7 @@ function vNear(){
   if(!N.pt) body=`<div class="card empty"><b>Where are you?</b>Type a town or use your phone's location to see who in the network is close by.</div>`;
   else {
     const near=(arr,geo)=>arr.map(x=>({x,g:geo(x)})).filter(r=>r.g).map(r=>({x:r.x,d:distKm(N.pt,r.g),exact:r.g.exact})).filter(r=>r.d<=rad).sort((a,b)=>a.d-b.d);
-    const ppl=near(contacts(),geoK), biz=near(companies().filter(c=>!isPartnerCo(c)),geoC), fin=near(companies().filter(c=>isPartnerCo(c)),geoC);
+    const ppl=near(contacts(),geoK), biz=near(companies().filter(isAcq),geoC), fin=near(companies().filter(c=>isPartnerCo(c)),geoC);
     const unknown=contacts().filter(k=>!geoK(k)).length;
     body=`<div class="card box"><div class="lbl">Within ${rad} km of ${esc(N.label)}</div><div>${ppl.length} people · ${biz.length} businesses · ${fin.length} partners</div>${unknown?`<div class="tag">${unknown} people have no town captured yet, so they can't show here.</div>`:""}</div>
     ${ppl.length?`<div class="sec"><h2>People</h2><span class="tag">${ppl.length}</span></div><div class="group">${ppl.slice(0,60).map(r=>personRow(r.x)).join("")}</div>`:""}
@@ -323,7 +324,7 @@ function renderSheet(){
       <a class="bigact" ${o?.email?`href="mailto:${esc(o.email)}"`:'aria-disabled="true"'}>${ic("mail",22)}Email</a>
       ${g==="network"&&!fin?`<button class="bigact" data-act="like" data-id="${esc(c.id)}" ${ro?'aria-disabled="true"':""}><span style="font-size:20px;line-height:22px">★</span>Like</button>`:`<button class="bigact" data-act="quick-checkin" data-id="${esc(c.id)}" ${ro||(!c.nextCheckIn&&fin)?'aria-disabled="true"':""}>${ic("check",22)}Check in</button>`}
     </div>
-    ${!fin&&g==="network"?`<div class="card box likebox"><div class="lbl">In our network</div><div class="next">Do we like this business?</div><div class="tag">Liking it makes it a target: map the owners and key people, then start checking in.</div>${ro?"":`<div class="acts" style="grid-template-columns:2fr 1fr"><button class="act dark" data-act="like" data-id="${esc(c.id)}">★ We like it</button><button class="act" data-act="not-for-us" data-id="${esc(c.id)}">Not for us</button></div>`}</div>`:""}
+    ${!fin&&g==="network"?`<div class="card box likebox"><div class="lbl">Prospect</div><div class="next">Make it a target?</div><div class="tag">A target goes on Today and into every target meeting: map the owners and key people, then check in until we get it.</div>${ro?"":`<div class="acts" style="grid-template-columns:2fr 1fr"><button class="act dark" data-act="like" data-id="${esc(c.id)}">★ Make it a target</button><button class="act" data-act="not-for-us" data-id="${esc(c.id)}">Not for us</button></div>`}</div>`:""}
     ${!fin&&g==="target"&&!ro?`<div class="acts" style="grid-template-columns:1fr 1fr;margin-top:12px"><button class="act dark" data-act="start-deal" data-id="${esc(c.id)}">Start discussions</button><button class="act" data-act="like" data-id="${esc(c.id)}">Change check-ins</button></div>`:""}
     ${(!fin&&["target","active"].includes(g))||fin?`<div class="fsec">${fin?"Relationship check-ins":"Check-in"}</div>
     <div class="card box">
@@ -416,6 +417,7 @@ function contactForm(id, preset){
   <div class="fields" style="margin-top:10px">
    <div class="fld" id="kCoPickW"><label for="kCoPick" id="kCoPickL">Which partner?</label><select id="kCoPick"></select></div>
    <div class="fld" id="kCoNewW" hidden><label for="kCoNew" id="kCoNewL">Name of the new partner firm</label><input id="kCoNew" autocomplete="off" autocapitalize="words" value="${esc(!co&&k.firm&&whereInit!=="other"?k.firm:"")}"></div>
+   <div class="fld" id="kBuyW" hidden><label for="kBuy">Would we like to buy this business?</label><select id="kBuy">${opts([{v:"no",l:"No – it's just where they work"},{v:"network",l:"Yes, a prospect – we'd look at it"},{v:"target",l:"Yes, a target – we go full out"}],"no")}</select></div>
    <div class="fld" id="kNewCoKindW" hidden><label for="kNewCoKind">What kind of partner?</label><select id="kNewCoKind">${opts(Object.entries(PKINDS).map(([v,l])=>({v,l})),"")}</select></div>
    <div class="fld" id="kFirmW" hidden><label for="kFirm">Company (optional)</label><input id="kFirm" autocomplete="off" value="${esc(!co&&whereInit==="other"?k.firm:"")}" placeholder="Where they work, if anywhere"></div>
    <div class="fld"><label for="kRole">Role at the company</label><select id="kRole">${opts(ROLES,k.companyRole,"Choose…")}</select></div>
@@ -490,13 +492,14 @@ async function submitContact(){
   const id=FORM.id||newId();
   const nc=newCoChoice(d); let addBiz=false;
   if(nc.what==="partner"){ const cid=newId(); const by=await myName(); const g2=gazFind(d.town); if(!await dbSet("companies/"+cid,{name:d.coName, kind:nc.kind, status:"network", industry:PIND[nc.kind]||"", town:d.town, province:d.province, hqCountry:d.country||"South Africa", partner:primary, owners:[], fit:{}, signals:{}, source:{}, log:[{d:today(),by,text:`Added as partner firm via ${d.name}`}], createdByName:by})) return; data.companyId=cid; data.firm=""; }
-  if(nc.what==="business") addBiz=true;
+  if(nc.what==="business" && nc.buy==="no"){ const cid=newId(); const by=await myName(); if(!await dbSet("companies/"+cid,{name:d.coName, kind:"other", status:"network", town:d.town, province:d.province, hqCountry:d.country||"South Africa", partner:primary, owners:[], fit:{}, signals:{}, source:{}, log:[{d:today(),by,text:`Added as ${d.name}'s workplace (not for acquisition)`}], createdByName:by})) return; data.companyId=cid; data.firm=""; }
+  if(nc.what==="business" && nc.buy!=="no"){ addBiz=true; FORM.buyAs=nc.buy; }
   document.querySelectorAll('button[type=submit]').forEach(b=>b.disabled=true);
   const ok=await dbSet("contacts/"+id,data) && await saveConns(id,d.conns);
   document.querySelectorAll('button[type=submit]').forEach(b=>b.disabled=false);
   if(!ok) return;
   toast(FORM.id?"Saved":"Added to People");
-  if(addBiz){ ownerDealForm(id); return; }
+  if(addBiz){ const b=FORM.buyAs; ownerDealForm(id); setTimeout(()=>{ const s=$("#cKind"); if(s){ s.value=b==="target"?"acquire":"network"; s.dispatchEvent(new Event("change",{bubbles:true})); } },60); return; }
   if(sheetOpen() && S.sheet?.kind==="contact" && S.sheet.id===id){ closeModal(); renderSheet(); } else openSheet("contact",id,true);
 }
 
@@ -525,7 +528,7 @@ function dealForm(id, preset){
     <div class="fld nofin"><label for="cStage">Stage</label><select id="cStage">${opts(STAGES.map(s=>({v:s.id,l:s.label})),stageOf(c.status).id)}</select></div>
     <div class="fld cadw"><label for="cCad">Check in</label><select id="cCad">${opts(CADENCE.map(x=>({v:x.m,l:x.l})),c.followUpMonths??0)}</select></div>
     <div class="fld cadw"><label for="cNext">Next check-in (or pick a specific date)</label><input id="cNext" type="date" value="${esc(c.nextCheckIn||"")}"></div>
-  </div><div class="hint" id="nextHint"></div><div class="hint" id="cadOff">New businesses sit in our network with no check-ins. Set the stage to “Target – we like it” when you want to start checking in.</div>
+  </div><div class="hint" id="nextHint"></div><div class="hint" id="cadOff">Prospects have no check-ins. Make it a target when we want to go full out: it then shows on Today and in every target meeting.</div>
   <div class="fields" style="margin-top:12px">${fldNote("cNotes","Why are we adding it?",c.notes,"Type or speak: succession situation, culture, why it's interesting…",3)}</div>
   <details class="more" ${id?"open":""}><summary>${ic("plus",18)} Size, sale signals and more</summary>
    <div class="nofin"><div class="fsec">Sale signals</div>

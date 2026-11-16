@@ -14,7 +14,7 @@ function vMeeting(){
   return m? meetRun(m) : meetHome();
 }
 function meetHome(){
-  const last=lastDone(); const nextDate=last?.next_date || (last? plus21(last.held_on) : "");
+  const last=lastDone(); const nextDate=S.meetNext || last?.next_date || (last? plus21(last.held_on) : "");
   const openC=S.commitments.filter(x=>x.status==="open").sort((a,b)=>(a.due||"9999").localeCompare(b.due||"9999"));
   const byOwner={}; openC.forEach(x=>(byOwner[x.owner||"Unassigned"]=byOwner[x.owner||"Unassigned"]||[]).push(x));
   const past=S.meetings.filter(x=>x.status==="done").sort((a,b)=>b.held_on.localeCompare(a.held_on));
@@ -22,13 +22,14 @@ function meetHome(){
   <div class="card box">
    <div class="lbl">${last?`Last meeting ${esc(fmtD(last.held_on))}`:"No meetings yet"}</div>
    <div class="next">${nextDate?`Next meeting ${esc(fmtD(nextDate))}`:"Start your first meeting"}${nextDate&&daysUntil(nextDate)!==null?` <span class="pill ${daysUntil(nextDate)<0?"late":daysUntil(nextDate)<=7?"soon":""}">${daysUntil(nextDate)<0?`${-daysUntil(nextDate)} days overdue`:daysUntil(nextDate)===0?"Today":`in ${daysUntil(nextDate)} days`}</span>`:""}</div>
-   ${S.readOnly?"":`<div class="fields" style="margin-top:6px"><div class="fld"><label for="m6Date">Meeting date</label><input type="date" id="m6Date" value="${esc(today())}"></div></div>
+   ${S.readOnly?"":`<div class="fields" style="margin-top:6px"><div class="fld"><label for="m8Next">Next meeting is on</label><input type="date" id="m8Next" value="${esc(nextDate||"")}"></div></div>
+   <div class="fields" style="margin-top:6px"><div class="fld"><label for="m6Date">Meeting date</label><input type="date" id="m6Date" value="${esc(today())}"></div></div>
    <button class="btn primary block" data-act="m6-start">${ic("flag",18)} Start meeting</button>
    <p class="tag" style="margin:0">Pick an earlier date to capture a meeting you already had.</p>`}
   </div>
   <div class="sec"><h2>Open actions</h2><span class="tag">${openC.length}</span></div>
   ${openC.length? Object.entries(byOwner).map(([o,list])=>`<div class="lbl" style="margin:10px 4px 6px">${esc(o)} · ${list.length}</div><div class="group">${list.map(cmtRow).join("")}</div>`).join("") : `<div class="card empty">No open actions. Add them during the meeting.</div>`}
-  ${past.length?`<div class="sec"><h2>Past meetings</h2><span class="tag">${past.length}</span></div><div class="group">${past.map(x=>{ const cm=S.commitments.filter(c=>c.meetingId===x.id); const dn=cm.filter(c=>c.status==="done").length; return `<button class="rowi" data-act="m6-view" data-id="${esc(x.id)}"><span class="avatar biz">${ic("flag",20)}</span><span class="main"><span class="t1" style="display:block">${esc(fmtD(x.held_on))}${x.title?` · ${esc(x.title)}`:""}</span><span class="t2" style="display:block">${esc([(x.attendees||[]).join(", "), `${(x.decisions||[]).length} decisions`, `${(x.items||[]).length} topics`, cm.length?`${dn}/${cm.length} actions done`:""].filter(Boolean).join(" · "))}</span></span>${ic("chev",18).replace('class="ic"','class="ic chev"')}</button>`; }).join("")}</div>`:""}`;
+  ${past.length?`<div class="sec"><h2>Past meetings</h2><button class="btn sm" data-act="m8-dl-all">${ic("dl",16)} All minutes</button></div><div class="group">${past.map(x=>{ const cm=S.commitments.filter(c=>c.meetingId===x.id); const dn=cm.filter(c=>c.status==="done").length; return `<button class="rowi" data-act="m6-view" data-id="${esc(x.id)}"><span class="avatar biz">${ic("flag",20)}</span><span class="main"><span class="t1" style="display:block">${esc(fmtD(x.held_on))}${x.title?` · ${esc(x.title)}`:""}</span><span class="t2" style="display:block">${esc([(x.attendees||[]).join(", "), `${(x.decisions||[]).length} decisions`, `${(x.items||[]).length} topics`, cm.length?`${dn}/${cm.length} actions done`:""].filter(Boolean).join(" · "))}</span></span>${ic("chev",18).replace('class="ic"','class="ic chev"')}</button>`; }).join("")}</div>`:""}`;
 }
 function meetRun(m){
   const prev=prevMeeting(m); const since=prev?.held_on || (()=>{ const d=parseD(m.held_on)||new Date(); d.setDate(d.getDate()-21); return ymd(d); })();
@@ -36,8 +37,8 @@ function meetRun(m){
   const toReview=S.commitments.filter(x=>x.meetingId!==m.id && (x.status==="open" || review[x.id])).sort((a,b)=>(a.owner||"").localeCompare(b.owner||"")||(a.due||"").localeCompare(b.due||""));
   const reviewed=toReview.filter(x=>review[x.id]).length;
   const dec=Object.fromEntries((m.decisions||[]).map(d=>[d.companyId,d.decision]));
-  const live=companies().filter(c=>!isPartnerCo(c) && ["target","active"].includes(grp(c))).sort((a,b)=>(grp(b)==="active")-(grp(a)==="active")||(a.name||"").localeCompare(b.name||""));
-  const newNet=companies().filter(c=>grp(c)==="network" && !isPartnerCo(c) && (c.createdAt||"").slice(0,10)>=since);
+  const live=companies().filter(c=>isAcq(c) && ["target","active"].includes(grp(c))).sort((a,b)=>(grp(b)==="active")-(grp(a)==="active")||(a.name||"").localeCompare(b.name||""));
+  const newNet=companies().filter(c=>grp(c)==="network" && isAcq(c)).sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
   const added=targetsAddedIn(m);
   const thisC=S.commitments.filter(x=>x.meetingId===m.id);
   const items=m.items||[];
@@ -71,7 +72,7 @@ function meetRun(m){
 
   ${sec("m-new",4,"New targets",added.length?`${added.length} added`:"")}
   ${added.length?`<div class="lbl" style="margin:6px 4px">Added at this meeting</div><div class="group">${added.map(bizRow).join("")}</div>`:""}
-  ${newNet.length?`<div class="lbl" style="margin:10px 4px 6px">New in our network since ${esc(fmtD(since))}: do we like any?</div><div class="group">${newNet.map(c=>`<div class="rowi"><span class="main" data-open="${esc(c.id)}" style="cursor:pointer"><span class="t1" style="display:block">${esc(c.name)}</span><span class="t2" style="display:block">${esc([industryShort(c)!=="—"?industryShort(c):"",c.town,c.createdByName].filter(Boolean).join(" · "))}</span></span><button class="btn sm" data-act="like" data-id="${esc(c.id)}">★ We like it</button></div>`).join("")}</div>`:""}
+  ${newNet.length?`<div class="lbl" style="margin:10px 4px 6px">Prospects: any to make a target?</div><div class="group">${newNet.map(c=>`<div class="rowi"><span class="main" data-open="${esc(c.id)}" style="cursor:pointer"><span class="t1" style="display:block">${esc(c.name)}</span><span class="t2" style="display:block">${esc([industryShort(c)!=="—"?industryShort(c):"",c.town,c.createdByName].filter(Boolean).join(" · "))}</span></span><button class="btn sm" data-act="like" data-id="${esc(c.id)}">★ Make target</button></div>`).join("")}</div>`:""}
   ${S.readOnly?"":`<button class="btn block" style="margin-top:10px" data-act="m6-newtarget">${ic("plus",18)} Add a new target business</button>`}
 
   ${sec("m-disc",5,"Discussion",items.length?`${items.length} topics`:"")}
@@ -121,7 +122,7 @@ function meetViewModal(id){
    ${(m.decisions||[]).length?`<div class="fsec">Pipeline decisions</div><div class="card box"><div class="sigs">${m.decisions.map(d=>`<span class="pill ${d.decision==="chase"?"won":d.decision==="drop"?"late":"soon"}">${esc(S.companies.get(d.companyId)?.name||"?")}: ${esc(({chase:"Chase",keep:"Keep warm",drop:"Drop",new:"New target"})[d.decision]||d.decision)}</span>`).join("")}</div></div>`:""}
    <div class="fsec">Actions agreed (${cm.filter(c=>c.status==="done").length}/${cm.length} done)</div>${cm.length?`<div class="group">${cm.map(x=>`<div class="rowi"><span class="main"><span class="t1" style="display:block;white-space:normal">${esc(x.action)}</span><span class="t2" style="display:block">${esc(cmtLine(x))}</span></span>${cmtStatusPill(x)}</div>`).join("")}</div>`:`<div class="card empty">None.</div>`}
    ${m.notes?`<div class="fsec">Notes</div><div class="card box" style="white-space:pre-wrap">${esc(m.notes)}</div>`:""}
-   <div style="margin-top:16px;display:grid;gap:10px"><button class="btn" data-act="m6-copy" data-id="${esc(m.id)}">Copy minutes for WhatsApp</button>${!S.readOnly&&!openMeeting()?`<button class="btn" data-act="m6-reopen" data-id="${esc(m.id)}">Reopen to edit</button>`:""}</div>
+   <div style="margin-top:16px;display:grid;gap:10px"><button class="btn" data-act="m6-copy" data-id="${esc(m.id)}">Copy minutes for WhatsApp</button><button class="btn" data-act="m8-dl" data-id="${esc(m.id)}">${ic("dl",18)} Download minutes</button>${!S.readOnly&&!openMeeting()?`<button class="btn" data-act="m6-reopen" data-id="${esc(m.id)}">Reopen to edit</button>`:""}</div>
   </div>`, true);
 }
 document.addEventListener("click",async e=>{
@@ -156,7 +157,7 @@ document.addEventListener("click",async e=>{
     case "m6-copy": { const mm=meetById(id); if(mm){ const notes=$("#m6Notes")?.value??mm.notes; copyText(minutesText({...mm,notes})); } break; }
     case "m6-finish": { if(!m) break; const notes=$("#m6Notes")?.value??m.notes; const nd=$("#m6Next")?.value||m.next_date||null;
       const added=targetsAddedIn(m); const decs=[...(m.decisions||[])]; added.forEach(c=>{ if(!decs.some(d=>d.companyId===c.id)) decs.push({companyId:c.id,decision:"new",at:today()}); });
-      if(await meetUpdate(m.id,{status:"done",notes,next_date:nd,decisions:decs},true)){ await loadMeetings(); toast("Meeting saved"); const mm=meetById(m.id); if(mm) showOut("Minutes", minutesText(mm)); } break; }
+      if(await meetUpdate(m.id,{status:"done",notes,next_date:nd,decisions:decs},true)){ if(nd) saveNextMeeting(nd,true); await loadMeetings(); toast("Meeting saved"); const mm=meetById(m.id); if(mm) showOut("Minutes", minutesText(mm)); } break; }
     case "m6-discard": { if(!m) break; confirmBox("Discard this meeting?","Its notes and decisions will be deleted. Actions already added stay on the list.","Discard",async()=>{ const {error}=await sb.from("meetings").delete().eq("id",m.id); if(error) writeErr(error); else { closeModal(); await loadMeetings(); toast("Discarded"); } }); break; }
     case "m6-view": meetViewModal(id); break;
     case "m6-reopen": { if(openMeeting()){ toast("Finish the open meeting first"); break; } if(await meetUpdate(id,{status:"open"},true)){ closeModal(); await loadMeetings(); toast("Reopened"); } break; }
