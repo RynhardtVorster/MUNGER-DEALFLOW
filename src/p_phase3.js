@@ -374,11 +374,11 @@ function renderSheet(){
     ${cp.pct<100&&!ro?`<button class="card box nudge" data-act="complete-profile" data-id="${esc(k.id)}"><div style="display:flex;justify-content:space-between;align-items:center"><b>Profile ${cp.pct}% complete</b><span class="pill soon">Add details</span></div><div class="meter"><span style="width:${cp.pct}%"></span></div><div class="tag">Missing: ${esc(cp.missing.join(", "))}. The more we capture, the better Ask the network works.</div></button>`:""}
     ${isTalent(k)?`<div class="fsec">Talent</div><div class="card box"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc((tal.roles||[]).join(", ")||"Potential leader")}</b>${stars(tal.rating)}</div>${tal.sectors?`<div class="tag">Could lead: ${esc(tal.sectors)}</div>`:""}${tal.availability?`<div><span class="pill ${tal.availability==="yes"?"won":tal.availability==="open"?"soon":""}">${esc(AVAIL[tal.availability])}</span></div>`:""}${tal.why?`<div style="white-space:pre-wrap">${esc(tal.why)}</div>`:""}</div>`:""}
     ${k.hnwi?`<div class="fsec">High net worth</div><div class="card box">${esc(k.wealthSource||"Wealth source not captured")}</div>`:""}
+    ${bizSectionHTML(k)}
     <div class="fsec">Who knows ${esc(k.name.split(" ")[0])}</div>
     ${knowers(k).length?`<div class="group">${knowers(k).map(x=>`<div class="rowi" style="min-height:52px"><span class="avatar biz" style="width:34px;height:34px;font-size:13px">${esc(initials(x.partner))}</span><span class="main"><span class="t1" style="display:block">${esc(x.partner)}</span></span><span class="pill ${x.relation==="friend"?"won":x.relation==="family"?"A":""}">${esc(RELS[x.relation]||"Not set")}</span></div>`).join("")}</div>`:`<div class="card empty">Nobody in our team linked yet.</div>`}
     ${bgHTML(k)}
     ${familyHTML(k)}
-    ${ownsLine(k)}
     <div class="fsec">Work</div>
     <div class="card kv">${co?`<div class="k">Works at</div><div class="v"><a href="#" data-open="${esc(co.id)}">${esc(co.name)}</a></div><div class="k">Role there</div><div class="v">${esc(k.companyRole||"—")}</div>`:`<div class="k">Company</div><div class="v">${esc(k.firm||"—")}</div>`}<div class="k">Title</div><div class="v">${esc(k.title||k.type||"—")}</div><div class="k">Industry</div><div class="v">${esc(k.industry||"—")}</div><div class="k">Can help with</div><div class="v">${esc(k.expertise||"—")}</div></div>
     ${(co||k.firm)&&!ro?`<button class="linkbtn" data-act="left-company" data-id="${esc(k.id)}">No longer works there</button>`:""}

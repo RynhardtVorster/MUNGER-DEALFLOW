@@ -687,3 +687,15 @@ document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act
 },true);
 document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act="net2prospect"]'); if(!t) return; e.preventDefault(); e.stopPropagation(); const c=S.companies.get(t.dataset.id); if(!c) return;
   confirmBox(`Make ${c.name} a prospect?`,"It moves to the businesses we'd look at buying, with stages and a responsible partner.","Make it a prospect",async()=>{ if(await dbUpdate("companies/"+c.id,{kind:"target",status:"network",responsible:[defaultResp()]})){ toast(`${c.name} is now a prospect`); try{ renderSheet(); }catch(_){} } }); },true);
+
+/* ---------- 24. Person page: every business they're involved in, main one first ---------- */
+function bizSectionHTML(k){
+  const L=[]; const seen=new Set(); const main=k.companyId&&S.companies.get(k.companyId);
+  if(main){ L.push({c:main,role:k.companyRole||(k.ownsCompanyId===main.id?"Owner":"Works there"),main:true}); seen.add(main.id); }
+  (k.otherRoles||[]).forEach(r=>{ const c=S.companies.get(r.companyId); if(c&&!seen.has(c.id)){ L.push({c,role:r.role||""}); seen.add(c.id); } });
+  companies().forEach(c=>{ if(seen.has(c.id)) return; if(k.ownsCompanyId===c.id || (c.owners||[]).some(o=>normName(o.name)===normName(k.name))){ L.push({c,role:(c.owners||[]).find(o=>normName(o.name)===normName(k.name))?.role||"Owner"}); seen.add(c.id); } });
+  const first=esc(k.name.split(" ")[0]);
+  const row=({c,role,main})=>`<button class="rowi bizrow19" data-open="${esc(c.id)}">${isPartnerCo(c)?`<span class="avatar biz">${ic(pkIcon(c),20)}</span>`:avatarB(c)}<span class="main"><span class="t1" style="display:block">${esc(c.name)}</span><span class="t2" style="display:block">${esc([role||"",xrLabel(c),c.town].filter(Boolean).join(" · "))}</span></span>${main?`<span class="pill">Main</span>`:""}${ic("chev",18).replace('class="ic"','class="ic chev"')}</button>`;
+  return `<div class="fsec">${first}'s businesses${L.length?` (${L.length})`:""}</div>
+   ${L.length?`<div class="group">${L.map(row).join("")}</div>`:`<div class="card box tag">Not linked to any company yet.</div>`}
+   ${S.readOnly?"":`<button class="btn block" data-act="link19" data-mode="k" data-id="${esc(k.id)}" style="margin-top:8px">+ Link to another company</button>`}`; }

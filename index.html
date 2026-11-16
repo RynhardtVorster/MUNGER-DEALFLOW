@@ -491,7 +491,7 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 <script src="supabase.js"></script>
 <script>
 "use strict";
-const APP_V="v50";
+const APP_V="v51";
 /* ---------------- Reference data ---------------- */
 const STAGES = [
   {id:"network", label:"Prospect – we'd look at it", group:"network"},
@@ -2589,11 +2589,11 @@ function renderSheet(){
     ${cp.pct<100&&!ro?`<button class="card box nudge" data-act="complete-profile" data-id="${esc(k.id)}"><div style="display:flex;justify-content:space-between;align-items:center"><b>Profile ${cp.pct}% complete</b><span class="pill soon">Add details</span></div><div class="meter"><span style="width:${cp.pct}%"></span></div><div class="tag">Missing: ${esc(cp.missing.join(", "))}. The more we capture, the better Ask the network works.</div></button>`:""}
     ${isTalent(k)?`<div class="fsec">Talent</div><div class="card box"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc((tal.roles||[]).join(", ")||"Potential leader")}</b>${stars(tal.rating)}</div>${tal.sectors?`<div class="tag">Could lead: ${esc(tal.sectors)}</div>`:""}${tal.availability?`<div><span class="pill ${tal.availability==="yes"?"won":tal.availability==="open"?"soon":""}">${esc(AVAIL[tal.availability])}</span></div>`:""}${tal.why?`<div style="white-space:pre-wrap">${esc(tal.why)}</div>`:""}</div>`:""}
     ${k.hnwi?`<div class="fsec">High net worth</div><div class="card box">${esc(k.wealthSource||"Wealth source not captured")}</div>`:""}
+    ${bizSectionHTML(k)}
     <div class="fsec">Who knows ${esc(k.name.split(" ")[0])}</div>
     ${knowers(k).length?`<div class="group">${knowers(k).map(x=>`<div class="rowi" style="min-height:52px"><span class="avatar biz" style="width:34px;height:34px;font-size:13px">${esc(initials(x.partner))}</span><span class="main"><span class="t1" style="display:block">${esc(x.partner)}</span></span><span class="pill ${x.relation==="friend"?"won":x.relation==="family"?"A":""}">${esc(RELS[x.relation]||"Not set")}</span></div>`).join("")}</div>`:`<div class="card empty">Nobody in our team linked yet.</div>`}
     ${bgHTML(k)}
     ${familyHTML(k)}
-    ${ownsLine(k)}
     <div class="fsec">Work</div>
     <div class="card kv">${co?`<div class="k">Works at</div><div class="v"><a href="#" data-open="${esc(co.id)}">${esc(co.name)}</a></div><div class="k">Role there</div><div class="v">${esc(k.companyRole||"—")}</div>`:`<div class="k">Company</div><div class="v">${esc(k.firm||"—")}</div>`}<div class="k">Title</div><div class="v">${esc(k.title||k.type||"—")}</div><div class="k">Industry</div><div class="v">${esc(k.industry||"—")}</div><div class="k">Can help with</div><div class="v">${esc(k.expertise||"—")}</div></div>
     ${(co||k.firm)&&!ro?`<button class="linkbtn" data-act="left-company" data-id="${esc(k.id)}">No longer works there</button>`:""}
@@ -4729,6 +4729,18 @@ document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act
 },true);
 document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act="net2prospect"]'); if(!t) return; e.preventDefault(); e.stopPropagation(); const c=S.companies.get(t.dataset.id); if(!c) return;
   confirmBox(`Make ${c.name} a prospect?`,"It moves to the businesses we'd look at buying, with stages and a responsible partner.","Make it a prospect",async()=>{ if(await dbUpdate("companies/"+c.id,{kind:"target",status:"network",responsible:[defaultResp()]})){ toast(`${c.name} is now a prospect`); try{ renderSheet(); }catch(_){} } }); },true);
+
+/* ---------- 24. Person page: every business they're involved in, main one first ---------- */
+function bizSectionHTML(k){
+  const L=[]; const seen=new Set(); const main=k.companyId&&S.companies.get(k.companyId);
+  if(main){ L.push({c:main,role:k.companyRole||(k.ownsCompanyId===main.id?"Owner":"Works there"),main:true}); seen.add(main.id); }
+  (k.otherRoles||[]).forEach(r=>{ const c=S.companies.get(r.companyId); if(c&&!seen.has(c.id)){ L.push({c,role:r.role||""}); seen.add(c.id); } });
+  companies().forEach(c=>{ if(seen.has(c.id)) return; if(k.ownsCompanyId===c.id || (c.owners||[]).some(o=>normName(o.name)===normName(k.name))){ L.push({c,role:(c.owners||[]).find(o=>normName(o.name)===normName(k.name))?.role||"Owner"}); seen.add(c.id); } });
+  const first=esc(k.name.split(" ")[0]);
+  const row=({c,role,main})=>`<button class="rowi bizrow19" data-open="${esc(c.id)}">${isPartnerCo(c)?`<span class="avatar biz">${ic(pkIcon(c),20)}</span>`:avatarB(c)}<span class="main"><span class="t1" style="display:block">${esc(c.name)}</span><span class="t2" style="display:block">${esc([role||"",xrLabel(c),c.town].filter(Boolean).join(" · "))}</span></span>${main?`<span class="pill">Main</span>`:""}${ic("chev",18).replace('class="ic"','class="ic chev"')}</button>`;
+  return `<div class="fsec">${first}'s businesses${L.length?` (${L.length})`:""}</div>
+   ${L.length?`<div class="group">${L.map(row).join("")}</div>`:`<div class="card box tag">Not linked to any company yet.</div>`}
+   ${S.readOnly?"":`<button class="btn block" data-act="link19" data-mode="k" data-id="${esc(k.id)}" style="margin-top:8px">+ Link to another company</button>`}`; }
 
 
 function vNetwork(){
