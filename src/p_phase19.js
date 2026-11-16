@@ -727,3 +727,11 @@ function senPill(k){ const s=senShort(k.seniority); return s?` <span class="pill
 { const base=noCoToggle; noCoToggle=function(){ base(); const f=$("#kSen")?.closest(".fld"); if(f) f.hidden= whereVal()==="other"; }; }
 { const base=dbSet; dbSet=async function(path,data){ if(String(path).startsWith("contacts/") && data && "name" in data && $("#contactForm #kSen")) data={...data, seniority: whereVal()==="other"? "" : $("#kSen").value}; return base(path,data); }; }
 { const base=dbUpdate; dbUpdate=async function(path,patch){ if(String(path).startsWith("contacts/") && patch && "name" in patch && $("#contactForm #kSen")) patch={...patch, seniority: whereVal()==="other"? "" : $("#kSen").value}; return base(path,patch); }; }
+
+/* ---------- 28. Mail lists: no "Everyone" chip; a quiet "Clear filters" link only when something is ticked ---------- */
+{ const base=vLists; vLists=function(){ const L=S.lists; const any=L.groups.length||L.tiers.length||L.pkinds.length;
+  let h=base().replace(/<div class="chips" style="margin-top:10px"><button class="chip[^"]*" data-act="l-all">Everyone<\/button><\/div>/,"");
+  h=h.replace("<p>Start with everyone, then narrow it down if you need to.</p>",`<p>Everyone is on the list. Tick below to narrow it down.</p>`);
+  h=h.replace('<div class="sec" style="margin-top:6px"><h2>Only business owners of</h2></div>','<div class="sec" style="margin-top:18px"><h2>Only business owners of</h2></div>').replace(">Acquired<",">Deal done<");
+  if(any) h=h.replace('<div class="stats">',`<div style="text-align:right;margin:4px 2px 0"><button class="linkbtn" data-act="l-all">Clear filters – back to everyone</button></div><div class="stats">`);
+  return h; }; }
