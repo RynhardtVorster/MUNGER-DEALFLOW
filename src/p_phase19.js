@@ -700,3 +700,8 @@ function bizSectionHTML(k){
    ${L.length?`<div class="group">${L.map(row).join("")}</div>`:`<div class="card box tag">Not linked to any company yet.</div>`}
    ${S.readOnly?"":`<button class="btn block" data-act="link19" data-mode="k" data-id="${esc(k.id)}" style="margin-top:8px">+ Link to another company</button>`}`; }
 document.addEventListener("click",e=>{ const a=e.target.closest('a[href="#businesses"]'); if(a && (a.closest("#tabbar")||a.closest(".rail")||a.closest(".seg"))) S.f.group=""; },true);
+
+/* ---------- 25. Wealth source: add or edit straight from the profile ---------- */
+document.addEventListener("click",e=>{ const t=e.target.closest('[data-act="wealth19"],[data-act="wealth19-save"]'); if(!t) return; e.preventDefault(); e.stopPropagation(); const k=S.contacts.get(t.dataset.id); if(!k) return;
+  if(t.dataset.act==="wealth19"){ showModal(`${ovHead("Wealth source",`<button class="hbtn" data-act="close-modal">Cancel</button>`)}<div class="ovb"><p style="margin:0 2px 10px"><b>${esc(k.name)}</b></p><div class="fields">${fldNote("wsText","Where does their wealth come from?",k.wealthSource||"","e.g. sold a logistics business in 2019; family farming trust; property portfolio in the Boland",4)}</div><button class="btn primary block" data-act="wealth19-save" data-id="${esc(k.id)}" style="margin-top:14px">Save</button></div>`,true); setTimeout(()=>$("#wsText")?.focus(),60); return; }
+  (async()=>{ if(await dbUpdate("contacts/"+k.id,{wealthSource:$("#wsText").value.trim(),hnwi:true})){ closeModal(); toast("Wealth source saved"); try{ renderSheet(); }catch(_){} } })(); },true);

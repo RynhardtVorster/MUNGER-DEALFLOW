@@ -373,7 +373,7 @@ function renderSheet(){
     ${k.doNotContact?`<div class="notice err" style="margin-top:12px"><span>This person asked not to be contacted. Respect it.</span></div>`:""}
     ${cp.pct<100&&!ro?`<button class="card box nudge" data-act="complete-profile" data-id="${esc(k.id)}"><div style="display:flex;justify-content:space-between;align-items:center"><b>Profile ${cp.pct}% complete</b><span class="pill soon">Add details</span></div><div class="meter"><span style="width:${cp.pct}%"></span></div><div class="tag">Missing: ${esc(cp.missing.join(", "))}. The more we capture, the better Ask the network works.</div></button>`:""}
     ${isTalent(k)?`<div class="fsec">Talent</div><div class="card box"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc((tal.roles||[]).join(", ")||"Potential leader")}</b>${stars(tal.rating)}</div>${tal.sectors?`<div class="tag">Could lead: ${esc(tal.sectors)}</div>`:""}${tal.availability?`<div><span class="pill ${tal.availability==="yes"?"won":tal.availability==="open"?"soon":""}">${esc(AVAIL[tal.availability])}</span></div>`:""}${tal.why?`<div style="white-space:pre-wrap">${esc(tal.why)}</div>`:""}</div>`:""}
-    ${k.hnwi?`<div class="fsec">High net worth</div><div class="card box">${esc(k.wealthSource||"Wealth source not captured")}</div>`:""}
+    ${k.hnwi?`<div class="fsec">High net worth</div><div class="card box">${k.wealthSource?`<div style="white-space:pre-wrap">${esc(k.wealthSource)}</div>`:`<div class="tag">Where their wealth comes from isn't captured yet.</div>`}${ro?"":`<button class="btn sm" data-act="wealth19" data-id="${esc(k.id)}" style="margin-top:8px">${k.wealthSource?"Edit":"Add"} wealth source</button>`}</div>`:""}
     ${bizSectionHTML(k)}
     <div class="fsec">Who knows ${esc(k.name.split(" ")[0])}</div>
     ${knowers(k).length?`<div class="group">${knowers(k).map(x=>`<div class="rowi" style="min-height:52px"><span class="avatar biz" style="width:34px;height:34px;font-size:13px">${esc(initials(x.partner))}</span><span class="main"><span class="t1" style="display:block">${esc(x.partner)}</span></span><span class="pill ${x.relation==="friend"?"won":x.relation==="family"?"A":""}">${esc(RELS[x.relation]||"Not set")}</span></div>`).join("")}</div>`:`<div class="card empty">Nobody in our team linked yet.</div>`}
@@ -446,7 +446,7 @@ function contactForm(id, preset){
   <div class="fields" style="margin-top:10px"><div class="fld"><label for="kInfl">How influential are they?</label><select id="kInfl">${opts([{v:0,l:"Not rated"},{v:1,l:"★ Some reach"},{v:2,l:"★★ Well connected locally"},{v:3,l:"★★★ Respected in their industry"},{v:4,l:"★★★★ Opens doors nationally"},{v:5,l:"★★★★★ Top of the network"}],k.influence||0)}</select></div></div>
   <div class="fsec">Check in with them?</div>
   ${ciFields(k)}
-  <label class="check"><input type="checkbox" id="kHnwi" ${k.hnwi?"checked":""}> High net worth individual</label>
+  <label class="check"><input type="checkbox" id="kHnwi" ${k.hnwi?"checked":""}> High net worth individual – tick to add where their wealth comes from</label>
   <div class="fields" id="kWealthWrap" ${k.hnwi?"":"hidden"}><div class="fld"><label for="kWealth">Where their wealth comes from</label><input id="kWealth" value="${esc(k.wealthSource)}" placeholder="e.g. sold a logistics business; property; agri"></div></div>
   <label class="check"><input type="checkbox" id="kTal" ${tal.on||tier==="C"?"checked":""}> ★ We'd love to work with them (talent)</label>
   <div id="kTalWrap" ${tal.on||tier==="C"?"":"hidden"}>
