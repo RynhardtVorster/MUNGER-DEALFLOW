@@ -262,3 +262,26 @@ initPlacesMap=function(){
   if(!navigator.onLine) ph.classList.add("notiles");
 };
 document.addEventListener("click",e=>{ const t=e.target.closest('[data-act="pl-town"]'); if(!t) return; e.preventDefault(); if(PLMAP) PLMAP.closePopup(); S.pl={...S.pl,mode:"town",val:t.dataset.k}; render(); setTimeout(()=>document.querySelector(".plpick")?.scrollIntoView({behavior:"smooth",block:"start"}),60); });
+
+/* ---------- 5. Better check-in logging: how we spoke, quick next dates, reach them from the log screen ---------- */
+const CI_HOW=["Call","WhatsApp","Meeting","Email","Coffee / lunch","Event"];
+const CI_WHEN=[["Tomorrow",1],["2 days",2],["1 week",7],["2 weeks",14],["1 month",30],["3 months",91],["6 months",182]];
+function ciReach(rec,isK){ const p= isK? rec : (bizContact(rec)||rec.owners?.[0]||{}); const cell=p.cell||(p.cells||[])[0]?.v||""; const mail=p.email||(p.emails||[])[0]?.v||"";
+  const nm=p.name&&p.name!==rec.name?` ${esc(p.name.split(" ")[0])}`:"";
+  return (cell||mail)?`<div class="ci19reach">${cell?`<a class="btn sm" href="tel:${esc(cell)}">${ic("phone",16)} Call${nm}</a>`:""}${cell&&waHref(cell)?`<a class="btn sm" href="${esc(waHref(cell))}" target="_blank" rel="noopener">${ic("wa",16)} WhatsApp</a>`:""}${mail?`<a class="btn sm" href="mailto:${esc(mail)}">${ic("mail",16)} Email</a>`:""}</div>`:""; }
+function ciEnhance(rec,isK){ const ov=document.querySelector("#modal .ovb"); if(!ov||ov.querySelector(".ci19how")) return;
+  const fields=ov.querySelector(".fields"); if(!fields) return;
+  fields.insertAdjacentHTML("beforebegin",`${ciReach(rec,isK)}<div class="lbl" style="margin:4px 4px 6px">How did you connect?</div><div class="chips ci19how">${CI_HOW.map(h=>`<button type="button" class="chip" data-act="ci19-how" data-k="${esc(h)}">${esc(h)}</button>`).join("")}</div>`);
+  const dateFld=isK? ov.querySelector("#qkNext")?.closest(".fld") : ov.querySelector("#qCad")?.closest(".fld");
+  if(dateFld) dateFld.insertAdjacentHTML("beforebegin",`<div class="ci19when"><div class="lbl" style="margin:2px 4px 6px">Next check-in</div><div class="chips">${CI_WHEN.map(([l,n])=>`<button type="button" class="chip" data-act="ci19-when" data-k="${addDays(n)}">${l}</button>`).join("")}</div></div>`); }
+{ const b=quickCheckin; quickCheckin=function(id){ b(id); const c=S.companies.get(id); if(c) ciEnhance(c,false); }; }
+{ const b=ciDoneModal; ciDoneModal=function(id){ b(id); const k=S.contacts.get(id); if(k) ciEnhance(k,true); }; }
+document.addEventListener("click",e=>{ const t=e.target.closest("[data-act]"); if(!t) return; const a=t.dataset.act;
+  if(a==="ci19-how"){ e.preventDefault(); const on=!t.classList.contains("on"); t.parentElement.querySelectorAll(".chip").forEach(x=>x.classList.remove("on")); if(on) t.classList.add("on"); }
+  if(a==="ci19-when"){ e.preventDefault(); t.parentElement.querySelectorAll(".chip").forEach(x=>x.classList.toggle("on",x===t)); const d=t.dataset.k;
+    if($("#qDate")){ $("#qDate").value=d; const o=$("#qOut"); if(o && o.value!=="keep"){ o.value="keep"; o.dispatchEvent(new Event("change",{bubbles:true})); } }
+    if($("#qkNext")){ const s=$("#qkNext"); s.value="date"; s.dispatchEvent(new Event("change",{bubbles:true})); if($("#qkDate")) $("#qkDate").value=d; $("#qkDateW")&&( $("#qkDateW").hidden=false ); $("#qkTodoW")&&( $("#qkTodoW").hidden=false ); } }
+},true);
+document.addEventListener("click",e=>{ const t=e.target.closest('[data-act="do-checkin2"],[data-act="k-ci-log"]'); if(!t) return;
+  const how=document.querySelector(".ci19how .chip.on")?.dataset.k; if(!how) return; const n=$("#qNote")||$("#qkNote"); if(!n || n.dataset.ci19) return;
+  n.value= n.value.trim()? `${how}: ${n.value.trim()}` : how; n.dataset.ci19="1"; },true);
