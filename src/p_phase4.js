@@ -46,7 +46,7 @@ function filteredDeals(){
   return companies().filter(c=>{
     if(!isAcq(c)) return false;
     const g=grp(c);
-    if(f.group==="likely"){ if(!likelySeller(c)||g==="closed"||g==="won") return false; } else if(f.group && g!==f.group) return false;
+    if(f.group==="likely"){ if(!likelySeller(c)||g==="closed"||g==="won") return false; } else if(f.group==="won"){ if(g!=="won"&&g!=="closed") return false; } else if(f.group && g!==f.group) return false;
     if(f.mine && !isMine(c)) return false;
     if(f.sector && sectorOf(c)!==f.sector) return false;
     if(f.partner && c.partner!==f.partner) return false;
@@ -58,12 +58,12 @@ function filteredDeals(){
   }).sort((a,b)=>{ const x=a.nextCheckIn||"9999", y=b.nextCheckIn||"9999"; return x.localeCompare(y) || (a.name||"").localeCompare(b.name||""); });
 }
 function vBusinesses(){
-  const f=S.f; const arr=filteredDeals(); const acq=companies().filter(isAcq); const nOther=companies().filter(c=>c.kind==="other").length; const n=g=>acq.filter(c=>grp(c)===g).length;
+  const f=S.f; const arr=filteredDeals(); const acq=companies().filter(isAcq); const nOther=companies().filter(c=>c.kind==="other").length; const n=g=>acq.filter(c=>grp(c)===g||(g==="won"&&grp(c)==="closed")).length;
   const nf=["sector","partner","province","channel","lang"].filter(x=>f[x]).length;
   return `<div class="ph"><div><h1>Businesses</h1><p>Only companies we want to buy: prospects we'd look at, and targets we go full out for.</p></div><button class="btn sm primary" data-act="new-deal">${ic("plus",18)} Add</button></div>
   <div class="search">${ic("search",20)}<input id="fq" type="search" placeholder="Search business, owner, town…" value="${esc(f.q)}" autocomplete="off" aria-label="Search businesses"></div>
   <div class="chips">
-    ${[["target","Targets"],["active","In discussions"],["network","Prospects"],["likely","Likely sellers"],["won","Deal done"],["closed","Closed"],["","All"]].map(([g,l])=>`<button class="chip ${f.group===g?"on":""}" data-act="f-group" data-k="${g}">${l} <span class="n">${g==="likely"?acq.filter(c=>likelySeller(c)&&!["closed","won"].includes(grp(c))).length:g?n(g):acq.length}</span></button>`).join("")}
+    ${[["","All"],["target","Targets"],["active","In discussions"],["network","Prospects"],["likely","Likely sellers"],["won","Deal done"]].map(([g,l])=>`<button class="chip ${f.group===g?"on":""}" data-act="f-group" data-k="${g}">${l} <span class="n">${g==="likely"?acq.filter(c=>likelySeller(c)&&!["closed","won"].includes(grp(c))).length:g?n(g):acq.length}</span></button>`).join("")}
     ${myPartner()?`<button class="chip ${f.mine?"on":""}" data-act="f-mine">Mine</button>`:""}
     <button class="chip ${nf?"on":""}" data-act="f-sheet">${ic("sliders",16)} Filters${nf?` · ${nf}`:""}</button>
   </div>

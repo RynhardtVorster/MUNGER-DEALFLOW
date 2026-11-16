@@ -699,3 +699,4 @@ function bizSectionHTML(k){
   return `<div class="fsec">${first}'s businesses${L.length?` (${L.length})`:""}</div>
    ${L.length?`<div class="group">${L.map(row).join("")}</div>`:`<div class="card box tag">Not linked to any company yet.</div>`}
    ${S.readOnly?"":`<button class="btn block" data-act="link19" data-mode="k" data-id="${esc(k.id)}" style="margin-top:8px">+ Link to another company</button>`}`; }
+document.addEventListener("click",e=>{ const a=e.target.closest('a[href="#businesses"]'); if(a && (a.closest("#tabbar")||a.closest(".rail")||a.closest(".seg"))) S.f.group=""; },true);
