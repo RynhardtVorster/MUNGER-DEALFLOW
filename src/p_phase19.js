@@ -285,3 +285,6 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-act]"); i
 document.addEventListener("click",e=>{ const t=e.target.closest('[data-act="do-checkin2"],[data-act="k-ci-log"]'); if(!t) return;
   const how=document.querySelector(".ci19how .chip.on")?.dataset.k; if(!how) return; const n=$("#qNote")||$("#qkNote"); if(!n || n.dataset.ci19) return;
   n.value= n.value.trim()? `${how}: ${n.value.trim()}` : how; n.dataset.ci19="1"; },true);
+
+/* ---------- 6. No contact import, anywhere ---------- */
+vImport=function(){ setTimeout(()=>{ if(location.hash==="#import") location.hash="people"; },0); return ""; };

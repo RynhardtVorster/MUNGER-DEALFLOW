@@ -523,7 +523,6 @@ function captureChooser(){
    <button type="button" data-act="new-contact"><span class="ci">${ic("userplus",24)}</span><span><b>A person</b><span>An owner, an employee, a potential hire, or an influential person we want in our network.</span></span></button>
    <button type="button" data-act="new-deal"><span class="ci">${ic("bizplus",24)}</span><span><b>A business</b><span>A company we might want to buy.</span></span></button>
    <button type="button" data-act="new-partner"><span class="ci">${ic("bank",24)}</span><span><b>A partner</b><span>A bank, funder, accounting or law firm, or advisor that helps us do deals.</span></span></button>
-   <button type="button" data-act="goto-import"><span class="ci">${ic("upload",24)}</span><span><b>Import contacts</b><span>Many people at once, from your phone or a file.</span></span></button>
   </div></div>`, true);
 }
 function quickCheckin(id){
