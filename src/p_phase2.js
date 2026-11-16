@@ -473,7 +473,7 @@ async function runAsk(q){
     try{
       const {data,error}=await sb.functions.invoke("ask-network",{body:{query:q, lines:pool.map(askLine)}});
       if(error){ const st=error.context?.status; if(st===503) S.aiOff=true; else S.aiErr=true; }
-      else if(data && Array.isArray(data.groups)){ res={mode:"ai", summary:data.summary||"", groups:data.groups.map(g=>({title:g.title, people:(g.people||[]).filter(p=>S.contacts.has(p.id))})).filter(g=>g.people.length), gaps:data.gaps||[], biz:local.biz}; }
+      else if(data && Array.isArray(data.groups)){ res={mode:"ai", summary:data.summary||"", groups:data.groups.map(g=>({title:g.title, people:(g.people||[]).filter(p=>S.contacts.has(p.id))})).filter(g=>g.people.length), gaps:data.gaps||[], biz:local.biz, partners:local.partners, bizFirst:local.bizFirst}; }
     }catch(e){ S.aiErr=true; }
   }
   if(S.ask.q===q){ S.ask={q, res, loading:false}; if(S.view==="ask") render(); }
