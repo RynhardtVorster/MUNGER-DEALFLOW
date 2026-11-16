@@ -803,10 +803,10 @@ function render(){
   if(S.scope===null && S.me) S.scope = companies().some(isMine)? "mine" : "team";
   const due=S.me? [...companies().filter(isOpen),...peopleCheckins(false)].filter(c=>{const n=daysUntil(c.nextCheckIn); return n!==null&&n<=7;}).length : 0;
   const tabOf = v => ["checkins","network","import","lists","settings","meeting","talent","more"].includes(v)? "" : v==="others"? "businesses" : v==="funders"? "partners" : v==="near"? "today" : v==="ask"? "today" : v;
-  $("#tabbar").innerHTML=TABS.map(([id,l,i])=> id==="+"? `<button class="plus" data-act="capture" aria-label="Capture a person or business">${ic("plus",26)}</button>` : `<a href="#${id}" class="${tabOf(S.view)===id?"on":""}">${ic(i,24)}<span>${l}</span>${id==="today"&&due?`<span class="dot">${due}</span>`:""}</a>`).join("");
+  $("#tabbar").innerHTML=TABS.map(([id,l,i])=> id==="+"? `<button class="plus" data-act="capture" aria-label="Capture a person or business">${ic("plus",26)}</button>` : `<a href="#${id}" class="${tabOf(S.view)===id?"on":""}">${ic(i,24)}<span>${l}</span>${id==="today"&&todayBadge()?`<span class="dot">${todayBadge()>9?"9+":todayBadge()}</span>`:""}</a>`).join("");
   $("#rail").innerHTML=`<div class="brand"><svg viewBox="0 0 1000 836" aria-hidden="true"><polygon points="0,64 97,0 500,258 903,0 1000,64 1000,722 814,836 814,146 500,378 186,146 186,836 0,722"/></svg><b>MUNGER</b><span>All roads lead to Munger.</span></div>
    <button class="cap" data-act="capture">${ic("plus",20)} Capture</button>
-   ${RAIL.map(([id,l,i])=>`<a class="nav ${S.view===id?"on":""}" href="#${id}">${ic(i,20)}<span>${l}</span>${id==="today"&&due?`<span class="dot">${due}</span>`:""}</a>`).join("")}
+   ${RAIL.map(([id,l,i])=>`<a class="nav ${S.view===id?"on":""}" href="#${id}">${ic(i,20)}<span>${l}</span>${id==="today"&&todayBadge()?`<span class="dot">${todayBadge()>9?"9+":todayBadge()}</span>`:""}</a>`).join("")}
    <div class="foot">${S.me?`${esc(S.me.name||S.me.email)} · ${S.companies.size} businesses · ${S.contacts.size} people`:""}</div>`;
   $("#topTitle").textContent=TITLES[S.view];
   $("#topActions").innerHTML = `<span style="display:flex">${["today","people","businesses"].includes(S.view)?`<button class="tbtn" data-act="goto" data-v="near" aria-label="Map">${ic("pin",22)}</button>`:""}${S.view!=="ask"?`<button class="tbtn" data-act="goto" data-v="ask" aria-label="Ask the network">${ic("search",22)}</button>`:""}<button class="tbtn ${S.view==="more"?"on":""}" data-act="goto" data-v="more" aria-label="More">${ic("more",22)}</button></span>`;
@@ -2316,13 +2316,13 @@ function vToday(){
   <div class="quick"><a class="act" href="#near">${ic("pin",18)}Map</a><a class="act" href="#partners">${ic("bank",18)}Partners</a><a class="act" href="#talent">${ic("star",18)}Talent</a></div>
   ${targetsBlock(mine)}
   <div class="sec"><h2>To call this week</h2>${due.length?`<a href="#checkins">All</a>`:""}</div>
-  ${due.length? due.map(anyDueCard).join("") : `<div class="card empty"><b>You're up to date</b>${soon.length?`Next up: ${esc(soon[0].name)} on ${esc(fmtD(soon[0].nextCheckIn))}.`:"Set check-ins on targets you like and on people you want to stay close to."}</div>`}
-  ${cm.length?`<div class="sec"><h2>${mine?"My commitments":"Team commitments"}</h2><a href="#meeting">Meeting</a></div><div class="group">${cm.slice(0,6).map(cmtRow).join("")}</div>`:""}
-  ${thx.length?`<div class="sec"><h2>Say thank you</h2></div><div class="group">${thx.map(k=>`<button class="rowi" data-contact="${esc(k.id)}">${avatarP(k)}<span class="main"><span class="t1" style="display:block">${esc(k.name)}</span><span class="t2" style="display:block">Introduced ${dealsFrom(k.id).length} lead${dealsFrom(k.id).length>1?"s":""} · ${(k.thanks||[]).length?"last thanked "+fmtD((k.thanks||[]).map(t=>t.d).sort().pop()):"not thanked yet"}</span></span>${ic("chev",18).replace('class="ic"','class="ic chev"')}</button>`).join("")}</div>`:""}
+  ${due.length? due.slice(0,5).map(anyDueCard).join("")+(due.length>5?`<a class="btn block" href="#checkins" style="margin-top:4px">See all ${due.length} check-ins</a>`:"") : `<div class="card empty"><b>You're up to date</b>${soon.length?`Next up: ${esc(soon[0].name)} on ${esc(fmtD(soon[0].nextCheckIn))}.`:"Set check-ins on targets you like and on people you want to stay close to."}</div>`}
+  ${cm.length?`<div class="sec"><h2>${mine?"My commitments":"Team commitments"}</h2><a href="#meeting">Meeting</a></div><div class="group">${cm.slice(0,5).map(cmtRow).join("")}</div>`:""}
+  ${thx.length?`<div class="sec"><h2>Say thank you</h2></div><div class="group">${thx.slice(0,4).map(k=>`<button class="rowi" data-contact="${esc(k.id)}">${avatarP(k)}<span class="main"><span class="t1" style="display:block">${esc(k.name)}</span><span class="t2" style="display:block">Introduced ${dealsFrom(k.id).length} lead${dealsFrom(k.id).length>1?"s":""} · ${(k.thanks||[]).length?"last thanked "+fmtD((k.thanks||[]).map(t=>t.d).sort().pop()):"not thanked yet"}</span></span>${ic("chev",18).replace('class="ic"','class="ic chev"')}</button>`).join("")}</div>`:""}
   ${newNet?`<div class="sec"><h2>New prospects</h2><a href="#businesses" data-act="biz-network">Review</a></div><div class="card box tag">${newNet} prospect${newNet>1?"s":""} added in the last three weeks. Open one and tap <b>Make it a target</b> if we want to go for it.</div>`:""}
-  ${weak.length?`<div class="sec"><h2>Make these profiles stronger</h2></div><div class="group">${weak.map(({k,c})=>`<button class="rowi" data-act="complete-profile" data-id="${esc(k.id)}">${avatarP(k)}<span class="main"><span class="t1" style="display:block">${esc(k.name)}</span><span class="t2" style="display:block">Add ${esc(c.missing.slice(0,3).join(", "))}</span></span><span class="trail"><span class="pill soon">${c.pct}%</span></span></button>`).join("")}</div>`:""}
-  ${soon.length?`<div class="sec"><h2>Coming up</h2></div><div class="group">${soon.slice(0,6).map(anyRow).join("")}</div>`:""}
-  ${recent.length?`<div class="sec"><h2>New in the network</h2><span class="tag">last 2 weeks</span></div><div class="group">${recent.map(r=>newRow(r)).join("")}</div>`:""}
+  ${weak.length?`<div class="sec"><h2>Make these profiles stronger</h2></div><div class="group">${weak.slice(0,3).map(({k,c})=>`<button class="rowi" data-act="complete-profile" data-id="${esc(k.id)}">${avatarP(k)}<span class="main"><span class="t1" style="display:block">${esc(k.name)}</span><span class="t2" style="display:block">Add ${esc(c.missing.slice(0,3).join(", "))}</span></span><span class="trail"><span class="pill soon">${c.pct}%</span></span></button>`).join("")}</div>`:""}
+  ${soon.length?`<div class="sec"><h2>Coming up</h2></div><div class="group">${soon.slice(0,4).map(anyRow).join("")}</div>`:""}
+  ${recent.length?`<div class="sec"><h2>New in the network</h2><span class="tag">last 2 weeks</span></div><div class="group">${recent.slice(0,5).map(r=>newRow(r)).join("")}</div>`:""}
   <div style="text-align:center;margin-top:18px"><button class="btn sm" data-act="copy-week">Copy my week for WhatsApp</button></div>`;
 }
 function myWeekText(){
@@ -4409,6 +4409,17 @@ document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act
     if(ok){ closeModal(); toast("Note deleted"); queueRender(); try{ renderSheet(); }catch(_){} } }); }
 },true);
 document.addEventListener("keydown",e=>{ if(e.key==="Enter" && e.target.matches?.('[data-act="log-edit"]')) e.target.click(); });
+
+/* ---------- 10. Today badge: only my check-ins that are due, and it clears once I've opened Today ---------- */
+const SEEN_KEY="munger.todaySeen";
+function myDueIds(){ if(!S.me) return []; const me=myPartner();
+  const cos=companies().filter(c=>isOpen(c) && isMine(c) && daysUntil(c.nextCheckIn)!==null && daysUntil(c.nextCheckIn)<=0).map(c=>"c"+c.id+"@"+c.nextCheckIn);
+  const ppl=peopleCheckins(true).filter(k=>daysUntil(k.nextCheckIn)!==null && daysUntil(k.nextCheckIn)<=0).map(k=>"k"+k.id+"@"+k.nextCheckIn);
+  return [...cos,...ppl]; }
+function todayBadge(){ const ids=myDueIds(); if(currentView()==="today" && ids.length){ offWrite(SEEN_KEY,ids); }
+  const seen=new Set(offRead(SEEN_KEY)||[]); const n=ids.filter(x=>!seen.has(x)).length;
+  try{ if(navigator.setAppBadge){ n? navigator.setAppBadge(n) : navigator.clearAppBadge(); } }catch(_){}
+  return n; }
 
 
 function vNetwork(){

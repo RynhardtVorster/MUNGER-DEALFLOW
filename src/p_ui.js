@@ -86,10 +86,10 @@ function render(){
   if(S.scope===null && S.me) S.scope = companies().some(isMine)? "mine" : "team";
   const due=S.me? [...companies().filter(isOpen),...peopleCheckins(false)].filter(c=>{const n=daysUntil(c.nextCheckIn); return n!==null&&n<=7;}).length : 0;
   const tabOf = v => ["checkins","network","import","lists","settings","meeting","talent","more"].includes(v)? "" : v==="others"? "businesses" : v==="funders"? "partners" : v==="near"? "today" : v==="ask"? "today" : v;
-  $("#tabbar").innerHTML=TABS.map(([id,l,i])=> id==="+"? `<button class="plus" data-act="capture" aria-label="Capture a person or business">${ic("plus",26)}</button>` : `<a href="#${id}" class="${tabOf(S.view)===id?"on":""}">${ic(i,24)}<span>${l}</span>${id==="today"&&due?`<span class="dot">${due}</span>`:""}</a>`).join("");
+  $("#tabbar").innerHTML=TABS.map(([id,l,i])=> id==="+"? `<button class="plus" data-act="capture" aria-label="Capture a person or business">${ic("plus",26)}</button>` : `<a href="#${id}" class="${tabOf(S.view)===id?"on":""}">${ic(i,24)}<span>${l}</span>${id==="today"&&todayBadge()?`<span class="dot">${todayBadge()>9?"9+":todayBadge()}</span>`:""}</a>`).join("");
   $("#rail").innerHTML=`<div class="brand"><svg viewBox="0 0 1000 836" aria-hidden="true"><polygon points="0,64 97,0 500,258 903,0 1000,64 1000,722 814,836 814,146 500,378 186,146 186,836 0,722"/></svg><b>MUNGER</b><span>All roads lead to Munger.</span></div>
    <button class="cap" data-act="capture">${ic("plus",20)} Capture</button>
-   ${RAIL.map(([id,l,i])=>`<a class="nav ${S.view===id?"on":""}" href="#${id}">${ic(i,20)}<span>${l}</span>${id==="today"&&due?`<span class="dot">${due}</span>`:""}</a>`).join("")}
+   ${RAIL.map(([id,l,i])=>`<a class="nav ${S.view===id?"on":""}" href="#${id}">${ic(i,20)}<span>${l}</span>${id==="today"&&todayBadge()?`<span class="dot">${todayBadge()>9?"9+":todayBadge()}</span>`:""}</a>`).join("")}
    <div class="foot">${S.me?`${esc(S.me.name||S.me.email)} · ${S.companies.size} businesses · ${S.contacts.size} people`:""}</div>`;
   $("#topTitle").textContent=TITLES[S.view];
   $("#topActions").innerHTML = `<span style="display:flex">${["today","people","businesses"].includes(S.view)?`<button class="tbtn" data-act="goto" data-v="near" aria-label="Map">${ic("pin",22)}</button>`:""}${S.view!=="ask"?`<button class="tbtn" data-act="goto" data-v="ask" aria-label="Ask the network">${ic("search",22)}</button>`:""}<button class="tbtn ${S.view==="more"?"on":""}" data-act="goto" data-v="more" aria-label="More">${ic("more",22)}</button></span>`;

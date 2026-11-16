@@ -381,3 +381,14 @@ document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act
     if(ok){ closeModal(); toast("Note deleted"); queueRender(); try{ renderSheet(); }catch(_){} } }); }
 },true);
 document.addEventListener("keydown",e=>{ if(e.key==="Enter" && e.target.matches?.('[data-act="log-edit"]')) e.target.click(); });
+
+/* ---------- 10. Today badge: only my check-ins that are due, and it clears once I've opened Today ---------- */
+const SEEN_KEY="munger.todaySeen";
+function myDueIds(){ if(!S.me) return []; const me=myPartner();
+  const cos=companies().filter(c=>isOpen(c) && isMine(c) && daysUntil(c.nextCheckIn)!==null && daysUntil(c.nextCheckIn)<=0).map(c=>"c"+c.id+"@"+c.nextCheckIn);
+  const ppl=peopleCheckins(true).filter(k=>daysUntil(k.nextCheckIn)!==null && daysUntil(k.nextCheckIn)<=0).map(k=>"k"+k.id+"@"+k.nextCheckIn);
+  return [...cos,...ppl]; }
+function todayBadge(){ const ids=myDueIds(); if(currentView()==="today" && ids.length){ offWrite(SEEN_KEY,ids); }
+  const seen=new Set(offRead(SEEN_KEY)||[]); const n=ids.filter(x=>!seen.has(x)).length;
+  try{ if(navigator.setAppBadge){ n? navigator.setAppBadge(n) : navigator.clearAppBadge(); } }catch(_){}
+  return n; }
