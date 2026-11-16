@@ -63,7 +63,7 @@ const TALENT_ROLES=["CEO / MD","CFO / Finance","COO / Operations","Sales & marke
 const AVAIL={"":"Unknown","no":"Not looking","open":"Open to the right thing","yes":"Actively looking"};
 const SIGNALS=[["age","Owner 60 or older"],["nosucc","No successor in place"],["kids","Children not taking over"],["tired","Owner tired or wants out"],["dispute","Shareholder or family dispute"],["health","Health concerns"],["capital","Needs growth capital"],["approached","Approached by other buyers"]];
 const KINDS={target:"Potential acquisition",financier:"Bank or funder",service:"Service provider",other:"Other"};
-const isTalent=k=>!!(k.talent&&(k.talent||{}).on)||k.tier==="C";
+const isTalent=k=>!!(k.talent&&(k.talent||{}).on)||k.tier==="C"||(k.tags||[]).includes("C");
 function sigCount(c){ return SIGNALS.filter(([s])=>(c.signals||{})[s]).length; }
 const likelySeller=c=>sigCount(c)>=2;
 function personBadges(k){ return `${isTalent(k)?`<span class="pill won">★ Talent</span>`:""}${k.hnwi?`<span class="pill A">HNWI</span>`:""}${k.doNotContact?`<span class="pill late">Do not contact</span>`:""}`; }
@@ -132,10 +132,10 @@ function myWeekText(){
 function vPeople(){
   const k=S.k, q=k.q.trim().toLowerCase(); const me=myPartner(); const all=contacts();
   const special={top:()=>true, talent:isTalent, hnwi:x=>x.hnwi};
-  const arr=all.filter(c=>{ if(special[k.tier]){ if(!special[k.tier](c)) return false; } else if(k.tier&&tierOf(c)!==k.tier) return false; if(k.mine&&!isMineK(c)) return false; if(q){ const co=companyOf(c); const h=[c.name,c.firm,c.title,c.email,c.cell,c.town,c.province,c.country,c.notes,c.type,c.industry,c.expertise,c.companyRole,co?.name,knowsTxt(c),(c.talent?.roles||[]).join(" "),c.talent?.sectors,c.wealthSource].join(" ").toLowerCase(); if(!h.includes(q)) return false; } return true; })
+  const arr=all.filter(c=>{ if(special[k.tier]){ if(!special[k.tier](c)) return false; } else if(k.tier&&!hasTag(c,k.tier)) return false; if(k.mine&&!isMineK(c)) return false; if(q){ const co=companyOf(c); const h=[c.name,c.firm,c.title,c.email,c.cell,c.town,c.province,c.country,c.notes,c.type,c.industry,c.expertise,c.companyRole,co?.name,knowsTxt(c),(c.talent?.roles||[]).join(" "),c.talent?.sectors,c.wealthSource].join(" ").toLowerCase(); if(!h.includes(q)) return false; } return true; })
     .sort((a,b)=> k.tier==="top"? influenceScore(b)-influenceScore(a) : k.tier==="talent"? (Number(b.talent?.rating)||0)-(Number(a.talent?.rating)||0) : (a.name||"").localeCompare(b.name||"",undefined,{sensitivity:"base"}));
   if(k.tier==="top") arr.splice(50);
-  const cnt=t=>all.filter(c=>tierOf(c)===t).length;
+  const cnt=t=>all.filter(c=>hasTag(c,t)).length;
   const chip=(t,l,n)=>`<button class="chip ${k.tier===t?"on":""}" data-act="k-tier" data-k="${t}">${l}${n!==undefined?` <span class="n">${n}</span>`:""}</button>`;
   let body="";
   if(!arr.length) body=`<div class="card empty">${all.length?"<b>Nobody matches</b>Try a different search or filter, or use Ask the network.":`<b>Your network starts here</b>Add the people who matter, one at a time.<div style="margin-top:14px"><button class="btn primary" data-act="new-contact">${ic("plus",18)} Add a person</button></div>`}</div>`;
@@ -357,7 +357,7 @@ function renderSheet(){
     const t=tierOf(k); const deals=dealsFrom(k.id); const co=companyOf(k); const cp=completeness(k); const tal=k.talent||{};
     const lastThx=(k.thanks||[]).map(x=>x.d).sort().pop();
     el.innerHTML=`${ovHead(k.name,null,ro?"":`<button class="hbtn" data-act="edit-contact" data-id="${esc(k.id)}">Edit</button>`)}<div class="ovb">
-    <div class="hero">${avatarP(k,true)}<h2>${esc(k.name)}</h2><div class="sub">${esc(workLine(k)||TIERS[t].label)}</div><div class="pills">${t?`<span class="pill ${t}">${t} · ${esc(TIERS[t].label)}</span>`:`<span class="pill">Not tagged</span>`}${k.influence?`<span class="pill">${stars(k.influence)}</span>`:""}${personBadges(k)}${k.industry?`<span class="pill">${esc(k.industry.split(" › ").pop())}</span>`:""}${langTag(k.language)}</div></div>
+    <div class="hero">${avatarP(k,true)}<h2>${esc(k.name)}</h2><div class="sub">${esc(workLine(k)||TIERS[t].label)}</div><div class="pills">${tagsOf(k).map(x=>`<span class="pill ${x}">${x} · ${esc(TIERS[x].label)}</span>`).join("")}${k.influence?`<span class="pill">${stars(k.influence)}</span>`:""}${personBadges(k)}${k.industry?`<span class="pill">${esc(k.industry.split(" › ").pop())}</span>`:""}${langTag(k.language)}</div></div>
     <div class="bigacts">
       <a class="bigact" ${k.cell&&!k.doNotContact?`href="${esc(telHref(k.cell))}"`:'aria-disabled="true"'}>${ic("phone",22)}Call</a>
       <a class="bigact" ${k.cell&&!k.doNotContact?`href="${esc(waHref(k.cell))}" target="_blank" rel="noopener"`:'aria-disabled="true"'}>${ic("wa",22)}WhatsApp</a>
@@ -404,7 +404,7 @@ function contactForm(id, preset){
   showModal(`<form id="contactForm" novalidate style="display:contents">${formHead(id?"Edit person":"New person","contactForm")}<div class="ovb">
   <div class="scorebar" id="kScore"></div>
   <div class="fsec">Who is this?</div>
-  <div class="tiers3" role="radiogroup">${["A","B","C","D"].map(t=>`<label><input type="radio" name="kTier" value="${t}" ${tier===t?"checked":""}><span class="avatar ${t}" style="width:34px;height:34px;font-family:var(--display)">${t}</span><b>${esc(TIERS[t].label)}</b></label>`).join("")}</div>
+  <p class="tag" style="margin:-4px 2px 8px">Tick all that apply, e.g. an employee who is also a great contact.</p><div class="tiers3" role="group">${["A","B","C","D"].map(t=>`<label><input type="checkbox" name="kTier" value="${t}" ${(id?tagsOf(k):[tier]).includes(t)?"checked":""}><span class="avatar ${t}" style="width:34px;height:34px;font-family:var(--display)">${t}</span><b>${esc(TIERS[t].label)}</b></label>`).join("")}</div>
   <div class="hint" id="kTierHint"></div>
   <div class="fsec">Contact</div>
   <div class="fields">
@@ -429,7 +429,7 @@ function contactForm(id, preset){
    <div class="fld" id="kFirmW" hidden><label for="kFirm">Company (optional)</label><input id="kFirm" autocomplete="off" value="${esc(!co&&whereInit==="other"?k.firm:"")}" placeholder="Where they work, if anywhere"></div>
    <div class="fld"><label for="kRole">Role at the company</label><select id="kRole">${opts(ROLES,k.companyRole,"Choose…")}</select></div>
    <div class="fld"><label for="kTitle">Job title</label><input id="kTitle" value="${esc(k.title)}" placeholder="e.g. Head of leveraged finance, Videographer"></div>
-   <div class="fld"><label for="kIndustry">Industry</label><select id="kIndustry">${industryOpts(k.industry)}</select></div>
+   <div class="fld"><label for="kIndustry">Industry</label><input id="kIndustry" list="indList" value="${esc(k.industry)}" autocomplete="off" placeholder="Type to search, e.g. betting, private equity">${indList()}</div>
    ${fldNote("kExpertise","What are they great at?",k.expertise,"e.g. e-commerce growth; brand films and editing; acquisition finance",2)}
   </div>
   <div class="hint" id="kCoHint"></div>
@@ -469,11 +469,11 @@ function contactForm(id, preset){
   setTimeout(()=>{ if(!id) $("#kName")?.focus(); },300);
 }
 function kFormRead(){
-  const tier=(document.querySelector('input[name=kTier]:checked')||{}).value||"";
+  const tags=[...document.querySelectorAll('input[name=kTier]:checked')].map(x=>x.value); const tier=TIER_PRIO.find(t=>tags.includes(t))||"";
   const W=whereRead(); const cname=W.coName; const co=W.co;
   const conns=[...document.querySelectorAll("[data-partner]")].filter(s=>s.value).map(s=>({partner:s.dataset.partner, relation:s.value}));
   const town=$("#kTown").value.trim(); const g=gazFind(town);
-  return {tier, name:$("#kName").value.trim(), cell:$("#kCell").value.trim(), email:$("#kEmail").value.trim(), country:$("#kCountry").value, companyId:co?co.id:"", firm: co? "" : cname, companyRole:$("#kRole").value, title:$("#kTitle").value.trim(), industry:$("#kIndustry").value, expertise:$("#kExpertise").value.trim(), type:$("#kType").value, language:$("#kLang").value, province:autoProvince(town,$("#kProv").value), town: g? g.name : town, linkedin:$("#kLinkedin").value.trim(), notes:$("#kNotes").value.trim(), influence:Number($("#kInfl").value)||0, conns, coName:cname, coFound:!!co,
+  return {tier, tags, name:$("#kName").value.trim(), cell:$("#kCell").value.trim(), email:$("#kEmail").value.trim(), country:$("#kCountry").value, companyId:co?co.id:"", firm: co? "" : cname, companyRole:$("#kRole").value, title:$("#kTitle").value.trim(), industry:$("#kIndustry").value, expertise:$("#kExpertise").value.trim(), type:$("#kType").value, language:$("#kLang").value, province:autoProvince(town,$("#kProv").value), town: g? g.name : town, linkedin:$("#kLinkedin").value.trim(), notes:$("#kNotes").value.trim(), influence:Number($("#kInfl").value)||0, conns, coName:cname, coFound:!!co,
     hnwi:$("#kHnwi").checked, wealthSource:$("#kWealth").value.trim(), doNotContact:$("#kDnc").checked,
     talent: $("#kTal").checked? {on:true, roles:[...document.querySelectorAll('input[name=kTalRole]:checked')].map(x=>x.value), rating:Number($("#kTalRate").value)||0, sectors:$("#kTalSect").value.trim(), availability:$("#kTalAvail").value, why:$("#kTalWhy").value.trim()} : {}};
 }
@@ -490,10 +490,10 @@ function kFormUpdate(){
 async function submitContact(){
   const d=kFormRead();
   if(!d.name){ toast("Add a name"); $("#kName").focus(); return; }
-  const tier=d.tier || (OWNER_ROLES.includes(d.companyRole)?"A":"D");
+  const tier=d.tier || (OWNER_ROLES.includes(d.companyRole)?"A":"D"); const tags=(d.tags&&d.tags.length)? d.tags : [tier];
   const me=myPartner(); const primary=(d.conns.find(c=>c.partner===me)||d.conns[0]||{}).partner||"";
   const prev=FORM.id? S.contacts.get(FORM.id):null;
-  const data={name:d.name, tier, firm:d.firm, type:d.type, partner:primary, companyId:d.companyId, companyRole:d.companyRole, ownsCompanyId: OWNER_ROLES.includes(d.companyRole)? d.companyId : "", title:d.title, country:d.country, industry:d.industry, expertise:d.expertise, linkedin:d.linkedin, cell:d.cell, email:d.email, language:d.language, province:d.province, town:d.town, notes:d.notes, influence:d.influence, hnwi:d.hnwi, wealthSource:d.hnwi?d.wealthSource:"", doNotContact:d.doNotContact, talent:d.talent, example:prev?.example||false};
+  const data={name:d.name, tier, tags, firm:d.firm, type:d.type, partner:primary, companyId:d.companyId, companyRole:d.companyRole, ownsCompanyId: OWNER_ROLES.includes(d.companyRole)? d.companyId : "", title:d.title, country:d.country, industry:d.industry, expertise:d.expertise, linkedin:d.linkedin, cell:d.cell, email:d.email, language:d.language, province:d.province, town:d.town, notes:d.notes, influence:d.influence, hnwi:d.hnwi, wealthSource:d.hnwi?d.wealthSource:"", doNotContact:d.doNotContact, talent:d.talent, example:prev?.example||false};
   Object.assign(data, ciRead()); data.cells=readExtras("cell"); data.emails=readExtras("email");
   if(prev && prev.companyId && prev.companyId!==d.companyId){ const pc=S.companies.get(prev.companyId); data.pastRoles=[...(prev.pastRoles||[]),{company:pc?.name||"", role:prev.companyRole||prev.title||"", until:today()}]; }
   const id=FORM.id||newId();
@@ -520,7 +520,7 @@ function dealForm(id, preset){
   <div class="fields">
     ${isPartnerKind(c.kind)? `<div class="fld"><label for="cKind">What kind of partner?</label><select id="cKind">${opts(Object.entries(PKINDS).map(([v,l])=>({v,l})),c.kind)}</select></div>` : `<div class="fld"><label for="cKind">What is it?</label><select id="cKind">${opts(BIZSEL,bizSelOf(c))}</select></div><div class="fld" id="cKindNoteW" ${c.kind==="other"?"":"hidden"}><label for="cKindNote">Describe it</label><input id="cKindNote" value="${esc(c.kindNote)}" placeholder="What is this business to us?"></div>`}
     <div class="fld"><label for="cName">Name *</label><input id="cName" value="${esc(c.name)}" autocomplete="off" autocapitalize="words"></div>
-    <div class="fld nofin"><label for="cIndustry">Industry</label><select id="cIndustry">${industryOpts(c.industry)}</select></div>
+    <div class="fld nofin"><label for="cIndustry">Industry</label><input id="cIndustry" list="indList" value="${esc(c.industry)}" autocomplete="off" placeholder="Type to search, e.g. betting, private equity">${indList()}</div>
     <div class="fld"><label for="cTown">Town / city</label><input id="cTown" list="townList" value="${esc(c.town)}" autocomplete="off">${townList()}</div>
     <div class="fld"><label for="cHq">Head office country</label><input id="cHq" list="countryList" value="${esc(c.hqCountry||"South Africa")}" autocomplete="off" placeholder="Start typing a country">${countryList()}</div>
     <div class="fld nofin"><label for="cFoot">Where it operates</label><select id="cFoot">${opts(FOOTPRINTS,c.footprint,"Choose…")}</select></div>

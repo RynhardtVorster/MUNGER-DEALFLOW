@@ -44,20 +44,23 @@ const CHANNEL_TO_TYPE = {accounting:"Accountant / auditor",law:"Attorney",tax:"T
 const CHANNEL_TO_TIER = {accounting:"B",law:"B",tax:"B",bank:"B",broker:"B",hatstone:"B",friend:"C",connector:"C",whatsapp:"A"};
 
 const INDUSTRIES = {
-  "Agriculture":["Fruit & citrus","Grain & field crops","Vegetables & horticulture","Livestock & dairy","Poultry & eggs","Wine & viticulture","Nuts (macadamia, pecan)","Mushrooms & specialty crops","Forestry & timber","Aquaculture & fishing","Agri inputs & services"],
+  "Agriculture":["Aquaculture & fishing","Sugar","Cannabis & hemp","Agri inputs (seed, fertiliser, chemicals)","Fruit & citrus","Grain & field crops","Vegetables & horticulture","Livestock & dairy","Poultry & eggs","Wine & viticulture","Nuts (macadamia, pecan)","Mushrooms & specialty crops","Forestry & timber","Aquaculture & fishing","Agri inputs & services"],
   "Agro-processing & food":["Food manufacturing","Juice & concentrates","Meat processing","Milling & bakery","Packhouses & cold storage","Beverages, wineries & breweries","Animal feed"],
   "Manufacturing":["Engineering & metal fabrication","Plastics & packaging","Chemicals","Automotive components","Textiles & clothing","Furniture & wood products","Building materials","Electrical equipment","Printing & signage"],
-  "Mining & energy":["Mining & quarrying","Mining services & equipment","Renewable energy & solar","Fuel distribution","Water & waste management"],
+  "Mining & energy":["Oil & gas","Power generation & utilities","Mining & quarrying","Mining services & equipment","Renewable energy & solar","Fuel distribution","Water & waste management"],
   "Construction & property":["Construction & civils","Specialist contractors (electrical, HVAC, plumbing)","Property development","Property management","Equipment & plant hire"],
-  "Trade & distribution":["Wholesale & distribution","Retail","FMCG brands","Franchise groups","Automotive dealerships & aftermarket","E-commerce"],
+  "Trade & distribution":["Import & export","Fuel stations & convenience","Wholesale & distribution","Retail","FMCG brands","Franchise groups","Automotive dealerships & aftermarket","E-commerce"],
   "Logistics & transport":["Road freight","Cold chain logistics","Warehousing","Courier & last mile","Passenger transport","Marine & aviation services"],
   "Tourism & hospitality":["Hotels & guesthouses","Game lodges & reserves","Tour operators","Restaurants & catering","Golf & leisure estates","Events & venues"],
-  "Health & education":["Private clinics & practices","Pharmacies","Pharmaceuticals & medical devices","Veterinary","Frail care & retirement","Private schools","Training & skills development"],
-  "Business & financial services":["Accounting & tax","Legal","Consulting","Insurance & brokers","Financial services & lending","Staffing & labour","Security services","Facilities management & cleaning","Marketing & media"],
-  "Technology":["Software & SaaS","IT & managed services","Telecoms & ISPs","Data & fintech"],
-  "Creative & media":["Video, film & editing","Photography","Content & social media","Graphic design & branding","Copywriting, PR & communications","Events, MCs & presenters","Music & audio"],
+  "Health & education":["Hospitals","Medical aid & health insurance","Universities & higher education","Childcare & early learning","Private clinics & practices","Pharmacies","Pharmaceuticals & medical devices","Veterinary","Frail care & retirement","Private schools","Training & skills development"],
+  "Business & financial services":["Private equity & venture capital","Investment & asset management","Banking","Wealth management & family offices","Fintech & payments","Accounting & tax","Legal","Consulting","Insurance & brokers","Financial services & lending","Staffing & labour","Security services","Facilities management & cleaning","Marketing & media"],
+  "Technology":["AI & data","Cybersecurity","Hardware & electronics","Software & SaaS","IT & managed services","Telecoms & ISPs","Data & fintech"],
+  "Creative & media":["Publishing","Broadcasting & radio","Advertising agencies","Video, film & editing","Photography","Content & social media","Graphic design & branding","Copywriting, PR & communications","Events, MCs & presenters","Music & audio"],
   "Professional services":["Architecture & interior design","Engineering consulting","Quantity surveying","Town planning","Property valuation","Recruitment & executive search","Coaching & training"],
-  "Other":["Funeral services","Other"]
+  "Gaming & betting":["Sports betting & bookmakers","Casinos","Lotteries","Online gaming","Gaming technology"],
+  "Sport & recreation":["Sports clubs & franchises","Fitness & gyms","Sports equipment & apparel"],
+  "Public sector & non-profit":["Government & SOEs","Municipalities","NGOs & non-profits","Development finance institutions"],
+  "Other":["Family office / private investor","Funeral services","Other"]
 };
 const SECTORS = Object.keys(INDUSTRIES);
 const PROVINCES = ["Western Cape","Eastern Cape","Northern Cape","Free State","KwaZulu-Natal","North West","Gauteng","Mpumalanga","Limpopo","Namibia","Eswatini","Botswana","Other"];
