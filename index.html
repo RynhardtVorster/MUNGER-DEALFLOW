@@ -2516,6 +2516,7 @@ function renderSheet(){
     ${k.hnwi?`<div class="fsec">High net worth</div><div class="card box">${esc(k.wealthSource||"Wealth source not captured")}</div>`:""}
     <div class="fsec">Who knows ${esc(k.name.split(" ")[0])}</div>
     ${knowers(k).length?`<div class="group">${knowers(k).map(x=>`<div class="rowi" style="min-height:52px"><span class="avatar biz" style="width:34px;height:34px;font-size:13px">${esc(initials(x.partner))}</span><span class="main"><span class="t1" style="display:block">${esc(x.partner)}</span></span><span class="pill ${x.relation==="friend"?"won":x.relation==="family"?"A":""}">${esc(RELS[x.relation]||"Not set")}</span></div>`).join("")}</div>`:`<div class="card empty">Nobody in our team linked yet.</div>`}
+    ${ownsLine(k)}
     <div class="fsec">Work</div>
     <div class="card kv">${co?`<div class="k">Works at</div><div class="v"><a href="#" data-open="${esc(co.id)}">${esc(co.name)}</a></div><div class="k">Role there</div><div class="v">${esc(k.companyRole||"—")}</div>`:`<div class="k">Company</div><div class="v">${esc(k.firm||"—")}</div>`}<div class="k">Title</div><div class="v">${esc(k.title||k.type||"—")}</div><div class="k">Industry</div><div class="v">${esc(k.industry||"—")}</div><div class="k">Can help with</div><div class="v">${esc(k.expertise||"—")}</div></div>
     ${(co||k.firm)&&!ro?`<button class="linkbtn" data-act="left-company" data-id="${esc(k.id)}">No longer works there</button>`:""}
@@ -2645,7 +2646,7 @@ async function submitContact(){
   document.querySelectorAll('button[type=submit]').forEach(b=>b.disabled=false);
   if(!ok) return;
   toast(FORM.id?"Saved":"Added to People");
-  if(addBiz){ const b=FORM.buyAs; ownerDealForm(id); setTimeout(()=>{ const s=$("#cKind"); if(s){ s.value=b==="target"?"acquire":"network"; s.dispatchEvent(new Event("change",{bubbles:true})); } },60); return; }
+  if(addBiz){ const b=FORM.buyAs; ownerDealForm(id,true); setTimeout(()=>{ const s=$("#cKind"); if(s){ s.value=b==="target"?"acquire":"network"; s.dispatchEvent(new Event("change",{bubbles:true})); } },60); return; }
   if(sheetOpen() && S.sheet?.kind==="contact" && S.sheet.id===id){ closeModal(); renderSheet(); } else openSheet("contact",id,true);
 }
 
@@ -2742,7 +2743,7 @@ async function submitDeal(){
   const ok=await dbSet("companies/"+id, data);
   btns.forEach(b=>b.disabled=false);
   if(ok){
-    if(!FORM.id && FORM.fromOwner) await dbUpdate("contacts/"+FORM.fromOwner,{companyId:id, companyRole:FORM.fromRole||"Owner", ownsCompanyId:id, firm:""});
+    if(!FORM.id && FORM.fromOwner) await dbUpdate("contacts/"+FORM.fromOwner,{companyId:id, companyRole:FORM.fromRole||"Owner", ownsCompanyId:(OWNER_ROLES.includes(FORM.fromRole||"Owner")||FORM.fromIsOwner)?id:"", firm:""});
     if(!fin) await syncOwnersToPeople(id, owners, data, FORM.fromOwner);
     toast(FORM.id?"Saved":"Added");
     if(sheetOpen() && S.sheet?.kind==="company" && S.sheet.id===id){ closeModal(); renderSheet(); } else openSheet("company",id,true);
@@ -3549,6 +3550,41 @@ document.addEventListener("click",async e=>{
   if(a==="m11-go") m11Go(t);
   if(a==="m11-apply") m11Apply(t);
   if(a==="m11-notes"){ const m=openMeeting(); const txt=($("#m11Text")?.value||"").trim(); if(!m||!txt){ toast("Paste the notes first"); return; } await meetUpdate(m.id,{notes:[m.notes,txt].filter(Boolean).join("\n\n")}); closeModal(); const ta=$("#m11Text"); if(ta) ta.value=""; toast("Saved in the meeting notes"); }
+});
+
+/* ================= Phase 12: a person's own business is never "their lead" ================= */
+function ownsOrWorks(k,c){ return !!k && !!c && (k.companyId===c.id || k.ownsCompanyId===c.id || (c.owners||[]).some(o=>normName(o.name)===normName(k.name))); }
+dealsFrom=function(contactId){ const k=S.contacts.get(contactId); return companies().filter(c=>c.source?.contactId===contactId && !ownsOrWorks(k,c)); };
+ownerDealForm=function(contactId, ownPlace){
+  const kk=S.contacts.get(contactId); if(!kk) return; const t=tierOf(kk); const owner=t==="A"||OWNER_ROLES.includes(kk.companyRole);
+  const map={"Accountant / auditor":"accounting","Attorney":"law","Tax advisor":"tax","Banker / financier":"bank","Business broker":"broker","Well-connected friend":"friend"};
+  const theirs=owner||ownPlace;
+  const preset={source: theirs? {} : {channel:map[kk?.type]||"connector", contactId}, partner:kk?.partner||defaultPartner()};
+  preset.name= theirs? (kk.firm||"") : "";
+  if(theirs){ preset.province=kk.province||""; preset.town=kk.town||""; preset.industry=kk.industry||""; }
+  if(owner) preset.owners=[{name:kk.name,cell:kk.cell||"",email:kk.email||"",language:kk.language||"af",role:kk.companyRole||"Owner"}];
+  dealForm(null,preset);
+  FORM.fromOwner= theirs? contactId : null; FORM.fromRole= kk.companyRole||(owner?"Owner":""); FORM.fromIsOwner=owner;
+};
+function ownsLine(k){
+  const owned=companies().filter(c=>c.id!==k.companyId && (k.ownsCompanyId===c.id || (c.owners||[]).some(o=>normName(o.name)===normName(k.name))));
+  return owned.length? `<div class="fsec">Owns</div><div class="group">${owned.map(bizRow).join("")}</div>` : "";
+}
+/* Don't lose a work link by accident when editing */
+{ const base=submitContact;
+  submitContact=async function(){
+    if(FORM.id && !FORM.unlinkOk){ const prev=S.contacts.get(FORM.id); const W=whereRead(); const pc=prev?.companyId? S.companies.get(prev.companyId) : null;
+      if(pc && !W.co && !W.isNew){
+        fuzzyBox("#contactForm","Remove the link?",`${esc(prev.name)} is linked to <b>${esc(pc.name)}</b>. Saving like this removes that link.`, "",
+          `<div style="display:grid;gap:10px"><button class="btn primary block" data-act="unlink-keep" data-id="${esc(pc.id)}">Keep the link to ${esc(pc.name)}</button><button class="btn block" data-act="unlink-ok">They don't work there any more – remove it</button></div>`);
+        return; } }
+    FORM.unlinkOk=false; return base();
+  };
+}
+document.addEventListener("click",e=>{
+  const t=e.target.closest("[data-act]"); if(!t) return; const a=t.dataset.act;
+  if(a==="unlink-keep"){ closeDupBox(); const c=S.companies.get(t.dataset.id); if(!c) return; const r=document.querySelector(`input[name=kWhere][value=${isPartnerCo(c)?"partner":"business"}]`); if(r) r.checked=true; fillCoPick(); $("#kCoPick").value=c.id; kFormUpdate(); FORM.unlinkOk=false; submitContact(); }
+  if(a==="unlink-ok"){ closeDupBox(); FORM.unlinkOk=true; submitContact(); }
 });
 
 

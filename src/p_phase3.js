@@ -371,6 +371,7 @@ function renderSheet(){
     ${k.hnwi?`<div class="fsec">High net worth</div><div class="card box">${esc(k.wealthSource||"Wealth source not captured")}</div>`:""}
     <div class="fsec">Who knows ${esc(k.name.split(" ")[0])}</div>
     ${knowers(k).length?`<div class="group">${knowers(k).map(x=>`<div class="rowi" style="min-height:52px"><span class="avatar biz" style="width:34px;height:34px;font-size:13px">${esc(initials(x.partner))}</span><span class="main"><span class="t1" style="display:block">${esc(x.partner)}</span></span><span class="pill ${x.relation==="friend"?"won":x.relation==="family"?"A":""}">${esc(RELS[x.relation]||"Not set")}</span></div>`).join("")}</div>`:`<div class="card empty">Nobody in our team linked yet.</div>`}
+    ${ownsLine(k)}
     <div class="fsec">Work</div>
     <div class="card kv">${co?`<div class="k">Works at</div><div class="v"><a href="#" data-open="${esc(co.id)}">${esc(co.name)}</a></div><div class="k">Role there</div><div class="v">${esc(k.companyRole||"—")}</div>`:`<div class="k">Company</div><div class="v">${esc(k.firm||"—")}</div>`}<div class="k">Title</div><div class="v">${esc(k.title||k.type||"—")}</div><div class="k">Industry</div><div class="v">${esc(k.industry||"—")}</div><div class="k">Can help with</div><div class="v">${esc(k.expertise||"—")}</div></div>
     ${(co||k.firm)&&!ro?`<button class="linkbtn" data-act="left-company" data-id="${esc(k.id)}">No longer works there</button>`:""}
@@ -500,7 +501,7 @@ async function submitContact(){
   document.querySelectorAll('button[type=submit]').forEach(b=>b.disabled=false);
   if(!ok) return;
   toast(FORM.id?"Saved":"Added to People");
-  if(addBiz){ const b=FORM.buyAs; ownerDealForm(id); setTimeout(()=>{ const s=$("#cKind"); if(s){ s.value=b==="target"?"acquire":"network"; s.dispatchEvent(new Event("change",{bubbles:true})); } },60); return; }
+  if(addBiz){ const b=FORM.buyAs; ownerDealForm(id,true); setTimeout(()=>{ const s=$("#cKind"); if(s){ s.value=b==="target"?"acquire":"network"; s.dispatchEvent(new Event("change",{bubbles:true})); } },60); return; }
   if(sheetOpen() && S.sheet?.kind==="contact" && S.sheet.id===id){ closeModal(); renderSheet(); } else openSheet("contact",id,true);
 }
 
@@ -597,7 +598,7 @@ async function submitDeal(){
   const ok=await dbSet("companies/"+id, data);
   btns.forEach(b=>b.disabled=false);
   if(ok){
-    if(!FORM.id && FORM.fromOwner) await dbUpdate("contacts/"+FORM.fromOwner,{companyId:id, companyRole:FORM.fromRole||"Owner", ownsCompanyId:id, firm:""});
+    if(!FORM.id && FORM.fromOwner) await dbUpdate("contacts/"+FORM.fromOwner,{companyId:id, companyRole:FORM.fromRole||"Owner", ownsCompanyId:(OWNER_ROLES.includes(FORM.fromRole||"Owner")||FORM.fromIsOwner)?id:"", firm:""});
     if(!fin) await syncOwnersToPeople(id, owners, data, FORM.fromOwner);
     toast(FORM.id?"Saved":"Added");
     if(sheetOpen() && S.sheet?.kind==="company" && S.sheet.id===id){ closeModal(); renderSheet(); } else openSheet("company",id,true);
