@@ -715,3 +715,15 @@ function mainContactHTML(c,ro){ const ppl=peopleAt(c).filter(k=>!k.doNotContact)
    <div class="tag" style="margin-top:6px">Call, WhatsApp and Email at the top of this page go to this person. To reach anyone else here, open their own profile.</div></div>`; }
 document.addEventListener("change",async e=>{ if(e.target.id!=="mc19") return; const id=e.target.dataset.id; const v=e.target.value;
   if(await dbUpdate("companies/"+id,{mainContactId:v})){ toast(v?`Main contact: ${S.contacts.get(v)?.name||""}`:"Main contact set to automatic"); try{ renderSheet(); }catch(_){} } });
+
+/* ---------- 27. Seniority at their company: who to contact, and who to escalate to ---------- */
+const SENIORITY=[["exec","Executive – decision-maker","Executive"],["senior","Senior – manages a team or deals","Senior"],["mid","Mid-level – specialist or analyst","Mid-level"],["junior","Junior – support or admin","Junior"]];
+const SEN_RANK=Object.fromEntries(SENIORITY.map(([v],i)=>[v,i]));
+function senShort(v){ return (SENIORITY.find(x=>x[0]===v)||[])[2]||""; }
+function senPill(k){ const s=senShort(k.seniority); return s?` <span class="pill sen19 sen-${esc(k.seniority)}">${esc(s)}</span>`:""; }
+{ const base=peopleAt; peopleAt=function(c){ return base(c).sort((a,b)=>(SEN_RANK[a.seniority]??9)-(SEN_RANK[b.seniority]??9)||a.name.localeCompare(b.name)); }; }
+{ const base=contactForm; contactForm=function(id,preset){ base(id,preset); const t=$("#kTitle")?.closest(".fld"); if(!t||$("#kSen")) return; const k=id?S.contacts.get(id):{};
+  t.insertAdjacentHTML("afterend",`<div class="fld"><label for="kSen">How senior are they there?</label><select id="kSen">${opts(SENIORITY.map(([v,l])=>({v,l})),k?.seniority||"","Not sure")}</select></div>`); noCoToggle(); }; }
+{ const base=noCoToggle; noCoToggle=function(){ base(); const f=$("#kSen")?.closest(".fld"); if(f) f.hidden= whereVal()==="other"; }; }
+{ const base=dbSet; dbSet=async function(path,data){ if(String(path).startsWith("contacts/") && data && "name" in data && $("#contactForm #kSen")) data={...data, seniority: whereVal()==="other"? "" : $("#kSen").value}; return base(path,data); }; }
+{ const base=dbUpdate; dbUpdate=async function(path,patch){ if(String(path).startsWith("contacts/") && patch && "name" in patch && $("#contactForm #kSen")) patch={...patch, seniority: whereVal()==="other"? "" : $("#kSen").value}; return base(path,patch); }; }
