@@ -298,6 +298,7 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 .kvline{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .plmap{height:min(52vh,460px);min-height:300px;position:relative;border-radius:var(--r,16px);overflow:hidden;border:1px solid var(--line);margin:0 0 12px;background:var(--soft);z-index:0}
 .plmap.notiles::after{content:"Map background needs signal – the dots still work";position:absolute;left:10px;right:10px;bottom:10px;z-index:500;background:rgba(255,255,255,.92);color:#333;font-size:13px;padding:8px 10px;border-radius:10px;text-align:center}
+.addedby{font-size:12.5px;color:var(--muted,#777)}
 .mdot-wrap{background:none;border:0}
 .mdot{border-radius:50%;background:var(--tierA,#b5651d);color:#fff;display:grid;place-items:center;font:700 12.5px/1 "Source Sans 3",system-ui,sans-serif;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);opacity:.93}
 .mdot.sel{background:var(--ink,#1d2b36);transform:scale(1.12)}
@@ -2278,6 +2279,10 @@ function bizRow(c){
 }
 
 /* ---------- Today ---------- */
+function newRow(r){ const x=r.x; const by=r.k==="company"? x.createdByName : (S.members.find(m=>m.user_id===x.createdBy)?.name||"");
+  const who=x.createdBy&&x.createdBy===S.uid? "you" : (by||"the team"); const what=r.k==="company"? (["target","active"].includes(grp(x))?"Target":"Prospect") : "";
+  const h=r.k==="company"?bizRow(x):personRow(x);
+  return h.replace(/(<span class="t2" style="display:block">)/, `$1<span class="addedby">${esc([`added by ${who}`,fmtD((x.createdAt||"").slice(0,10))].filter(Boolean).join(" · "))}</span><br>`); }
 function thanksDue(){ return contacts().filter(k=>{ const ds=dealsFrom(k.id); if(!ds.length) return false; const last=(k.thanks||[]).map(t=>t.d).sort().pop()||""; return ds.some(c=>(c.createdAt||"").slice(0,10)>last); }); }
 function vToday(){
   const first=(S.me?.name||"").split(" ")[0];
@@ -2293,7 +2298,7 @@ function vToday(){
   const cm=S.commitments.filter(x=>x.status==="open" && (!mine || x.owner===me)).sort((a,b)=>(a.due||"9999").localeCompare(b.due||"9999"));
   const weak=contacts().filter(k=>isMineK(k)||k.createdBy===S.uid).map(k=>({k,c:completeness(k)})).filter(x=>x.c.pct<60).sort((a,b)=>a.c.pct-b.c.pct).slice(0,4);
   const thx=thanksDue().filter(k=>!mine||isMineK(k)).slice(0,4);
-  const recent=[...companies().filter(c=>c.createdByName!=="Munger setup").map(x=>({k:"company",x})),...contacts().map(x=>({k:"contact",x}))].filter(r=>r.x.createdBy!==S.uid && daysSince(r.x.createdAt)<=14).sort((a,b)=>(b.x.createdAt||"").localeCompare(a.x.createdAt||"")).slice(0,6);
+  const recent=[...companies().filter(c=>isAcq(c) && !["Munger setup","Munger"].includes(c.createdByName||"")).map(x=>({k:"company",x})),...contacts().map(x=>({k:"contact",x}))].filter(r=>daysSince(r.x.createdAt)<=14).sort((a,b)=>(b.x.createdAt||"").localeCompare(a.x.createdAt||"")).slice(0,8);
   const overdue=due.filter(c=>daysUntil(c.nextCheckIn)<0).length;
   return `<div class="ph"><div><div class="eyebrow">${esc(dateTxt)}</div><h1>${greet()}${first?`, ${esc(first)}`:""}</h1></div></div>
   <a class="askbar" href="#ask">${ic("spark",20)}<span>What do you need? Ask the network…</span></a>
@@ -2312,7 +2317,7 @@ function vToday(){
   ${newNet?`<div class="sec"><h2>New prospects</h2><a href="#businesses" data-act="biz-network">Review</a></div><div class="card box tag">${newNet} prospect${newNet>1?"s":""} added in the last three weeks. Open one and tap <b>Make it a target</b> if we want to go for it.</div>`:""}
   ${weak.length?`<div class="sec"><h2>Make these profiles stronger</h2></div><div class="group">${weak.map(({k,c})=>`<button class="rowi" data-act="complete-profile" data-id="${esc(k.id)}">${avatarP(k)}<span class="main"><span class="t1" style="display:block">${esc(k.name)}</span><span class="t2" style="display:block">Add ${esc(c.missing.slice(0,3).join(", "))}</span></span><span class="trail"><span class="pill soon">${c.pct}%</span></span></button>`).join("")}</div>`:""}
   ${soon.length?`<div class="sec"><h2>Coming up</h2></div><div class="group">${soon.slice(0,6).map(anyRow).join("")}</div>`:""}
-  ${recent.length?`<div class="sec"><h2>New from the team</h2></div><div class="group">${recent.map(r=>r.k==="company"?bizRow(r.x):personRow(r.x)).join("")}</div>`:""}
+  ${recent.length?`<div class="sec"><h2>New in the network</h2><span class="tag">last 2 weeks</span></div><div class="group">${recent.map(r=>newRow(r)).join("")}</div>`:""}
   <div style="text-align:center;margin-top:18px"><button class="btn sm" data-act="copy-week">Copy my week for WhatsApp</button></div>`;
 }
 function myWeekText(){
