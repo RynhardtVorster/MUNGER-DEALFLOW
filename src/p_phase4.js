@@ -127,6 +127,7 @@ async function syncOwnersToPeople(cid, owners, biz, skipId){
     const nm=String(o.name||"").trim(); if(!nm) continue;
     const ph=last9(o.cell), em=String(o.email||"").toLowerCase();
     const same=contacts().find(k=>k.id===skipId && k.name.toLowerCase()===nm.toLowerCase()) || contacts().find(k=>(k.companyId===cid||k.ownsCompanyId===cid) && k.name.toLowerCase()===nm.toLowerCase()) || contacts().find(k=>(ph.length===9&&last9(k.cell)===ph)||(em&&String(k.email||"").toLowerCase()===em));
+    if(same && same.companyId && same.companyId!==cid && !(same.otherRoles||[]).some(r=>r.companyId===cid)){ await dbUpdate("contacts/"+same.id,{otherRoles:[...(same.otherRoles||[]),{companyId:cid, role:o.role||"Owner"}]}); continue; }
     if(same){ if(!same.companyId) await dbUpdate("contacts/"+same.id,{companyId:cid, companyRole:o.role||"Owner", ownsCompanyId:cid, firm:"", tier:same.tier||"A"}); continue; }
     const ok=await dbSet("contacts/"+newId(),{name:nm, tier:"A", type:"Business owner", companyId:cid, companyRole:o.role||"Owner", ownsCompanyId:cid, firm:"", cell:o.cell||"", email:o.email||"", language:o.language||"af", partner:biz.partner||"", town:biz.town||"", province:biz.province||"", country:biz.hqCountry||"South Africa", influence:0, notes:""});
     if(ok) made++;

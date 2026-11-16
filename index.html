@@ -292,6 +292,7 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 .stars{color:#b8862b;font-size:12px;letter-spacing:1px;vertical-align:1px}
 .likebox{margin-top:14px;border-color:var(--ink)}
 [hidden]{display:none!important}
+.xrole .xin{grid-template-columns:1.4fr 1fr auto}
 .netf{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:-4px 0 10px}
 .netf select{min-height:40px;border:1px solid var(--line);border-radius:10px;padding:0 8px;font-size:14px;background:var(--surface);color:var(--ink);min-width:0}
 .kvline{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
@@ -596,11 +597,11 @@ let renderQueued=false;
 function queueRender(){ if(renderQueued) return; renderQueued=true; requestAnimationFrame(()=>{ renderQueued=false; render(); }); }
 
 const nz = v => (v===undefined||v===null||v==="") ? null : v;
-function companyFromRow(r){ return {id:r.id, name:r.name, tradingAs:r.trading_as, industry:r.industry, province:r.province, town:r.town, website:r.website, ebit:r.ebit, turnover:r.turnover, employees:r.employees, owners:r.owners||[], language:r.language, source:{channel:r.source_channel, contactId:r.source_contact_id||"", partner:r.source_partner, detail:r.source_detail}, partner:r.partner, status:r.status, followUpMonths:r.follow_up_months, nextCheckIn:r.next_check_in||"", lastContact:r.last_contact||"", notes:r.notes, log:r.log||[], example:r.example, hqCountry:r.hq_country, footprint:r.footprint, countries:r.countries, regNo:r.reg_no, ebitConfirmed:r.ebit_confirmed, turnoverConfirmed:r.turnover_confirmed, financialsYear:r.financials_year, fit:r.fit||{}, kind:r.kind||"target", kindNote:r.kind_note||"", checkInNote:r.check_in_note||"", signals:r.signals||{}, updatedByName:r.updated_by_name||"", createdBy:r.created_by, createdByName:r.created_by_name, createdAt:r.created_at, updatedAt:r.updated_at}; }
-function contactFromRow(r){ return {education:r.education||"", background:r.background||"", publicRole:r.public_role||"", profiles:Array.isArray(r.profiles)?r.profiles:[], tags:Array.isArray(r.tags)?r.tags:[], cells:Array.isArray(r.cells)?r.cells:[], emails:Array.isArray(r.emails)?r.emails:[], nextCheckIn:r.next_check_in||"", checkInWeeks:r.check_in_weeks||0, checkInRepeat:!!r.check_in_repeat, checkInNote:r.check_in_note||"", checkInOwner:r.check_in_owner||"", lastContact:r.last_contact||"", id:r.id, name:r.name, tier:r.tier, type:r.type, firm:r.firm, partner:r.partner, ownsCompanyId:r.owns_company_id||"", companyId:r.company_id||r.owns_company_id||"", companyRole:r.company_role||(r.owns_company_id?"Owner":""), title:r.title||"", country:r.country||"", industry:r.industry||"", expertise:r.expertise||"", linkedin:r.linkedin||"", influence:r.influence||0, talent:r.talent||{}, hnwi:!!r.hnwi, wealthSource:r.wealth_source||"", doNotContact:!!r.do_not_contact, thanks:r.thanks||[], log:r.log||[], pastRoles:r.past_roles||[], updatedByName:r.updated_by_name||"", cell:r.cell, email:r.email, language:r.language, province:r.province, town:r.town, notes:r.notes, example:r.example, createdBy:r.created_by, createdAt:r.created_at, updatedAt:r.updated_at}; }
-const CMAP={name:"name",tradingAs:"trading_as",industry:"industry",province:"province",town:"town",website:"website",ebit:"ebit",turnover:"turnover",employees:"employees",owners:"owners",language:"language",partner:"partner",status:"status",followUpMonths:"follow_up_months",nextCheckIn:"next_check_in",lastContact:"last_contact",notes:"notes",log:"log",example:"example",createdByName:"created_by_name",hqCountry:"hq_country",footprint:"footprint",countries:"countries",regNo:"reg_no",ebitConfirmed:"ebit_confirmed",turnoverConfirmed:"turnover_confirmed",financialsYear:"financials_year",fit:"fit",kind:"kind",kindNote:"kind_note",checkInNote:"check_in_note",signals:"signals"};
-const KMAP={education:"education",background:"background",publicRole:"public_role",profiles:"profiles",tags:"tags",cells:"cells",emails:"emails",nextCheckIn:"next_check_in",checkInWeeks:"check_in_weeks",checkInRepeat:"check_in_repeat",checkInNote:"check_in_note",checkInOwner:"check_in_owner",lastContact:"last_contact",name:"name",tier:"tier",type:"type",firm:"firm",partner:"partner",ownsCompanyId:"owns_company_id",cell:"cell",email:"email",language:"language",province:"province",town:"town",notes:"notes",example:"example",companyId:"company_id",companyRole:"company_role",title:"title",country:"country",industry:"industry",expertise:"expertise",linkedin:"linkedin",influence:"influence",talent:"talent",hnwi:"hnwi",wealthSource:"wealth_source",doNotContact:"do_not_contact",thanks:"thanks",log:"log",pastRoles:"past_roles"};
-const NULLABLE=new Set(["next_check_in","last_contact","owns_company_id","source_contact_id","company_id","ebit_confirmed","turnover_confirmed"]);
+function companyFromRow(r){ return {id:r.id, name:r.name, tradingAs:r.trading_as, industry:r.industry, province:r.province, town:r.town, website:r.website, ebit:r.ebit, turnover:r.turnover, employees:r.employees, owners:r.owners||[], language:r.language, source:{channel:r.source_channel, contactId:r.source_contact_id||"", partner:r.source_partner, detail:r.source_detail}, partner:r.partner, status:r.status, followUpMonths:r.follow_up_months, nextCheckIn:r.next_check_in||"", lastContact:r.last_contact||"", notes:r.notes, log:r.log||[], example:r.example, hqCountry:r.hq_country, footprint:r.footprint, countries:r.countries, regNo:r.reg_no, ebitConfirmed:r.ebit_confirmed, turnoverConfirmed:r.turnover_confirmed, financialsYear:r.financials_year, fit:r.fit||{}, kind:r.kind||"target", kindNote:r.kind_note||"", ownership:r.ownership||"", listing:r.listing||"", parentId:r.parent_id||"", checkInNote:r.check_in_note||"", signals:r.signals||{}, updatedByName:r.updated_by_name||"", createdBy:r.created_by, createdByName:r.created_by_name, createdAt:r.created_at, updatedAt:r.updated_at}; }
+function contactFromRow(r){ return {otherRoles:Array.isArray(r.other_roles)?r.other_roles:[], education:r.education||"", background:r.background||"", publicRole:r.public_role||"", profiles:Array.isArray(r.profiles)?r.profiles:[], tags:Array.isArray(r.tags)?r.tags:[], cells:Array.isArray(r.cells)?r.cells:[], emails:Array.isArray(r.emails)?r.emails:[], nextCheckIn:r.next_check_in||"", checkInWeeks:r.check_in_weeks||0, checkInRepeat:!!r.check_in_repeat, checkInNote:r.check_in_note||"", checkInOwner:r.check_in_owner||"", lastContact:r.last_contact||"", id:r.id, name:r.name, tier:r.tier, type:r.type, firm:r.firm, partner:r.partner, ownsCompanyId:r.owns_company_id||"", companyId:r.company_id||r.owns_company_id||"", companyRole:r.company_role||(r.owns_company_id?"Owner":""), title:r.title||"", country:r.country||"", industry:r.industry||"", expertise:r.expertise||"", linkedin:r.linkedin||"", influence:r.influence||0, talent:r.talent||{}, hnwi:!!r.hnwi, wealthSource:r.wealth_source||"", doNotContact:!!r.do_not_contact, thanks:r.thanks||[], log:r.log||[], pastRoles:r.past_roles||[], updatedByName:r.updated_by_name||"", cell:r.cell, email:r.email, language:r.language, province:r.province, town:r.town, notes:r.notes, example:r.example, createdBy:r.created_by, createdAt:r.created_at, updatedAt:r.updated_at}; }
+const CMAP={name:"name",tradingAs:"trading_as",industry:"industry",province:"province",town:"town",website:"website",ebit:"ebit",turnover:"turnover",employees:"employees",owners:"owners",language:"language",partner:"partner",status:"status",followUpMonths:"follow_up_months",nextCheckIn:"next_check_in",lastContact:"last_contact",notes:"notes",log:"log",example:"example",createdByName:"created_by_name",hqCountry:"hq_country",footprint:"footprint",countries:"countries",regNo:"reg_no",ebitConfirmed:"ebit_confirmed",turnoverConfirmed:"turnover_confirmed",financialsYear:"financials_year",fit:"fit",kind:"kind",kindNote:"kind_note",ownership:"ownership",listing:"listing",parentId:"parent_id",checkInNote:"check_in_note",signals:"signals"};
+const KMAP={otherRoles:"other_roles",education:"education",background:"background",publicRole:"public_role",profiles:"profiles",tags:"tags",cells:"cells",emails:"emails",nextCheckIn:"next_check_in",checkInWeeks:"check_in_weeks",checkInRepeat:"check_in_repeat",checkInNote:"check_in_note",checkInOwner:"check_in_owner",lastContact:"last_contact",name:"name",tier:"tier",type:"type",firm:"firm",partner:"partner",ownsCompanyId:"owns_company_id",cell:"cell",email:"email",language:"language",province:"province",town:"town",notes:"notes",example:"example",companyId:"company_id",companyRole:"company_role",title:"title",country:"country",industry:"industry",expertise:"expertise",linkedin:"linkedin",influence:"influence",talent:"talent",hnwi:"hnwi",wealthSource:"wealth_source",doNotContact:"do_not_contact",thanks:"thanks",log:"log",pastRoles:"past_roles"};
+const NULLABLE=new Set(["parent_id","next_check_in","last_contact","owns_company_id","source_contact_id","company_id","ebit_confirmed","turnover_confirmed"]);
 function toRow(table, d){
   const map=table==="companies"?CMAP:KMAP; const row={};
   for(const [k,col] of Object.entries(map)) if(k in d){ let v=d[k]; if(NULLABLE.has(col)) v=nz(v); else if(v===undefined||v===null) continue; row[col]=v; }
@@ -2104,12 +2105,14 @@ function netBuildGraph(){
   const add=(id,type,label,extra)=>{ const o=old.get(id); const n={id,type,label,x:o?.x??(Math.random()-.5)*400,y:o?.y??(Math.random()-.5)*400,vx:0,vy:0,...extra}; nodes.push(n); by.set(id,n); return n; };
   const partnerSet=new Set(S.partners); contacts().forEach(k=>knowers(k).forEach(x=>partnerSet.add(x.partner))); companies().forEach(c=>{ if(c.partner) partnerSet.add(c.partner); });
   if(G.show.p) [...partnerSet].filter(Boolean).forEach(p=>add("p:"+p,"p",p,{r:16}));
-  const netK=contacts().filter(netKOK); const fOn=netFilterOn(); const coIds=new Set(netK.map(k=>k.companyId).filter(Boolean));
+  const netK=contacts().filter(netKOK); const fOn=netFilterOn(); const coIds=new Set(netK.flatMap(k=>[k.companyId,...(k.otherRoles||[]).map(r=>r.companyId)]).filter(Boolean));
   if(G.show.k) netK.forEach(k=>add("k:"+k.id,"k",k.name,{r:8+(Number(k.influence)||0)*1.6,sub:workLine(k),tier:tierOf(k)}));
   if(G.show.c) companies().filter(c=>!fOn||coIds.has(c.id)).forEach(c=>add("c:"+c.id,"c",c.name,{r:7,group:isPartnerCo(c)?"pfirm":stageOf(c.status).group,sub:isPartnerCo(c)?"Partner · "+(PKINDS[c.kind]||""):industryShort(c)}));
   const link=(a,b,kind)=>{ if(by.has(a)&&by.has(b)) edges.push({a:by.get(a),b:by.get(b),kind}); };
   contacts().forEach(k=>{ knowers(k).forEach(x=>link("k:"+k.id,"p:"+x.partner,x.relation==="friend"?"friend":"network")); if(k.companyId) link("k:"+k.id,"c:"+k.companyId,"works"); });
   (S.links||[]).forEach(l=>link("k:"+l.a,"k:"+l.b,"family"));
+  companies().forEach(c=>{ if(c.parentId) link("c:"+c.id,"c:"+c.parentId,"group"); });
+  contacts().forEach(k=>(k.otherRoles||[]).forEach(r=>link("k:"+k.id,"c:"+r.companyId,"works")));
   companies().forEach(c=>{ if(c.source?.contactId) link("c:"+c.id,"k:"+c.source.contactId,"referred"); if(c.source?.partner) link("c:"+c.id,"p:"+c.source.partner,"referred"); if(c.partner) link("c:"+c.id,"p:"+c.partner,"lead"); });
   nodes.forEach(n=>n.deg=0); edges.forEach(e=>{e.a.deg++; e.b.deg++;});
   nodes.forEach(n=>{ if(n.type!=="p") n.r += Math.min(8, n.deg*1.2); });
@@ -2303,7 +2306,7 @@ function myWeekText(){
 /* ---------- People ---------- */
 function vPeople(){
   const k=S.k, q=k.q.trim().toLowerCase(); const me=myPartner(); const all=contacts();
-  const special={top:()=>true, talent:isTalent, hnwi:x=>x.hnwi, ceo:isCEO, pol:x=>!!x.publicRole, "pr:Sportsperson":x=>(x.profiles||[]).includes("Sportsperson"), "pr:Artist":x=>(x.profiles||[]).includes("Artist"), "pr:Influencer":x=>(x.profiles||[]).includes("Influencer")};
+  const special={top:()=>true, talent:isTalent, hnwi:x=>x.hnwi, ceo:isCEO, pol:x=>!!x.publicRole, "pr:Sportsperson":x=>(x.profiles||[]).includes("Sportsperson"), "pr:Artist":x=>(x.profiles||[]).includes("Artist"), "pr:Influencer":x=>(x.profiles||[]).includes("Influencer"), "pr:Doctor / medical":x=>(x.profiles||[]).includes("Doctor / medical")};
   const arr=all.filter(c=>{ if(special[k.tier]){ if(!special[k.tier](c)) return false; } else if(k.tier&&!hasTag(c,k.tier)) return false; if(k.mine&&!isMineK(c)) return false; if(q){ const co=companyOf(c); const h=[c.name,c.firm,c.title,c.email,c.cell,c.town,c.province,c.country,c.notes,c.type,c.industry,c.expertise,c.companyRole,co?.name,knowsTxt(c),(c.talent?.roles||[]).join(" "),c.talent?.sectors,c.wealthSource].join(" ").toLowerCase(); if(!h.includes(q)) return false; } return true; })
     .sort((a,b)=> k.tier==="top"? influenceScore(b)-influenceScore(a) : k.tier==="talent"? (Number(b.talent?.rating)||0)-(Number(a.talent?.rating)||0) : (a.name||"").localeCompare(b.name||"",undefined,{sensitivity:"base"}));
   if(k.tier==="top") arr.splice(50);
@@ -2316,7 +2319,7 @@ function vPeople(){
     flush(); body=parts.join(""); }
   return `<div class="ph"><div><h1>People</h1><p>${all.length} in the network · A ${cnt("A")} · B ${cnt("B")} · C ${cnt("C")} · D ${cnt("D")}</p></div><button class="btn sm primary" data-act="new-contact">${ic("plus",18)} Add</button></div>
   <div class="search">${ic("search",20)}<input id="kq" type="search" placeholder="Search name, company, skill, town…" value="${esc(k.q)}" autocomplete="off" aria-label="Search people"></div>
-  <div class="chips">${chip("","All",all.length)}${chip("A","A · Owners",cnt("A"))}${chip("B","B · Employees",cnt("B"))}${chip("C","C · Potential hires",cnt("C"))}${chip("D","D · Great contacts",cnt("D"))}${chip("top","★ Most influential")}${chip("talent","Talent",all.filter(isTalent).length)}${chip("hnwi","HNWI",all.filter(x=>x.hnwi).length)}${chip("ceo","CEOs & MDs",all.filter(isCEO).length)}${["Sportsperson","Artist","Influencer"].map(p=>chip("pr:"+p,PROFILE_PL[p],all.filter(x=>(x.profiles||[]).includes(p)).length)).join("")}${chip("pol","Public / political",all.filter(x=>x.publicRole).length)}${me?`<button class="chip ${k.mine?"on":""}" data-act="k-mine">People I know</button>`:""}</div>
+  <div class="chips">${chip("","All",all.length)}${chip("A","A · Owners",cnt("A"))}${chip("B","B · Employees",cnt("B"))}${chip("C","C · Potential hires",cnt("C"))}${chip("D","D · Great contacts",cnt("D"))}${chip("top","★ Most influential")}${chip("talent","Talent",all.filter(isTalent).length)}${chip("hnwi","HNWI",all.filter(x=>x.hnwi).length)}${chip("ceo","CEOs & MDs",all.filter(isCEO).length)}${["Doctor / medical","Sportsperson","Artist","Influencer"].map(p=>chip("pr:"+p,PROFILE_PL[p],all.filter(x=>(x.profiles||[]).includes(p)).length)).join("")}${chip("pol","Public / political",all.filter(x=>x.publicRole).length)}${me?`<button class="chip ${k.mine?"on":""}" data-act="k-mine">People I know</button>`:""}</div>
   ${k.tier==="top"?`<p class="tag" style="margin:-4px 2px 10px">Ranked by your influence rating, how many of our team know them, friendships and the leads they've brought in.</p>`:""}
   ${body}`;
 }
@@ -2514,6 +2517,7 @@ function renderSheet(){
     ${!fin?`<div class="fsec">Sale signals</div>${sigCount(c)?`<div class="card box"><div class="sigs">${SIGNALS.filter(([s])=>(c.signals||{})[s]).map(([,l])=>`<span class="pill soon">${esc(l)}</span>`).join("")}</div></div>`:`<div class="card box tag">None captured. Edit the business to tick what you know: owner's age, no successor, wants out…</div>`}
     <div class="fsec">Size & mandate fit</div>
     <div class="card kv"><div class="k">Profit</div><div class="v">${esc(sizeTxt(c))}</div><div class="k">Turnover</div><div class="v">${esc(c.turnoverConfirmed!=null&&c.turnoverConfirmed!==""?`R${c.turnoverConfirmed}m (confirmed)`:(c.turnover?`${c.turnover} (estimate)`:"—"))}</div><div class="k">Employees</div><div class="v">${esc(c.employees||"—")}</div><div class="k">Mandate fit</div><div class="v">${fp===null?"Not scored":`${fp}%`}</div>${FITDIMS.filter(([d])=>(c.fit||{})[d]).map(([d,l])=>`<div class="k">${esc(l)}</div><div class="v">${"●".repeat(Number(c.fit[d]))}${"○".repeat(5-Number(c.fit[d]))}</div>`).join("")}</div>`:""}
+    ${groupHTML(c)}
     <div class="fsec">Where it operates</div>
     <div class="card kv"><div class="k">Head office</div><div class="v">${esc([c.town,c.hqCountry||"South Africa"].filter(Boolean).join(", "))}</div>${fin?"":`<div class="k">Footprint</div><div class="v">${esc(c.footprint||"—")}</div>`}${c.countries?`<div class="k">Countries</div><div class="v">${esc(c.countries)}</div>`:""}${fin?"":`<div class="k">Industry</div><div class="v">${esc(c.industry||"—")}</div>`}${c.regNo?`<div class="k">Reg. no.</div><div class="v">${esc(c.regNo)}</div>`:""}<div class="k">Website</div><div class="v">${c.website?`<a href="${esc(/^https?:/i.test(c.website)?c.website:"https://"+c.website)}" target="_blank" rel="noopener">${esc(c.website)}</a>`:"—"}</div></div>
     ${!fin?`<div class="fsec">How we heard</div>
@@ -2607,6 +2611,7 @@ function contactForm(id, preset){
    ${fldNote("kExpertise","What are they great at?",k.expertise,"e.g. e-commerce growth; brand films and editing; acquisition finance",2)}
   </div>
   <div class="hint" id="kCoHint"></div>
+  ${otherRolesFields(k)}
   ${bgFields(k)}
   <div class="fsec">Who in our team knows them?</div>
   <div class="fields">${S.partners.map((p,i)=>`<div class="fld"><label for="rel${i}">${esc(p)}</label><select id="rel${i}" data-partner="${esc(p)}">${opts([{v:"",l:"Doesn't know them"},...Object.entries(RELS).map(([v,l])=>({v,l}))],rel[p]||"")}</select></div>`).join("")}</div>
@@ -2669,7 +2674,7 @@ async function submitContact(){
   const me=myPartner(); const primary=(d.conns.find(c=>c.partner===me)||d.conns[0]||{}).partner||"";
   const prev=FORM.id? S.contacts.get(FORM.id):null;
   const data={name:d.name, tier, tags, firm:d.firm, type:d.type, partner:primary, companyId:d.companyId, companyRole:d.companyRole, ownsCompanyId: OWNER_ROLES.includes(d.companyRole)? d.companyId : "", title:d.title, country:d.country, industry:d.industry, expertise:d.expertise, linkedin:d.linkedin, cell:d.cell, email:d.email, language:d.language, province:d.province, town:d.town, notes:d.notes, influence:d.influence, hnwi:d.hnwi, wealthSource:d.hnwi?d.wealthSource:"", doNotContact:d.doNotContact, talent:d.talent, example:prev?.example||false};
-  Object.assign(data, ciRead(), bgRead()); data.cells=readExtras("cell"); data.emails=readExtras("email");
+  Object.assign(data, ciRead(), bgRead(), otherRolesRead()); data.cells=readExtras("cell"); data.emails=readExtras("email");
   if(prev && prev.companyId && prev.companyId!==d.companyId){ const pc=S.companies.get(prev.companyId); data.pastRoles=[...(prev.pastRoles||[]),{company:pc?.name||"", role:prev.companyRole||prev.title||"", until:today()}]; }
   const id=FORM.id||newId();
   const nc=newCoChoice(d); let addBiz=false;
@@ -2731,6 +2736,7 @@ function dealForm(id, preset){
     <div class="fld"><label for="cTrading">Trading as</label><input id="cTrading" value="${esc(c.tradingAs)}"></div>
     <div class="fld"><label for="cProvince">Province</label><select id="cProvince">${opts(PROVINCES,c.province,"Fills in from the town")}</select></div>
     <div class="fld"><label for="cCountries">Countries it trades in</label><input id="cCountries" value="${esc(c.countries)}" placeholder="e.g. Namibia, Botswana, UK exports"></div>
+    ${groupFields(c)}
     <div class="fld"><label for="cReg">Company registration no.</label><input id="cReg" value="${esc(c.regNo)}"></div>
     <div class="fld"><label for="cWeb">Website</label><input id="cWeb" inputmode="url" autocapitalize="off" value="${esc(c.website)}"></div>
    </div>
@@ -2763,7 +2769,7 @@ async function submitDeal(){
   const data={
     name, kind, kindNote:kind==="other"?($("#cKindNote")?.value.trim()||""):"", tradingAs:$("#cTrading").value.trim(), industry:fin? (PIND[kind]||"") : $("#cIndustry").value, province:autoProvince(town,$("#cProvince").value), town:g?g.name:town,
     website:$("#cWeb").value.trim(), ebit:$("#cEbit").value, turnover:$("#cTurnover").value.trim(), employees:$("#cEmp").value.trim(),
-    hqCountry:$("#cHq").value, footprint:fin?"":$("#cFoot").value, countries:$("#cCountries").value.trim(), regNo:$("#cReg").value.trim(),
+    hqCountry:$("#cHq").value, footprint:fin?"":$("#cFoot").value, countries:$("#cCountries").value.trim(), regNo:$("#cReg").value.trim(), ...groupRead(),
     ebitConfirmed:numOrNull($("#cEbitC").value), turnoverConfirmed:numOrNull($("#cTurnC").value), financialsYear:$("#cFy").value.trim(), fit, signals,
     owners, language: owners.length? (new Set(owners.map(o=>o.language)).size>1?"both":owners[0].language) : "",
     source, partner:$("#cPartner").value, status, followUpMonths:cad?Number($("#cCad").value):0, nextCheckIn:cad?($("#cNext").value||""):"",
@@ -2983,6 +2989,7 @@ async function syncOwnersToPeople(cid, owners, biz, skipId){
     const nm=String(o.name||"").trim(); if(!nm) continue;
     const ph=last9(o.cell), em=String(o.email||"").toLowerCase();
     const same=contacts().find(k=>k.id===skipId && k.name.toLowerCase()===nm.toLowerCase()) || contacts().find(k=>(k.companyId===cid||k.ownsCompanyId===cid) && k.name.toLowerCase()===nm.toLowerCase()) || contacts().find(k=>(ph.length===9&&last9(k.cell)===ph)||(em&&String(k.email||"").toLowerCase()===em));
+    if(same && same.companyId && same.companyId!==cid && !(same.otherRoles||[]).some(r=>r.companyId===cid)){ await dbUpdate("contacts/"+same.id,{otherRoles:[...(same.otherRoles||[]),{companyId:cid, role:o.role||"Owner"}]}); continue; }
     if(same){ if(!same.companyId) await dbUpdate("contacts/"+same.id,{companyId:cid, companyRole:o.role||"Owner", ownsCompanyId:cid, firm:"", tier:same.tier||"A"}); continue; }
     const ok=await dbSet("contacts/"+newId(),{name:nm, tier:"A", type:"Business owner", companyId:cid, companyRole:o.role||"Owner", ownsCompanyId:cid, firm:"", cell:o.cell||"", email:o.email||"", language:o.language||"af", partner:biz.partner||"", town:biz.town||"", province:biz.province||"", country:biz.hqCountry||"South Africa", influence:0, notes:""});
     if(ok) made++;
@@ -3607,7 +3614,7 @@ ownerDealForm=function(contactId, ownPlace){
   FORM.fromOwner= theirs? contactId : null; FORM.fromRole= kk.companyRole||(owner?"Owner":""); FORM.fromIsOwner=owner;
 };
 function ownsLine(k){
-  const owned=companies().filter(c=>c.id!==k.companyId && (k.ownsCompanyId===c.id || (c.owners||[]).some(o=>normName(o.name)===normName(k.name))));
+  const xr=new Set((k.otherRoles||[]).map(r=>r.companyId)); const owned=companies().filter(c=>c.id!==k.companyId && !xr.has(c.id) && (k.ownsCompanyId===c.id || (c.owners||[]).some(o=>normName(o.name)===normName(k.name))));
   return owned.length? `<div class="fsec">Owns</div><div class="group">${owned.map(bizRow).join("")}</div>` : "";
 }
 /* Don't lose a work link by accident when editing */
@@ -3889,8 +3896,8 @@ function aiExtras(r){
 }
 
 /* ================= Phase 17: background & context, public profiles, map filters, business check-in report ================= */
-const PROFILES=["Sportsperson","Artist","Influencer","Media personality","Academic"];
-const PROFILE_PL={Sportsperson:"Sports people",Artist:"Artists",Influencer:"Influencers","Media personality":"Media","Academic":"Academics"};
+const PROFILES=["Doctor / medical","Sportsperson","Artist","Influencer","Media personality","Academic"];
+const PROFILE_PL={"Doctor / medical":"Doctors",Sportsperson:"Sports people",Artist:"Artists",Influencer:"Influencers","Media personality":"Media","Academic":"Academics"};
 const CEO_RX=/\b(ceo|chief executive|managing director|md|group ceo|founder)\b/i;
 const CSUITE_RX=/\b(ceo|cfo|coo|cto|cio|cmo|cro|chief|managing director|md|executive director|chair(man|person)?)\b/i;
 function isCEO(k){ return CEO_RX.test([k.title,k.companyRole].join(" ")) || ((k.tags||[]).includes("A") && /owner|founder/i.test(k.companyRole||"")); }
@@ -3923,7 +3930,7 @@ INTENTS.push(
 );
 /* ---- Network map filters ---- */
 S.netf=S.netf||{who:"",team:"",sector:""};
-const NET_WHO=[["","Everyone"],["A","Owners"],["B","Employees"],["C","Potential hires"],["D","Great contacts"],["ceo","CEOs & MDs"],["csuite","C-suite"],["talent","Talent bench"],["hnwi","HNWI"],["pol","Public / political"],["pr:Sportsperson","Sports people"],["pr:Artist","Artists"],["pr:Influencer","Influencers"],["family","People with family links"]];
+const NET_WHO=[["","Everyone"],["A","Owners"],["B","Employees"],["C","Potential hires"],["D","Great contacts"],["ceo","CEOs & MDs"],["csuite","C-suite"],["talent","Talent bench"],["hnwi","HNWI"],["pol","Public / political"],["pr:Sportsperson","Sports people"],["pr:Artist","Artists"],["pr:Influencer","Influencers"],["pr:Doctor / medical","Doctors"],["family","People with family links"]];
 function netFilterOn(){ const f=S.netf; return !!(f.who||f.team||f.sector); }
 function netKOK(k){ const f=S.netf;
   if(f.who){ const w=f.who; const ok= ["A","B","C","D"].includes(w)? hasTag(k,w) : w==="ceo"? isCEO(k) : w==="csuite"? isCSuite(k) : w==="talent"? isTalent(k) : w==="hnwi"? !!k.hnwi : w==="pol"? !!k.publicRole : w==="family"? familyOf(k).length>0 : w.startsWith("pr:")? (k.profiles||[]).includes(w.slice(3)) : true; if(!ok) return false; }
@@ -3950,6 +3957,45 @@ function ciReportHTML(c){
   </div>
   ${H.length>1?`<details class="histd"><summary>${ic("history",16)} All check-ins (${H.length})</summary><div class="group log" style="margin-top:8px">${H.map(e=>`<div class="e"><small>${esc(fmtD(e.d))}${e.by?` · ${esc(e.by)}`:""}</small>${esc(e.text)}</div>`).join("")}</div></details>`:""}`;
 }
+
+/* ================= Phase 18: listed/private, group structures, people at several companies ================= */
+const OWNERSHIP=["Private company","Family-owned","Listed – JSE","Listed – other exchange","State-owned","Subsidiary of a group","Non-profit / NGO","Trust or foundation"];
+peopleAt=function(c){ return contacts().filter(k=>k.companyId===c.id || (k.otherRoles||[]).some(r=>r.companyId===c.id)); };
+function roleAt(k,c){ if(k.companyId===c.id) return k.companyRole||k.title||"Works here"; const r=(k.otherRoles||[]).find(r=>r.companyId===c.id); return r?.role||"Involved"; }
+function subsOf(c){ return companies().filter(x=>x.parentId===c.id).sort((a,b)=>a.name.localeCompare(b.name)); }
+function groupFields(c){
+  const others=companies().filter(x=>x.id!==c.id && x.parentId!==c.id).sort((a,b)=>a.name.localeCompare(b.name));
+  return `<div class="fld"><label for="cOwn">Listed or private?</label><select id="cOwn">${opts(OWNERSHIP,c.ownership||"","Not sure / skip")}</select></div>
+   <div class="fld" id="cListW" ${/^Listed/.test(c.ownership||"")?"":"hidden"}><label for="cList">Exchange & share code</label><input id="cList" value="${esc(c.listing||"")}" placeholder="e.g. JSE: BEL"></div>
+   <div class="fld"><label for="cParent">Part of a group? Parent company</label><select id="cParent">${opts(others.map(x=>({v:x.id,l:x.name})),c.parentId||"","Not part of a group")}</select></div>`; }
+function groupRead(){ if(!$("#cOwn")) return {}; const own=$("#cOwn").value; return {ownership:own, listing:/^Listed/.test(own)? ($("#cList").value.trim()) : "", parentId:$("#cParent").value||""}; }
+function groupHTML(c){
+  const par=c.parentId? S.companies.get(c.parentId) : null; const subs=subsOf(c);
+  const sib= par? subsOf(par).filter(x=>x.id!==c.id) : [];
+  const own= c.ownership? `<div class="card box"><div class="kvline"><span class="lbl">Ownership</span><b>${esc(c.ownership)}${c.listing?` · ${esc(c.listing)}`:""}</b></div></div>` : "";
+  if(!par && !subs.length) return own? `<div class="fsec">Ownership</div>${own}` : "";
+  return `<div class="fsec">Group</div>${own}
+   ${par?`<div class="lbl" style="margin:8px 4px 6px">Part of</div><div class="group">${bizRowAny(par)}</div>`:""}
+   ${subs.length?`<div class="lbl" style="margin:8px 4px 6px">Companies in this group (${subs.length})</div><div class="group">${subs.map(bizRowAny).join("")}</div>`:""}
+   ${sib.length?`<div class="lbl" style="margin:8px 4px 6px">Sister companies</div><div class="group">${sib.map(bizRowAny).join("")}</div>`:""}`;
+}
+function bizRowAny(c){ return isPartnerCo(c)? partnerRow(c) : bizRow(c); }
+/* people involved in more than one company */
+function otherRolesFields(k){
+  return `<div class="lbl" style="margin:12px 2px 6px">Also owns or works at</div>
+  <div id="kRolesX">${(k.otherRoles||[]).map(r=>roleRow(r)).join("")}</div>
+  <button type="button" class="linkbtn addx" data-act="xr-add">+ Add another company</button>`; }
+function roleRow(r){ const cos=companies().sort((a,b)=>a.name.localeCompare(b.name));
+  return `<div class="fld xrow xrole"><div class="xin"><select class="xco" aria-label="Company">${opts(cos.map(c=>({v:c.id,l:c.name})),r?.companyId||"","Choose company…")}</select><select class="xrl" aria-label="Role">${opts(["Owner","Co-owner","Shareholder","Director","CEO / MD","Chair","Board member / NED","Employee","Advisor","Investor"],r?.role||"Owner")}</select><button type="button" class="xdel" data-act="x-del" aria-label="Remove">✕</button></div></div>`; }
+function otherRolesRead(){ const main=($("#kCoPick")&&$("#kCoPick").value)||""; return {otherRoles:[...document.querySelectorAll(".xrole")].map(r=>({companyId:r.querySelector(".xco").value, role:r.querySelector(".xrl").value})).filter(r=>r.companyId && r.companyId!==main).filter((r,i,a)=>a.findIndex(x=>x.companyId===r.companyId)===i)}; }
+function otherRolesHTML(k){ const L=(k.otherRoles||[]).map(r=>({r,c:S.companies.get(r.companyId)})).filter(x=>x.c); if(!L.length) return "";
+  return `<div class="fsec">Also involved in</div><div class="group">${L.map(({r,c})=>`<button class="rowi" data-open="${esc(c.id)}">${isPartnerCo(c)?`<span class="avatar biz">${ic(pkIcon(c),20)}</span>`:avatarB(c)}<span class="main"><span class="t1" style="display:block">${esc(c.name)}</span><span class="t2" style="display:block">${esc(r.role)}${c.ownership?` · ${esc(c.ownership)}`:""}</span></span>${ic("chev",18).replace('class="ic"','class="ic chev"')}</button>`).join("")}</div>`; }
+{ const base=ownsLine; ownsLine=function(k){ return otherRolesHTML(k)+base(k); }; }
+/* AI context */
+{ const base=companyLine; companyLine=function(c){ const par=c.parentId?S.companies.get(c.parentId):null; const subs=subsOf(c); const x=[c.ownership?`ownership: ${c.ownership}${c.listing?` (${c.listing})`:""}`:"", par?`part of group: ${par.name}`:"", subs.length?`group companies: ${subs.map(s=>s.name).join(", ")}`:""].filter(Boolean).join("; ").replace(/\|/g,"/"); return base(c)+(x?" | "+x:""); }; }
+{ const base=askLine; askLine=function(k){ const x=(k.otherRoles||[]).map(r=>{ const c=S.companies.get(r.companyId); return c? `${r.role} at ${c.name}` : ""; }).filter(Boolean).join(", "); return base(k)+(x?" | also: "+x.replace(/\|/g,"/"):""); }; }
+document.addEventListener("change",e=>{ if(e.target.id==="cOwn"){ const w=$("#cListW"); if(w) w.hidden=!/^Listed/.test(e.target.value); } });
+document.addEventListener("click",e=>{ const t=e.target.closest("[data-act=xr-add]"); if(!t) return; const box=$("#kRolesX"); if(box){ box.insertAdjacentHTML("beforeend",roleRow(null)); } });
 
 
 function vNetwork(){

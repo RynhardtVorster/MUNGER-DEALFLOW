@@ -13,7 +13,7 @@ ownerDealForm=function(contactId, ownPlace){
   FORM.fromOwner= theirs? contactId : null; FORM.fromRole= kk.companyRole||(owner?"Owner":""); FORM.fromIsOwner=owner;
 };
 function ownsLine(k){
-  const owned=companies().filter(c=>c.id!==k.companyId && (k.ownsCompanyId===c.id || (c.owners||[]).some(o=>normName(o.name)===normName(k.name))));
+  const xr=new Set((k.otherRoles||[]).map(r=>r.companyId)); const owned=companies().filter(c=>c.id!==k.companyId && !xr.has(c.id) && (k.ownsCompanyId===c.id || (c.owners||[]).some(o=>normName(o.name)===normName(k.name))));
   return owned.length? `<div class="fsec">Owns</div><div class="group">${owned.map(bizRow).join("")}</div>` : "";
 }
 /* Don't lose a work link by accident when editing */

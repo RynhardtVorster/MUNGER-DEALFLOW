@@ -564,12 +564,14 @@ function netBuildGraph(){
   const add=(id,type,label,extra)=>{ const o=old.get(id); const n={id,type,label,x:o?.x??(Math.random()-.5)*400,y:o?.y??(Math.random()-.5)*400,vx:0,vy:0,...extra}; nodes.push(n); by.set(id,n); return n; };
   const partnerSet=new Set(S.partners); contacts().forEach(k=>knowers(k).forEach(x=>partnerSet.add(x.partner))); companies().forEach(c=>{ if(c.partner) partnerSet.add(c.partner); });
   if(G.show.p) [...partnerSet].filter(Boolean).forEach(p=>add("p:"+p,"p",p,{r:16}));
-  const netK=contacts().filter(netKOK); const fOn=netFilterOn(); const coIds=new Set(netK.map(k=>k.companyId).filter(Boolean));
+  const netK=contacts().filter(netKOK); const fOn=netFilterOn(); const coIds=new Set(netK.flatMap(k=>[k.companyId,...(k.otherRoles||[]).map(r=>r.companyId)]).filter(Boolean));
   if(G.show.k) netK.forEach(k=>add("k:"+k.id,"k",k.name,{r:8+(Number(k.influence)||0)*1.6,sub:workLine(k),tier:tierOf(k)}));
   if(G.show.c) companies().filter(c=>!fOn||coIds.has(c.id)).forEach(c=>add("c:"+c.id,"c",c.name,{r:7,group:isPartnerCo(c)?"pfirm":stageOf(c.status).group,sub:isPartnerCo(c)?"Partner · "+(PKINDS[c.kind]||""):industryShort(c)}));
   const link=(a,b,kind)=>{ if(by.has(a)&&by.has(b)) edges.push({a:by.get(a),b:by.get(b),kind}); };
   contacts().forEach(k=>{ knowers(k).forEach(x=>link("k:"+k.id,"p:"+x.partner,x.relation==="friend"?"friend":"network")); if(k.companyId) link("k:"+k.id,"c:"+k.companyId,"works"); });
   (S.links||[]).forEach(l=>link("k:"+l.a,"k:"+l.b,"family"));
+  companies().forEach(c=>{ if(c.parentId) link("c:"+c.id,"c:"+c.parentId,"group"); });
+  contacts().forEach(k=>(k.otherRoles||[]).forEach(r=>link("k:"+k.id,"c:"+r.companyId,"works")));
   companies().forEach(c=>{ if(c.source?.contactId) link("c:"+c.id,"k:"+c.source.contactId,"referred"); if(c.source?.partner) link("c:"+c.id,"p:"+c.source.partner,"referred"); if(c.partner) link("c:"+c.id,"p:"+c.partner,"lead"); });
   nodes.forEach(n=>n.deg=0); edges.forEach(e=>{e.a.deg++; e.b.deg++;});
   nodes.forEach(n=>{ if(n.type!=="p") n.r += Math.min(8, n.deg*1.2); });

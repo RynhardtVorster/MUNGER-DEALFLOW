@@ -131,7 +131,7 @@ function myWeekText(){
 /* ---------- People ---------- */
 function vPeople(){
   const k=S.k, q=k.q.trim().toLowerCase(); const me=myPartner(); const all=contacts();
-  const special={top:()=>true, talent:isTalent, hnwi:x=>x.hnwi, ceo:isCEO, pol:x=>!!x.publicRole, "pr:Sportsperson":x=>(x.profiles||[]).includes("Sportsperson"), "pr:Artist":x=>(x.profiles||[]).includes("Artist"), "pr:Influencer":x=>(x.profiles||[]).includes("Influencer")};
+  const special={top:()=>true, talent:isTalent, hnwi:x=>x.hnwi, ceo:isCEO, pol:x=>!!x.publicRole, "pr:Sportsperson":x=>(x.profiles||[]).includes("Sportsperson"), "pr:Artist":x=>(x.profiles||[]).includes("Artist"), "pr:Influencer":x=>(x.profiles||[]).includes("Influencer"), "pr:Doctor / medical":x=>(x.profiles||[]).includes("Doctor / medical")};
   const arr=all.filter(c=>{ if(special[k.tier]){ if(!special[k.tier](c)) return false; } else if(k.tier&&!hasTag(c,k.tier)) return false; if(k.mine&&!isMineK(c)) return false; if(q){ const co=companyOf(c); const h=[c.name,c.firm,c.title,c.email,c.cell,c.town,c.province,c.country,c.notes,c.type,c.industry,c.expertise,c.companyRole,co?.name,knowsTxt(c),(c.talent?.roles||[]).join(" "),c.talent?.sectors,c.wealthSource].join(" ").toLowerCase(); if(!h.includes(q)) return false; } return true; })
     .sort((a,b)=> k.tier==="top"? influenceScore(b)-influenceScore(a) : k.tier==="talent"? (Number(b.talent?.rating)||0)-(Number(a.talent?.rating)||0) : (a.name||"").localeCompare(b.name||"",undefined,{sensitivity:"base"}));
   if(k.tier==="top") arr.splice(50);
@@ -144,7 +144,7 @@ function vPeople(){
     flush(); body=parts.join(""); }
   return `<div class="ph"><div><h1>People</h1><p>${all.length} in the network · A ${cnt("A")} · B ${cnt("B")} · C ${cnt("C")} · D ${cnt("D")}</p></div><button class="btn sm primary" data-act="new-contact">${ic("plus",18)} Add</button></div>
   <div class="search">${ic("search",20)}<input id="kq" type="search" placeholder="Search name, company, skill, town…" value="${esc(k.q)}" autocomplete="off" aria-label="Search people"></div>
-  <div class="chips">${chip("","All",all.length)}${chip("A","A · Owners",cnt("A"))}${chip("B","B · Employees",cnt("B"))}${chip("C","C · Potential hires",cnt("C"))}${chip("D","D · Great contacts",cnt("D"))}${chip("top","★ Most influential")}${chip("talent","Talent",all.filter(isTalent).length)}${chip("hnwi","HNWI",all.filter(x=>x.hnwi).length)}${chip("ceo","CEOs & MDs",all.filter(isCEO).length)}${["Sportsperson","Artist","Influencer"].map(p=>chip("pr:"+p,PROFILE_PL[p],all.filter(x=>(x.profiles||[]).includes(p)).length)).join("")}${chip("pol","Public / political",all.filter(x=>x.publicRole).length)}${me?`<button class="chip ${k.mine?"on":""}" data-act="k-mine">People I know</button>`:""}</div>
+  <div class="chips">${chip("","All",all.length)}${chip("A","A · Owners",cnt("A"))}${chip("B","B · Employees",cnt("B"))}${chip("C","C · Potential hires",cnt("C"))}${chip("D","D · Great contacts",cnt("D"))}${chip("top","★ Most influential")}${chip("talent","Talent",all.filter(isTalent).length)}${chip("hnwi","HNWI",all.filter(x=>x.hnwi).length)}${chip("ceo","CEOs & MDs",all.filter(isCEO).length)}${["Doctor / medical","Sportsperson","Artist","Influencer"].map(p=>chip("pr:"+p,PROFILE_PL[p],all.filter(x=>(x.profiles||[]).includes(p)).length)).join("")}${chip("pol","Public / political",all.filter(x=>x.publicRole).length)}${me?`<button class="chip ${k.mine?"on":""}" data-act="k-mine">People I know</button>`:""}</div>
   ${k.tier==="top"?`<p class="tag" style="margin:-4px 2px 10px">Ranked by your influence rating, how many of our team know them, friendships and the leads they've brought in.</p>`:""}
   ${body}`;
 }
@@ -342,6 +342,7 @@ function renderSheet(){
     ${!fin?`<div class="fsec">Sale signals</div>${sigCount(c)?`<div class="card box"><div class="sigs">${SIGNALS.filter(([s])=>(c.signals||{})[s]).map(([,l])=>`<span class="pill soon">${esc(l)}</span>`).join("")}</div></div>`:`<div class="card box tag">None captured. Edit the business to tick what you know: owner's age, no successor, wants out…</div>`}
     <div class="fsec">Size & mandate fit</div>
     <div class="card kv"><div class="k">Profit</div><div class="v">${esc(sizeTxt(c))}</div><div class="k">Turnover</div><div class="v">${esc(c.turnoverConfirmed!=null&&c.turnoverConfirmed!==""?`R${c.turnoverConfirmed}m (confirmed)`:(c.turnover?`${c.turnover} (estimate)`:"—"))}</div><div class="k">Employees</div><div class="v">${esc(c.employees||"—")}</div><div class="k">Mandate fit</div><div class="v">${fp===null?"Not scored":`${fp}%`}</div>${FITDIMS.filter(([d])=>(c.fit||{})[d]).map(([d,l])=>`<div class="k">${esc(l)}</div><div class="v">${"●".repeat(Number(c.fit[d]))}${"○".repeat(5-Number(c.fit[d]))}</div>`).join("")}</div>`:""}
+    ${groupHTML(c)}
     <div class="fsec">Where it operates</div>
     <div class="card kv"><div class="k">Head office</div><div class="v">${esc([c.town,c.hqCountry||"South Africa"].filter(Boolean).join(", "))}</div>${fin?"":`<div class="k">Footprint</div><div class="v">${esc(c.footprint||"—")}</div>`}${c.countries?`<div class="k">Countries</div><div class="v">${esc(c.countries)}</div>`:""}${fin?"":`<div class="k">Industry</div><div class="v">${esc(c.industry||"—")}</div>`}${c.regNo?`<div class="k">Reg. no.</div><div class="v">${esc(c.regNo)}</div>`:""}<div class="k">Website</div><div class="v">${c.website?`<a href="${esc(/^https?:/i.test(c.website)?c.website:"https://"+c.website)}" target="_blank" rel="noopener">${esc(c.website)}</a>`:"—"}</div></div>
     ${!fin?`<div class="fsec">How we heard</div>
@@ -435,6 +436,7 @@ function contactForm(id, preset){
    ${fldNote("kExpertise","What are they great at?",k.expertise,"e.g. e-commerce growth; brand films and editing; acquisition finance",2)}
   </div>
   <div class="hint" id="kCoHint"></div>
+  ${otherRolesFields(k)}
   ${bgFields(k)}
   <div class="fsec">Who in our team knows them?</div>
   <div class="fields">${S.partners.map((p,i)=>`<div class="fld"><label for="rel${i}">${esc(p)}</label><select id="rel${i}" data-partner="${esc(p)}">${opts([{v:"",l:"Doesn't know them"},...Object.entries(RELS).map(([v,l])=>({v,l}))],rel[p]||"")}</select></div>`).join("")}</div>
@@ -497,7 +499,7 @@ async function submitContact(){
   const me=myPartner(); const primary=(d.conns.find(c=>c.partner===me)||d.conns[0]||{}).partner||"";
   const prev=FORM.id? S.contacts.get(FORM.id):null;
   const data={name:d.name, tier, tags, firm:d.firm, type:d.type, partner:primary, companyId:d.companyId, companyRole:d.companyRole, ownsCompanyId: OWNER_ROLES.includes(d.companyRole)? d.companyId : "", title:d.title, country:d.country, industry:d.industry, expertise:d.expertise, linkedin:d.linkedin, cell:d.cell, email:d.email, language:d.language, province:d.province, town:d.town, notes:d.notes, influence:d.influence, hnwi:d.hnwi, wealthSource:d.hnwi?d.wealthSource:"", doNotContact:d.doNotContact, talent:d.talent, example:prev?.example||false};
-  Object.assign(data, ciRead(), bgRead()); data.cells=readExtras("cell"); data.emails=readExtras("email");
+  Object.assign(data, ciRead(), bgRead(), otherRolesRead()); data.cells=readExtras("cell"); data.emails=readExtras("email");
   if(prev && prev.companyId && prev.companyId!==d.companyId){ const pc=S.companies.get(prev.companyId); data.pastRoles=[...(prev.pastRoles||[]),{company:pc?.name||"", role:prev.companyRole||prev.title||"", until:today()}]; }
   const id=FORM.id||newId();
   const nc=newCoChoice(d); let addBiz=false;
@@ -559,6 +561,7 @@ function dealForm(id, preset){
     <div class="fld"><label for="cTrading">Trading as</label><input id="cTrading" value="${esc(c.tradingAs)}"></div>
     <div class="fld"><label for="cProvince">Province</label><select id="cProvince">${opts(PROVINCES,c.province,"Fills in from the town")}</select></div>
     <div class="fld"><label for="cCountries">Countries it trades in</label><input id="cCountries" value="${esc(c.countries)}" placeholder="e.g. Namibia, Botswana, UK exports"></div>
+    ${groupFields(c)}
     <div class="fld"><label for="cReg">Company registration no.</label><input id="cReg" value="${esc(c.regNo)}"></div>
     <div class="fld"><label for="cWeb">Website</label><input id="cWeb" inputmode="url" autocapitalize="off" value="${esc(c.website)}"></div>
    </div>
@@ -591,7 +594,7 @@ async function submitDeal(){
   const data={
     name, kind, kindNote:kind==="other"?($("#cKindNote")?.value.trim()||""):"", tradingAs:$("#cTrading").value.trim(), industry:fin? (PIND[kind]||"") : $("#cIndustry").value, province:autoProvince(town,$("#cProvince").value), town:g?g.name:town,
     website:$("#cWeb").value.trim(), ebit:$("#cEbit").value, turnover:$("#cTurnover").value.trim(), employees:$("#cEmp").value.trim(),
-    hqCountry:$("#cHq").value, footprint:fin?"":$("#cFoot").value, countries:$("#cCountries").value.trim(), regNo:$("#cReg").value.trim(),
+    hqCountry:$("#cHq").value, footprint:fin?"":$("#cFoot").value, countries:$("#cCountries").value.trim(), regNo:$("#cReg").value.trim(), ...groupRead(),
     ebitConfirmed:numOrNull($("#cEbitC").value), turnoverConfirmed:numOrNull($("#cTurnC").value), financialsYear:$("#cFy").value.trim(), fit, signals,
     owners, language: owners.length? (new Set(owners.map(o=>o.language)).size>1?"both":owners[0].language) : "",
     source, partner:$("#cPartner").value, status, followUpMonths:cad?Number($("#cCad").value):0, nextCheckIn:cad?($("#cNext").value||""):"",
