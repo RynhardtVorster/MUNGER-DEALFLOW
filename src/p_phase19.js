@@ -586,3 +586,16 @@ otherRolesRead=function(){ const main=($("#kCoPick")&&$("#kCoPick").value)||""; 
       if(!ok) return; }
     x.dataset.co=id; x.dataset.new=""; }
   return base(); }; }
+
+/* ---------- 21. On every business: who brought it in, and who is responsible – change it right there ---------- */
+function teamCardHTML(c,ro){ const R=respOf(c);
+  return `<div class="fsec">Our team on this business</div><div class="card box teamcard">
+   <div class="kvline"><span class="lbl">Brought in by</span>${ro?`<b>${esc(c.partner||"Not set")}</b>`:`<select class="tc-by" data-id="${esc(c.id)}" aria-label="Brought in by">${opts(S.partners,c.partner||"","Not set")}</select>`}</div>
+   <div class="lbl" style="margin-top:4px">Responsible to follow up</div>
+   <div class="rolechips">${S.partners.map(p=>`<label><input type="checkbox" class="tc-resp" data-id="${esc(c.id)}" value="${esc(p)}" ${R.includes(p)?"checked":""} ${ro?"disabled":""}><span>${esc(p.split(" ")[0])}</span></label>`).join("")}</div>
+   <div class="tag">The responsible partners see this business, its check-ins and follow-ups under <b>Mine</b> on Today.</div></div>`; }
+document.addEventListener("change",async e=>{ const t=e.target;
+  if(t.classList?.contains("tc-by")){ if(await dbUpdate("companies/"+t.dataset.id,{partner:t.value})) toast(t.value?`Brought in by ${t.value.split(" ")[0]}`:"Cleared"); }
+  if(t.classList?.contains("tc-resp")){ const id=t.dataset.id; const R=[...document.querySelectorAll(`.tc-resp[data-id="${id}"]:checked`)].map(x=>x.value);
+    if(!R.length){ t.checked=true; toast("At least one partner must be responsible"); return; }
+    if(await dbUpdate("companies/"+id,{responsible:R})) toast(`Responsible: ${R.map(p=>p.split(" ")[0]).join(" & ")}`); } });

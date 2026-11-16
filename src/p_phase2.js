@@ -594,7 +594,7 @@ function likeModal(id){
    <p style="margin:0 2px 12px;font-size:15.5px">${isT?"":`<b>${esc(c.name)}</b> becomes a target. `}When should we check in?</p>
    <div class="fields"><div class="fld"><label for="lkCad">Check in</label><select id="lkCad">${opts(CADENCE.filter(x=>x.m).map(x=>({v:x.m,l:x.l})),Number(c.followUpMonths)||3)}</select></div>
    <div class="fld"><label for="lkDate">First / next check-in date</label><input id="lkDate" type="date" value="${esc(c.nextCheckIn||addMonths(today(),Number(c.followUpMonths)||3))}"></div>
-   <div class="fld"><label for="lkPartner">Who owns this relationship?</label><select id="lkPartner">${opts(S.partners,c.partner||defaultPartner())}</select></div></div>
+   <div class="fld"><label>Responsible to follow up</label><div class="rolechips" style="margin-top:6px">${S.partners.map(p=>`<label><input type="checkbox" name="lkResp" value="${esc(p)}" ${(respOf(c).length?respOf(c):[defaultResp()]).includes(p)?"checked":""}><span>${esc(p.split(" ")[0])}</span></label>`).join("")}</div></div></div>
    ${isT?"":`<div class="hint">Next: add the owners and key people at ${esc(c.name)} so we know our way in.</div>`}
    <div style="margin-top:14px"><button class="btn primary block" data-act="like-save" data-id="${esc(c.id)}">${isT?"Save":"★ Make it a target"}</button></div></div>`, true);
 }
@@ -606,7 +606,7 @@ document.addEventListener("click", async e=>{
     case "complete-profile": contactForm(id); break;
     case "like": likeModal(id); break;
     case "like-save": { const c=S.companies.get(id); if(!c) break; const by=await myName(); const was=grp(c);
-      const patch={followUpMonths:Number($("#lkCad").value)||3, nextCheckIn:$("#lkDate").value||addMonths(today(),3), partner:$("#lkPartner").value};
+      const patch={followUpMonths:Number($("#lkCad").value)||3, nextCheckIn:$("#lkDate").value||addMonths(today(),3)}; { const R=[...document.querySelectorAll("input[name=lkResp]:checked")].map(x=>x.value); if(R.length) patch.responsible=R; }
       if(!isPartnerCo(c)&&(was==="network"||was==="closed")){ patch.status="target"; patch.log=[...(c.log||[]),{d:today(),by,text:"★ We like it – now a target"}].slice(-200); }
       if(await dbUpdate("companies/"+id,patch)){ closeModal(); toast(was==="network"?"Now a target":"Check-ins updated"); } break; }
     case "not-for-us": { const c=S.companies.get(id); const by=await myName(); if(await dbUpdate("companies/"+id,{status:"passed", nextCheckIn:"", log:[...(c.log||[]),{d:today(),by,text:"Not for us"}].slice(-200)})) toast("Marked not for us"); break; }

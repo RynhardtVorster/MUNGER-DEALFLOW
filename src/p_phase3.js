@@ -336,6 +336,7 @@ function renderSheet(){
       ${fin&&!ro?`<button class="btn sm" data-act="like" data-id="${esc(c.id)}">${c.nextCheckIn?"Change check-ins":"Set check-ins"}</button>`:""}
     </div>`:""}
     ${!fin&&!ro?`<div class="fields" style="margin-top:12px"><div class="fld"><label for="dStage">Stage</label><select id="dStage">${opts(STAGES.map(s=>({v:s.id,l:s.label})),stageOf(c.status).id)}</select></div></div>`:""}
+    ${!fin?teamCardHTML(c,ro):""}
     ${ciReportHTML(c)}
     ${!fin&&g!=="network"?`<div class="fsec">Our way in</div>${wayInHTML(c)}`:""}
     <div class="fsec">People we know here</div>

@@ -316,6 +316,8 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 .xr19 .xdel{border:0;background:none;font-size:18px;color:var(--muted,#777);padding:6px}
 #xr19List:empty{display:none}
 .xr19panel{margin-top:10px}
+.teamcard .kvline{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.teamcard select{font:inherit;font-size:16px;padding:6px 10px;border:1px solid var(--line);border-radius:10px;background:var(--paper,#fff);max-width:60%}
 .mdot-wrap{background:none;border:0}
 .mdot{border-radius:50%;background:var(--tierA,#b5651d);color:#fff;display:grid;place-items:center;font:700 12.5px/1 "Source Sans 3",system-ui,sans-serif;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);opacity:.93}
 .mdot.sel{background:var(--ink,#1d2b36);transform:scale(1.12)}
@@ -489,7 +491,7 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 <script src="supabase.js"></script>
 <script>
 "use strict";
-const APP_V="v46";
+const APP_V="v47";
 /* ---------------- Reference data ---------------- */
 const STAGES = [
   {id:"network", label:"Prospect – we'd look at it", group:"network"},
@@ -2174,7 +2176,7 @@ function likeModal(id){
    <p style="margin:0 2px 12px;font-size:15.5px">${isT?"":`<b>${esc(c.name)}</b> becomes a target. `}When should we check in?</p>
    <div class="fields"><div class="fld"><label for="lkCad">Check in</label><select id="lkCad">${opts(CADENCE.filter(x=>x.m).map(x=>({v:x.m,l:x.l})),Number(c.followUpMonths)||3)}</select></div>
    <div class="fld"><label for="lkDate">First / next check-in date</label><input id="lkDate" type="date" value="${esc(c.nextCheckIn||addMonths(today(),Number(c.followUpMonths)||3))}"></div>
-   <div class="fld"><label for="lkPartner">Who owns this relationship?</label><select id="lkPartner">${opts(S.partners,c.partner||defaultPartner())}</select></div></div>
+   <div class="fld"><label>Responsible to follow up</label><div class="rolechips" style="margin-top:6px">${S.partners.map(p=>`<label><input type="checkbox" name="lkResp" value="${esc(p)}" ${(respOf(c).length?respOf(c):[defaultResp()]).includes(p)?"checked":""}><span>${esc(p.split(" ")[0])}</span></label>`).join("")}</div></div></div>
    ${isT?"":`<div class="hint">Next: add the owners and key people at ${esc(c.name)} so we know our way in.</div>`}
    <div style="margin-top:14px"><button class="btn primary block" data-act="like-save" data-id="${esc(c.id)}">${isT?"Save":"★ Make it a target"}</button></div></div>`, true);
 }
@@ -2186,7 +2188,7 @@ document.addEventListener("click", async e=>{
     case "complete-profile": contactForm(id); break;
     case "like": likeModal(id); break;
     case "like-save": { const c=S.companies.get(id); if(!c) break; const by=await myName(); const was=grp(c);
-      const patch={followUpMonths:Number($("#lkCad").value)||3, nextCheckIn:$("#lkDate").value||addMonths(today(),3), partner:$("#lkPartner").value};
+      const patch={followUpMonths:Number($("#lkCad").value)||3, nextCheckIn:$("#lkDate").value||addMonths(today(),3)}; { const R=[...document.querySelectorAll("input[name=lkResp]:checked")].map(x=>x.value); if(R.length) patch.responsible=R; }
       if(!isPartnerCo(c)&&(was==="network"||was==="closed")){ patch.status="target"; patch.log=[...(c.log||[]),{d:today(),by,text:"★ We like it – now a target"}].slice(-200); }
       if(await dbUpdate("companies/"+id,patch)){ closeModal(); toast(was==="network"?"Now a target":"Check-ins updated"); } break; }
     case "not-for-us": { const c=S.companies.get(id); const by=await myName(); if(await dbUpdate("companies/"+id,{status:"passed", nextCheckIn:"", log:[...(c.log||[]),{d:today(),by,text:"Not for us"}].slice(-200)})) toast("Marked not for us"); break; }
@@ -2549,6 +2551,7 @@ function renderSheet(){
       ${fin&&!ro?`<button class="btn sm" data-act="like" data-id="${esc(c.id)}">${c.nextCheckIn?"Change check-ins":"Set check-ins"}</button>`:""}
     </div>`:""}
     ${!fin&&!ro?`<div class="fields" style="margin-top:12px"><div class="fld"><label for="dStage">Stage</label><select id="dStage">${opts(STAGES.map(s=>({v:s.id,l:s.label})),stageOf(c.status).id)}</select></div></div>`:""}
+    ${!fin?teamCardHTML(c,ro):""}
     ${ciReportHTML(c)}
     ${!fin&&g!=="network"?`<div class="fsec">Our way in</div>${wayInHTML(c)}`:""}
     <div class="fsec">People we know here</div>
@@ -4626,6 +4629,19 @@ otherRolesRead=function(){ const main=($("#kCoPick")&&$("#kCoPick").value)||""; 
       if(!ok) return; }
     x.dataset.co=id; x.dataset.new=""; }
   return base(); }; }
+
+/* ---------- 21. On every business: who brought it in, and who is responsible – change it right there ---------- */
+function teamCardHTML(c,ro){ const R=respOf(c);
+  return `<div class="fsec">Our team on this business</div><div class="card box teamcard">
+   <div class="kvline"><span class="lbl">Brought in by</span>${ro?`<b>${esc(c.partner||"Not set")}</b>`:`<select class="tc-by" data-id="${esc(c.id)}" aria-label="Brought in by">${opts(S.partners,c.partner||"","Not set")}</select>`}</div>
+   <div class="lbl" style="margin-top:4px">Responsible to follow up</div>
+   <div class="rolechips">${S.partners.map(p=>`<label><input type="checkbox" class="tc-resp" data-id="${esc(c.id)}" value="${esc(p)}" ${R.includes(p)?"checked":""} ${ro?"disabled":""}><span>${esc(p.split(" ")[0])}</span></label>`).join("")}</div>
+   <div class="tag">The responsible partners see this business, its check-ins and follow-ups under <b>Mine</b> on Today.</div></div>`; }
+document.addEventListener("change",async e=>{ const t=e.target;
+  if(t.classList?.contains("tc-by")){ if(await dbUpdate("companies/"+t.dataset.id,{partner:t.value})) toast(t.value?`Brought in by ${t.value.split(" ")[0]}`:"Cleared"); }
+  if(t.classList?.contains("tc-resp")){ const id=t.dataset.id; const R=[...document.querySelectorAll(`.tc-resp[data-id="${id}"]:checked`)].map(x=>x.value);
+    if(!R.length){ t.checked=true; toast("At least one partner must be responsible"); return; }
+    if(await dbUpdate("companies/"+id,{responsible:R})) toast(`Responsible: ${R.map(p=>p.split(" ")[0]).join(" & ")}`); } });
 
 
 function vNetwork(){
