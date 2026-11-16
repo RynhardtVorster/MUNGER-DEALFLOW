@@ -536,3 +536,53 @@ function noCoToggle(){ if(!$("#contactForm")) return; const none=whereVal()==="o
 { const base=newCoUpdate; newCoUpdate=function(d){ base(d); noCoToggle(); }; }
 { const base=contactForm; contactForm=function(id,preset){ base(id,preset); noCoToggle(); }; }
 document.addEventListener("change",e=>{ if(e.target.name==="kWhere") setTimeout(noCoToggle,0); });
+
+/* ---------- 20. Other companies a person owns or works at: a clear add panel (existing or brand-new company) ---------- */
+const XR_KINDS=[["network","A business we'd look at buying (prospect)"],["target","A target – we go full out"],["other","Network company – not to buy"],...Object.entries(PKINDS).map(([k,l])=>["pk:"+k,`Partner firm – ${l}`])];
+function xrLabel(c){ return isPartnerCo(c)? (PKINDS[c.kind]||"Partner") : c.kind==="other"? "Network company" : grp(c)==="network"? "Prospect" : grp(c)==="target"? "Target" : grp(c)==="active"? "In discussions" : "Business"; }
+function xrEntry(e){ const c=e.companyId?S.companies.get(e.companyId):null; const name=c?c.name:e.newName; const sub=c? xrLabel(c) : `New · ${({network:"Prospect",target:"Target",other:"Network company"})[e.newKind]||PKINDS[String(e.newKind).slice(3)]||""} – created when you save`;
+  return `<div class="xr19" data-co="${esc(e.companyId||"")}" data-role="${esc(e.role||"Owner")}" data-new="${esc(e.companyId?"":JSON.stringify({name:e.newName,kind:e.newKind,town:e.newTown||""}))}">
+   <span class="avatar biz">${ic(c&&isPartnerCo(c)?"bank":"biz",18)}</span><span class="main"><span class="t1" style="display:block">${esc(name)}</span><span class="t2" style="display:block">${esc(e.role||"Owner")} · ${esc(sub)}</span></span><button type="button" class="xdel" data-act="xr19-del" aria-label="Remove">✕</button></div>`; }
+otherRolesFields=function(k){ return `<div class="fsec">Also owns or works at</div><p class="tag" style="margin:-4px 2px 8px">Other companies besides their main one – e.g. a second business they own.</p>
+  <div id="xr19List" class="group">${(k.otherRoles||[]).filter(r=>r.companyId).map(r=>xrEntry(r)).join("")}</div>
+  <button type="button" class="btn block" data-act="xr19-open" style="margin-top:8px">+ Add another company</button>
+  <div id="xr19Panel" class="card box xr19panel" hidden></div>`; };
+function xrPanel(){ const P=$("#xr19Panel"); if(!P) return; P.hidden=false; P.innerHTML=`
+  <div class="fields"><div class="fld"><label for="xrRole">Their role there</label><select id="xrRole">${opts(XR_ROLES,"Owner")}</select></div></div>
+  <div class="seg" style="margin:10px 0"><button type="button" class="on" data-act="xr19-mode" data-k="find">Already in Munger</button><button type="button" data-act="xr19-mode" data-k="new">New company</button></div>
+  <div id="xrFind"><input type="search" id="xrQ" class="ss-input" placeholder="Type the company name…" autocomplete="off"><div id="xrHits" class="group"></div></div>
+  <div id="xrNew" hidden><div class="fields"><div class="fld"><label for="xrName">Company name</label><input id="xrName" autocapitalize="words" autocomplete="off" placeholder="e.g. Van der Walt Boerdery"></div>
+   <div class="fld"><label for="xrKind">What is it?</label><select id="xrKind">${opts(XR_KINDS.map(([v,l])=>({v,l})),"network")}</select></div>
+   <div class="fld"><label for="xrTown">Town (optional)</label><input id="xrTown" list="townList" autocomplete="off"></div></div>
+   <div id="xrSim" class="warnline"></div>
+   <button type="button" class="btn primary block" data-act="xr19-addnew" style="margin-top:10px">Add this company</button></div>
+  <button type="button" class="linkbtn" data-act="xr19-close" style="margin-top:8px">Cancel</button>`; xrHits(""); setTimeout(()=>$("#xrQ")?.focus(),50); }
+function xrTaken(){ return new Set([$("#kCoPick")?.value, ...[...document.querySelectorAll(".xr19")].map(x=>x.dataset.co)].filter(Boolean)); }
+function xrHits(q){ const box=$("#xrHits"); if(!box) return; const taken=xrTaken(); const w=ssNorm(q).trim().split(/\s+/).filter(Boolean);
+  const L=companies().filter(c=>!taken.has(c.id) && w.every(x=>ssNorm(c.name+" "+(c.tradingAs||"")).includes(x))).sort((a,b)=>a.name.localeCompare(b.name)).slice(0,8);
+  box.innerHTML= L.map(c=>`<button type="button" class="rowi" data-act="xr19-pick" data-id="${esc(c.id)}"><span class="avatar biz">${ic(isPartnerCo(c)?"bank":"biz",18)}</span><span class="main"><span class="t1" style="display:block">${esc(c.name)}</span><span class="t2" style="display:block">${esc([xrLabel(c),c.town].filter(Boolean).join(" · "))}</span></span></button>`).join("")
+   + (q.trim()? `<button type="button" class="rowi" data-act="xr19-mode" data-k="new" data-name="${esc(q.trim())}"><span class="avatar biz">${ic("plus",18)}</span><span class="main"><span class="t1" style="display:block">Add “${esc(q.trim())}” as a new company</span><span class="t2" style="display:block">Not in Munger yet</span></span></button>` : (L.length?"":`<div class="rowi tag">No companies yet – add a new one.</div>`)); }
+function xrAdd(e){ $("#xr19List").insertAdjacentHTML("beforeend",xrEntry(e)); $("#xr19Panel").hidden=true; $("#xr19Panel").innerHTML=""; }
+document.addEventListener("input",e=>{ if(e.target.id==="xrQ") xrHits(e.target.value);
+  if(e.target.id==="xrName"){ const nm=e.target.value.trim(); const L=nm.length>2? fuzzyCompanies(nm).slice(0,3) : []; const ex=companies().find(c=>normName(c.name)===normName(nm));
+    $("#xrSim").innerHTML= ex? `<div>Already in Munger: <b>${esc(ex.name)}</b> <button type="button" class="btn sm" data-act="xr19-pick" data-id="${esc(ex.id)}">Use it</button></div>` : L.map(c=>`<div>Did you mean <b>${esc(c.name)}</b>? <button type="button" class="btn sm" data-act="xr19-pick" data-id="${esc(c.id)}">Use it</button></div>`).join(""); } });
+document.addEventListener("click",e=>{ const t=e.target.closest('[data-act^="xr19-"]'); if(!t) return; e.preventDefault(); const a=t.dataset.act;
+  if(a==="xr19-open") xrPanel();
+  if(a==="xr19-close"){ $("#xr19Panel").hidden=true; $("#xr19Panel").innerHTML=""; }
+  if(a==="xr19-del") t.closest(".xr19").remove();
+  if(a==="xr19-mode"){ const nw=t.dataset.k==="new"; document.querySelectorAll('#xr19Panel .seg button').forEach(b=>b.classList.toggle("on",b.dataset.k===t.dataset.k)); $("#xrFind").hidden=nw; $("#xrNew").hidden=!nw; if(nw){ if(t.dataset.name) $("#xrName").value=t.dataset.name; $("#xrName").focus(); $("#xrName").dispatchEvent(new Event("input",{bubbles:true})); } else $("#xrQ").focus(); }
+  if(a==="xr19-pick"){ const id=t.dataset.id; if(xrTaken().has(id)){ toast("Already linked"); return; } xrAdd({companyId:id, role:$("#xrRole").value}); }
+  if(a==="xr19-addnew"){ const nm=$("#xrName").value.trim(); if(!nm){ toast("Type the company name"); $("#xrName").focus(); return; }
+    const ex=companies().find(c=>normName(c.name)===normName(nm)); if(ex){ xrAdd({companyId:ex.id, role:$("#xrRole").value}); toast(`${ex.name} is already in Munger – linked to it`); return; }
+    xrAdd({newName:nm, newKind:$("#xrKind").value, newTown:$("#xrTown").value.trim(), role:$("#xrRole").value}); }
+});
+otherRolesRead=function(){ const main=($("#kCoPick")&&$("#kCoPick").value)||""; return {otherRoles:[...document.querySelectorAll(".xr19")].map(x=>({companyId:x.dataset.co, role:x.dataset.role})).filter(r=>r.companyId && r.companyId!==main).filter((r,i,a)=>a.findIndex(x=>x.companyId===r.companyId)===i)}; };
+{ const base=submitContact; submitContact=async function(){
+  const pend=[...document.querySelectorAll("#contactForm .xr19")].filter(x=>!x.dataset.co && x.dataset.new);
+  for(const x of pend){ const n=JSON.parse(x.dataset.new); const ex=companies().find(c=>normName(c.name)===normName(n.name)); let id=ex?.id;
+    if(!id){ id=newId(); const by=await myName(); const role=x.dataset.role; const pname=($("#kName")?.value||"").trim(); const pk=n.kind.startsWith("pk:")? n.kind.slice(3) : null;
+      const g=gazFind(n.town||""); const owner=!pk && ["Owner","Co-owner","Shareholder"].includes(role) && pname? [{name:pname, cell:($("#kCell")?.value||"").trim(), email:($("#kEmail")?.value||"").trim(), role, language:"af"}] : [];
+      const ok=await dbSet("companies/"+id,{name:n.name, kind: pk||(n.kind==="other"?"other":"target"), status:n.kind==="target"?"target":"network", town:g?g.name:(n.town||""), province:g?.region||"", partner:myPartner()||"", responsible:(pk||n.kind==="other")?[]:[defaultResp()], owners:owner, hqCountry:"South Africa", log:[{d:today(),by,text:`Captured · added with ${pname||"a person"}`}], createdByName:by});
+      if(!ok) return; }
+    x.dataset.co=id; x.dataset.new=""; }
+  return base(); }; }
