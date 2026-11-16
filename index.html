@@ -305,6 +305,7 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 .ss-input.nohit{border-color:var(--bad,#b3261e)}
 .log .e[data-act="log-edit"]{cursor:pointer;position:relative;padding-right:30px}
 .log .e[data-act="log-edit"]::after{content:"✎";position:absolute;right:10px;top:10px;opacity:.45;font-size:15px}
+.rowi.done19 .t1::after{content:" ✓ opened";color:var(--good,#2e7d32);font-weight:500}
 .mdot-wrap{background:none;border:0}
 .mdot{border-radius:50%;background:var(--tierA,#b5651d);color:#fff;display:grid;place-items:center;font:700 12.5px/1 "Source Sans 3",system-ui,sans-serif;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);opacity:.93}
 .mdot.sel{background:var(--ink,#1d2b36);transform:scale(1.12)}
@@ -4420,6 +4421,54 @@ function todayBadge(){ const ids=myDueIds(); if(currentView()==="today" && ids.l
   const seen=new Set(offRead(SEEN_KEY)||[]); const n=ids.filter(x=>!seen.has(x)).length;
   try{ if(navigator.setAppBadge){ n? navigator.setAppBadge(n) : navigator.clearAppBadge(); } }catch(_){}
   return n; }
+
+/* ---------- 11. Mail lists: people at partner firms by kind, and a mailer you can draft and send in batches ---------- */
+S.lists.pkinds=S.lists.pkinds||[];
+S.mailDraft=offRead("munger.mailDraft")||{subject:"",body:"Hi {first name}\n\n"};
+function firstName(n){ return String(n||"").trim().split(/\s+/)[0]||""; }
+function partnerKindOf(k){ const ids=[k.companyId,...(k.otherRoles||[]).map(r=>r.companyId||r.company_id||r.id)].filter(Boolean);
+  return ids.map(id=>S.companies.get(id)).filter(c=>c&&isPartnerCo(c)).map(c=>({kind:c.kind,c})); }
+listRows=function(){
+  const L=S.lists; const rows=[]; const any=!L.groups.length && !L.tiers.length && !L.pkinds.length;
+  const langOK=l=> L.lang==="all" || l===L.lang || l==="both";
+  if(any || L.groups.length) companies().forEach(c=>{ if(!isAcq(c)) return; const g=stageOf(c.status).group; if(!any && !L.groups.includes(g)) return;
+    (c.owners||[]).forEach(o=>{ const lang=o.language||c.language; if(!langOK(lang)) return; if(!o.email&&!o.cell) return; rows.push({name:o.name,email:o.email||"",cell:o.cell||"",org:c.name,kind:"Business owner",lang}); }); });
+  contacts().forEach(k=>{ if(k.doNotContact || !langOK(k.language)) return;
+    const pk=partnerKindOf(k); const byTier=L.tiers.length && tagsOf(k).some(t=>L.tiers.includes(t)); const byPartner=L.pkinds.length && pk.some(x=>L.pkinds.includes(x.kind));
+    if(!any && !byTier && !byPartner) return;
+    const email=k.email||(k.emails||[])[0]?.v||"", cell=k.cell||(k.cells||[])[0]?.v||""; if(!email&&!cell) return;
+    const firm=(byPartner? pk.find(x=>L.pkinds.includes(x.kind))?.c : null) || companyOf(k);
+    rows.push({name:k.name,email,cell,org:firm?.name||k.firm||"",kind: byPartner&&!byTier? (PKINDS[pk.find(x=>L.pkinds.includes(x.kind)).kind]||"Partner") : `${tierOf(k)} · ${k.type||TIERS[tierOf(k)]?.label||"Contact"}`,lang:k.language}); });
+  const seen=new Set(); return rows.filter(r=>{ const key=(r.email||r.cell).toLowerCase(); if(seen.has(key)) return false; seen.add(key); return true; }).sort((a,b)=>a.name.localeCompare(b.name));
+};
+{ const base=vLists; vLists=function(){ const L=S.lists; const any=!L.groups.length&&!L.tiers.length&&!L.pkinds.length;
+  const firms=k=>companies().filter(c=>isPartnerCo(c)&&c.kind===k).length;
+  const pchips=`<div class="sec" style="margin-top:0"><h2>Only people at partner firms</h2></div><div class="chips">${Object.entries(PKINDS).map(([k,l])=>`<button class="chip ${L.pkinds.includes(k)?"on":""}" data-act="l-pkind" data-k="${k}">${esc(l)}s <span class="n">${firms(k)}</span></button>`).join("")}</div>`;
+  const rows=listRows(); const emails=rows.filter(r=>r.email); const D=S.mailDraft; const B=40; const batches=Math.ceil(emails.length/B);
+  const composer=`<div class="sec"><h2>Write the mailer</h2></div>
+   <div class="fields"><div class="fld"><label for="mdSubj">Subject</label><input id="mdSubj" value="${esc(D.subject)}" placeholder="e.g. Munger – partnering on deals in 2027"></div>
+   ${fldNote("mdBody","Message",D.body,"Write your message. {first name} becomes each person's first name in a mail merge.",8)}</div>
+   <p class="tag" style="margin:6px 4px 0">Saved on this phone as you type. ${emails.length} ${emails.length===1?"person":"people"} with email on this list.</p>
+   ${emails.length?`<div class="lbl" style="margin:12px 4px 6px">Send it</div>
+   <div class="group">${Array.from({length:batches},(_,i)=>`<a class="rowi" href="#" data-act="md-batch" data-i="${i}"><span class="avatar biz">${ic("mail",20)}</span><span class="main"><span class="t1" style="display:block">Open email ${batches>1?`${i+1} of ${batches}`:""}</span><span class="t2" style="display:block">${i*B+1}–${Math.min(emails.length,(i+1)*B)} · everyone in BCC · "{first name}" becomes "all"</span></span></a>`).join("")}</div>
+   <div class="acts" style="margin-top:10px;grid-template-columns:1fr 1fr"><button class="act" data-act="md-copy">${ic("edit",18)}Copy message</button><button class="act dark" data-act="md-merge">${ic("dl",18)}Mail-merge file</button></div>
+   <p class="tag" style="margin:8px 4px 0">For a personal "Hi Johan" to every person, use the mail-merge file (CSV with first names) in Outlook, Word or Gmail mail merge. For a quick group mail, open the emails above: they go out in groups of ${B} so your mail app doesn't choke.</p>`:""}`;
+  let h=base();
+  h=h.replace('<div class="stats">',pchips+'<div class="stats">');
+  h=h.replace(/<button class="chip[^"]*" data-act="l-all">/,`<button class="chip ${any?"on":""}" data-act="l-all">`);
+  h=h.replace('<div class="sec"><h2>Recipients</h2></div>',composer+'<div class="sec"><h2>Recipients</h2></div>');
+  return h; }; }
+document.addEventListener("input",e=>{ if(e.target.id==="mdSubj"||e.target.id==="mdBody"){ S.mailDraft={subject:$("#mdSubj").value, body:$("#mdBody").value}; offWrite("munger.mailDraft",S.mailDraft); } });
+function mdText(fill){ const D=S.mailDraft; return {subject:D.subject||"", body:String(D.body||"").replace(/\{first ?name\}/gi,fill)}; }
+document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act="l-pkind"],[data-act="l-all"],[data-act="md-batch"],[data-act="md-copy"],[data-act="md-merge"]'); if(!t) return; const a=t.dataset.act, k=t.dataset.k;
+  if(a==="l-pkind"){ const p=S.lists.pkinds; S.lists.pkinds=p.includes(k)?p.filter(x=>x!==k):[...p,k]; render(); return; }
+  if(a==="l-all"){ S.lists.pkinds=[]; render(); return; }
+  e.preventDefault(); const emails=listRows().filter(r=>r.email);
+  if(a==="md-batch"){ if(!S.mailDraft.subject.trim()){ toast("Add a subject first"); $("#mdSubj")?.focus(); return; } const i=Number(t.dataset.i); const part=emails.slice(i*40,(i+1)*40).map(r=>r.email); const me=S.me?.email||"";
+    const m=mdText("all"); location.href=`mailto:${encodeURIComponent(me)}?bcc=${part.map(encodeURIComponent).join(",")}&subject=${encodeURIComponent(m.subject)}&body=${encodeURIComponent(m.body)}`; t.classList.add("done19"); }
+  if(a==="md-copy"){ const m=mdText("{first name}"); try{ await navigator.clipboard.writeText(`${m.subject}\n\n${m.body}`); toast("Subject and message copied"); }catch(_){ toast("Couldn't copy – select the text and copy it"); } }
+  if(a==="md-merge"){ const L=S.lists; download(`munger-mail-merge-${today()}.csv`,[["First name","Name","Email","Organisation","Type","Subject","Message"],...emails.map(r=>[firstName(r.name),r.name,r.email,r.org,r.kind,S.mailDraft.subject||"",String(S.mailDraft.body||"").replace(/\{first ?name\}/gi,firstName(r.name))])]); }
+},true);
 
 
 function vNetwork(){
