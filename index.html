@@ -292,6 +292,9 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 .stars{color:#b8862b;font-size:12px;letter-spacing:1px;vertical-align:1px}
 .likebox{margin-top:14px;border-color:var(--ink)}
 [hidden]{display:none!important}
+.netf{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:-4px 0 10px}
+.netf select{min-height:40px;border:1px solid var(--line);border-radius:10px;padding:0 8px;font-size:14px;background:var(--surface);color:var(--ink);min-width:0}
+.kvline{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .plmap{height:300px;border-radius:var(--r,16px);overflow:hidden;border:1px solid var(--line);margin:0 0 12px;background:var(--soft);z-index:0}
 .plmap .leaflet-control-attribution{font-size:10px}
 .plpick{display:grid;grid-template-columns:1fr auto;gap:8px;margin:10px 0}
@@ -505,8 +508,10 @@ const INDUSTRIES = {
   "Creative & media":["Publishing","Broadcasting & radio","Advertising agencies","Video, film & editing","Photography","Content & social media","Graphic design & branding","Copywriting, PR & communications","Events, MCs & presenters","Music & audio"],
   "Professional services":["Architecture & interior design","Engineering consulting","Quantity surveying","Town planning","Property valuation","Recruitment & executive search","Coaching & training"],
   "Gaming & betting":["Sports betting & bookmakers","Casinos","Lotteries","Online gaming","Gaming technology"],
-  "Sport & recreation":["Sports clubs & franchises","Fitness & gyms","Sports equipment & apparel"],
+  "Sport & recreation":["Professional athletes","Sports management & agencies","Sports clubs & franchises","Fitness & gyms","Sports equipment & apparel"],
   "Public sector & non-profit":["Government & SOEs","Municipalities","NGOs & non-profits","Development finance institutions"],
+  "Aviation & aerospace":["Airlines","Charter & private aviation","Aircraft maintenance (MRO)","Airports & ground services","Aerospace manufacturing","Drones"],
+  "Arts & entertainment":["Visual arts & galleries","Music & performing arts","Film & TV production","Talent & influencer management","Fashion & design","Museums & heritage"],
   "Other":["Family office / private investor","Funeral services","Other"]
 };
 const SECTORS = Object.keys(INDUSTRIES);
@@ -592,9 +597,9 @@ function queueRender(){ if(renderQueued) return; renderQueued=true; requestAnima
 
 const nz = v => (v===undefined||v===null||v==="") ? null : v;
 function companyFromRow(r){ return {id:r.id, name:r.name, tradingAs:r.trading_as, industry:r.industry, province:r.province, town:r.town, website:r.website, ebit:r.ebit, turnover:r.turnover, employees:r.employees, owners:r.owners||[], language:r.language, source:{channel:r.source_channel, contactId:r.source_contact_id||"", partner:r.source_partner, detail:r.source_detail}, partner:r.partner, status:r.status, followUpMonths:r.follow_up_months, nextCheckIn:r.next_check_in||"", lastContact:r.last_contact||"", notes:r.notes, log:r.log||[], example:r.example, hqCountry:r.hq_country, footprint:r.footprint, countries:r.countries, regNo:r.reg_no, ebitConfirmed:r.ebit_confirmed, turnoverConfirmed:r.turnover_confirmed, financialsYear:r.financials_year, fit:r.fit||{}, kind:r.kind||"target", kindNote:r.kind_note||"", checkInNote:r.check_in_note||"", signals:r.signals||{}, updatedByName:r.updated_by_name||"", createdBy:r.created_by, createdByName:r.created_by_name, createdAt:r.created_at, updatedAt:r.updated_at}; }
-function contactFromRow(r){ return {tags:Array.isArray(r.tags)?r.tags:[], cells:Array.isArray(r.cells)?r.cells:[], emails:Array.isArray(r.emails)?r.emails:[], nextCheckIn:r.next_check_in||"", checkInWeeks:r.check_in_weeks||0, checkInRepeat:!!r.check_in_repeat, checkInNote:r.check_in_note||"", checkInOwner:r.check_in_owner||"", lastContact:r.last_contact||"", id:r.id, name:r.name, tier:r.tier, type:r.type, firm:r.firm, partner:r.partner, ownsCompanyId:r.owns_company_id||"", companyId:r.company_id||r.owns_company_id||"", companyRole:r.company_role||(r.owns_company_id?"Owner":""), title:r.title||"", country:r.country||"", industry:r.industry||"", expertise:r.expertise||"", linkedin:r.linkedin||"", influence:r.influence||0, talent:r.talent||{}, hnwi:!!r.hnwi, wealthSource:r.wealth_source||"", doNotContact:!!r.do_not_contact, thanks:r.thanks||[], log:r.log||[], pastRoles:r.past_roles||[], updatedByName:r.updated_by_name||"", cell:r.cell, email:r.email, language:r.language, province:r.province, town:r.town, notes:r.notes, example:r.example, createdBy:r.created_by, createdAt:r.created_at, updatedAt:r.updated_at}; }
+function contactFromRow(r){ return {education:r.education||"", background:r.background||"", publicRole:r.public_role||"", profiles:Array.isArray(r.profiles)?r.profiles:[], tags:Array.isArray(r.tags)?r.tags:[], cells:Array.isArray(r.cells)?r.cells:[], emails:Array.isArray(r.emails)?r.emails:[], nextCheckIn:r.next_check_in||"", checkInWeeks:r.check_in_weeks||0, checkInRepeat:!!r.check_in_repeat, checkInNote:r.check_in_note||"", checkInOwner:r.check_in_owner||"", lastContact:r.last_contact||"", id:r.id, name:r.name, tier:r.tier, type:r.type, firm:r.firm, partner:r.partner, ownsCompanyId:r.owns_company_id||"", companyId:r.company_id||r.owns_company_id||"", companyRole:r.company_role||(r.owns_company_id?"Owner":""), title:r.title||"", country:r.country||"", industry:r.industry||"", expertise:r.expertise||"", linkedin:r.linkedin||"", influence:r.influence||0, talent:r.talent||{}, hnwi:!!r.hnwi, wealthSource:r.wealth_source||"", doNotContact:!!r.do_not_contact, thanks:r.thanks||[], log:r.log||[], pastRoles:r.past_roles||[], updatedByName:r.updated_by_name||"", cell:r.cell, email:r.email, language:r.language, province:r.province, town:r.town, notes:r.notes, example:r.example, createdBy:r.created_by, createdAt:r.created_at, updatedAt:r.updated_at}; }
 const CMAP={name:"name",tradingAs:"trading_as",industry:"industry",province:"province",town:"town",website:"website",ebit:"ebit",turnover:"turnover",employees:"employees",owners:"owners",language:"language",partner:"partner",status:"status",followUpMonths:"follow_up_months",nextCheckIn:"next_check_in",lastContact:"last_contact",notes:"notes",log:"log",example:"example",createdByName:"created_by_name",hqCountry:"hq_country",footprint:"footprint",countries:"countries",regNo:"reg_no",ebitConfirmed:"ebit_confirmed",turnoverConfirmed:"turnover_confirmed",financialsYear:"financials_year",fit:"fit",kind:"kind",kindNote:"kind_note",checkInNote:"check_in_note",signals:"signals"};
-const KMAP={tags:"tags",cells:"cells",emails:"emails",nextCheckIn:"next_check_in",checkInWeeks:"check_in_weeks",checkInRepeat:"check_in_repeat",checkInNote:"check_in_note",checkInOwner:"check_in_owner",lastContact:"last_contact",name:"name",tier:"tier",type:"type",firm:"firm",partner:"partner",ownsCompanyId:"owns_company_id",cell:"cell",email:"email",language:"language",province:"province",town:"town",notes:"notes",example:"example",companyId:"company_id",companyRole:"company_role",title:"title",country:"country",industry:"industry",expertise:"expertise",linkedin:"linkedin",influence:"influence",talent:"talent",hnwi:"hnwi",wealthSource:"wealth_source",doNotContact:"do_not_contact",thanks:"thanks",log:"log",pastRoles:"past_roles"};
+const KMAP={education:"education",background:"background",publicRole:"public_role",profiles:"profiles",tags:"tags",cells:"cells",emails:"emails",nextCheckIn:"next_check_in",checkInWeeks:"check_in_weeks",checkInRepeat:"check_in_repeat",checkInNote:"check_in_note",checkInOwner:"check_in_owner",lastContact:"last_contact",name:"name",tier:"tier",type:"type",firm:"firm",partner:"partner",ownsCompanyId:"owns_company_id",cell:"cell",email:"email",language:"language",province:"province",town:"town",notes:"notes",example:"example",companyId:"company_id",companyRole:"company_role",title:"title",country:"country",industry:"industry",expertise:"expertise",linkedin:"linkedin",influence:"influence",talent:"talent",hnwi:"hnwi",wealthSource:"wealth_source",doNotContact:"do_not_contact",thanks:"thanks",log:"log",pastRoles:"past_roles"};
 const NULLABLE=new Set(["next_check_in","last_contact","owns_company_id","source_contact_id","company_id","ebit_confirmed","turnover_confirmed"]);
 function toRow(table, d){
   const map=table==="companies"?CMAP:KMAP; const row={};
@@ -2099,8 +2104,9 @@ function netBuildGraph(){
   const add=(id,type,label,extra)=>{ const o=old.get(id); const n={id,type,label,x:o?.x??(Math.random()-.5)*400,y:o?.y??(Math.random()-.5)*400,vx:0,vy:0,...extra}; nodes.push(n); by.set(id,n); return n; };
   const partnerSet=new Set(S.partners); contacts().forEach(k=>knowers(k).forEach(x=>partnerSet.add(x.partner))); companies().forEach(c=>{ if(c.partner) partnerSet.add(c.partner); });
   if(G.show.p) [...partnerSet].filter(Boolean).forEach(p=>add("p:"+p,"p",p,{r:16}));
-  if(G.show.k) contacts().forEach(k=>add("k:"+k.id,"k",k.name,{r:8+(Number(k.influence)||0)*1.6,sub:workLine(k),tier:tierOf(k)}));
-  if(G.show.c) companies().forEach(c=>add("c:"+c.id,"c",c.name,{r:7,group:isPartnerCo(c)?"pfirm":stageOf(c.status).group,sub:isPartnerCo(c)?"Partner · "+(PKINDS[c.kind]||""):industryShort(c)}));
+  const netK=contacts().filter(netKOK); const fOn=netFilterOn(); const coIds=new Set(netK.map(k=>k.companyId).filter(Boolean));
+  if(G.show.k) netK.forEach(k=>add("k:"+k.id,"k",k.name,{r:8+(Number(k.influence)||0)*1.6,sub:workLine(k),tier:tierOf(k)}));
+  if(G.show.c) companies().filter(c=>!fOn||coIds.has(c.id)).forEach(c=>add("c:"+c.id,"c",c.name,{r:7,group:isPartnerCo(c)?"pfirm":stageOf(c.status).group,sub:isPartnerCo(c)?"Partner · "+(PKINDS[c.kind]||""):industryShort(c)}));
   const link=(a,b,kind)=>{ if(by.has(a)&&by.has(b)) edges.push({a:by.get(a),b:by.get(b),kind}); };
   contacts().forEach(k=>{ knowers(k).forEach(x=>link("k:"+k.id,"p:"+x.partner,x.relation==="friend"?"friend":"network")); if(k.companyId) link("k:"+k.id,"c:"+k.companyId,"works"); });
   (S.links||[]).forEach(l=>link("k:"+l.a,"k:"+l.b,"family"));
@@ -2297,7 +2303,7 @@ function myWeekText(){
 /* ---------- People ---------- */
 function vPeople(){
   const k=S.k, q=k.q.trim().toLowerCase(); const me=myPartner(); const all=contacts();
-  const special={top:()=>true, talent:isTalent, hnwi:x=>x.hnwi};
+  const special={top:()=>true, talent:isTalent, hnwi:x=>x.hnwi, ceo:isCEO, pol:x=>!!x.publicRole, "pr:Sportsperson":x=>(x.profiles||[]).includes("Sportsperson"), "pr:Artist":x=>(x.profiles||[]).includes("Artist"), "pr:Influencer":x=>(x.profiles||[]).includes("Influencer")};
   const arr=all.filter(c=>{ if(special[k.tier]){ if(!special[k.tier](c)) return false; } else if(k.tier&&!hasTag(c,k.tier)) return false; if(k.mine&&!isMineK(c)) return false; if(q){ const co=companyOf(c); const h=[c.name,c.firm,c.title,c.email,c.cell,c.town,c.province,c.country,c.notes,c.type,c.industry,c.expertise,c.companyRole,co?.name,knowsTxt(c),(c.talent?.roles||[]).join(" "),c.talent?.sectors,c.wealthSource].join(" ").toLowerCase(); if(!h.includes(q)) return false; } return true; })
     .sort((a,b)=> k.tier==="top"? influenceScore(b)-influenceScore(a) : k.tier==="talent"? (Number(b.talent?.rating)||0)-(Number(a.talent?.rating)||0) : (a.name||"").localeCompare(b.name||"",undefined,{sensitivity:"base"}));
   if(k.tier==="top") arr.splice(50);
@@ -2310,7 +2316,7 @@ function vPeople(){
     flush(); body=parts.join(""); }
   return `<div class="ph"><div><h1>People</h1><p>${all.length} in the network · A ${cnt("A")} · B ${cnt("B")} · C ${cnt("C")} · D ${cnt("D")}</p></div><button class="btn sm primary" data-act="new-contact">${ic("plus",18)} Add</button></div>
   <div class="search">${ic("search",20)}<input id="kq" type="search" placeholder="Search name, company, skill, town…" value="${esc(k.q)}" autocomplete="off" aria-label="Search people"></div>
-  <div class="chips">${chip("","All",all.length)}${chip("A","A · Owners",cnt("A"))}${chip("B","B · Employees",cnt("B"))}${chip("C","C · Potential hires",cnt("C"))}${chip("D","D · Great contacts",cnt("D"))}${chip("top","★ Most influential")}${chip("talent","Talent",all.filter(isTalent).length)}${chip("hnwi","HNWI",all.filter(x=>x.hnwi).length)}${me?`<button class="chip ${k.mine?"on":""}" data-act="k-mine">People I know</button>`:""}</div>
+  <div class="chips">${chip("","All",all.length)}${chip("A","A · Owners",cnt("A"))}${chip("B","B · Employees",cnt("B"))}${chip("C","C · Potential hires",cnt("C"))}${chip("D","D · Great contacts",cnt("D"))}${chip("top","★ Most influential")}${chip("talent","Talent",all.filter(isTalent).length)}${chip("hnwi","HNWI",all.filter(x=>x.hnwi).length)}${chip("ceo","CEOs & MDs",all.filter(isCEO).length)}${["Sportsperson","Artist","Influencer"].map(p=>chip("pr:"+p,PROFILE_PL[p],all.filter(x=>(x.profiles||[]).includes(p)).length)).join("")}${chip("pol","Public / political",all.filter(x=>x.publicRole).length)}${me?`<button class="chip ${k.mine?"on":""}" data-act="k-mine">People I know</button>`:""}</div>
   ${k.tier==="top"?`<p class="tag" style="margin:-4px 2px 10px">Ranked by your influence rating, how many of our team know them, friendships and the leads they've brought in.</p>`:""}
   ${body}`;
 }
@@ -2491,7 +2497,7 @@ function renderSheet(){
     </div>
     ${!fin&&g==="network"?`<div class="card box likebox"><div class="lbl">Prospect</div><div class="next">Make it a target?</div><div class="tag">A target goes on Today and into every target meeting: map the owners and key people, then check in until we get it.</div>${ro?"":`<div class="acts" style="grid-template-columns:2fr 1fr"><button class="act dark" data-act="like" data-id="${esc(c.id)}">★ Make it a target</button><button class="act" data-act="not-for-us" data-id="${esc(c.id)}">Not for us</button></div>`}</div>`:""}
     ${!fin&&g==="target"&&!ro?`<div class="acts" style="grid-template-columns:1fr 1fr;margin-top:12px"><button class="act dark" data-act="start-deal" data-id="${esc(c.id)}">Start discussions</button><button class="act" data-act="like" data-id="${esc(c.id)}">Change check-ins</button></div>`:""}
-    ${(!fin&&["target","active"].includes(g))||fin?`<div class="fsec">${fin?"Relationship check-ins":"Check-in"}</div>
+    ${false?`<div class="fsec">${fin?"Relationship check-ins":"Check-in"}</div>
     <div class="card box">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div class="lbl">Next check-in</div><div class="next">${c.nextCheckIn?esc(fmtD(c.nextCheckIn)):"Not scheduled"}</div></div>${due?`<span class="pill ${due.cls}">${esc(due.txt)}</span>`:""}</div>
       <div class="tag">${esc(CADENCE.find(x=>x.m===Number(c.followUpMonths))?.l||"No scheduled check-in")} · last contact ${esc(fmtD(c.lastContact))}</div>
@@ -2499,6 +2505,7 @@ function renderSheet(){
       ${fin&&!ro?`<button class="btn sm" data-act="like" data-id="${esc(c.id)}">${c.nextCheckIn?"Change check-ins":"Set check-ins"}</button>`:""}
     </div>`:""}
     ${!fin&&!ro?`<div class="fields" style="margin-top:12px"><div class="fld"><label for="dStage">Stage</label><select id="dStage">${opts(STAGES.map(s=>({v:s.id,l:s.label})),stageOf(c.status).id)}</select></div></div>`:""}
+    ${ciReportHTML(c)}
     ${!fin&&g!=="network"?`<div class="fsec">Our way in</div>${wayInHTML(c)}`:""}
     <div class="fsec">People we know here</div>
     ${(c.owners||[]).length||ppl.length? `<div class="group">${(c.owners||[]).filter(w=>!ppl.some(k=>k.name.toLowerCase()===String(w.name||"").toLowerCase())).map(w=>`<div class="rowi"><span class="avatar biz">${esc(initials(w.name))}</span><span class="main"><span class="t1" style="display:block">${esc(w.name||"Unnamed")} ${langTag(w.language)}</span><span class="t2" style="display:block">${esc([w.role||"Owner",w.cell,w.email].filter(Boolean).join(" · "))}</span></span>${w.cell?`<a class="btn sm" href="${esc(telHref(w.cell))}" aria-label="Call ${esc(w.name)}">${ic("phone",18)}</a>`:""}</div>`).join("")}${ppl.map(k=>`<button class="rowi" data-contact="${esc(k.id)}">${avatarP(k)}<span class="main"><span class="t1" style="display:block">${esc(k.name)}</span><span class="t2" style="display:block">${esc([k.companyRole||k.title||"Works here", knowers(k).length?"known by "+knowers(k).map(x=>x.partner.split(" ")[0]).join(", "):""].filter(Boolean).join(" · "))}</span></span>${ic("chev",18).replace('class="ic"','class="ic chev"')}</button>`).join("")}</div>` : `<div class="card empty">${fin?"Nobody we know here yet. Add the bankers, partners or advisors we deal with.":"Nobody linked yet."}</div>`}
@@ -2537,6 +2544,7 @@ function renderSheet(){
     ${k.hnwi?`<div class="fsec">High net worth</div><div class="card box">${esc(k.wealthSource||"Wealth source not captured")}</div>`:""}
     <div class="fsec">Who knows ${esc(k.name.split(" ")[0])}</div>
     ${knowers(k).length?`<div class="group">${knowers(k).map(x=>`<div class="rowi" style="min-height:52px"><span class="avatar biz" style="width:34px;height:34px;font-size:13px">${esc(initials(x.partner))}</span><span class="main"><span class="t1" style="display:block">${esc(x.partner)}</span></span><span class="pill ${x.relation==="friend"?"won":x.relation==="family"?"A":""}">${esc(RELS[x.relation]||"Not set")}</span></div>`).join("")}</div>`:`<div class="card empty">Nobody in our team linked yet.</div>`}
+    ${bgHTML(k)}
     ${familyHTML(k)}
     ${ownsLine(k)}
     <div class="fsec">Work</div>
@@ -2599,6 +2607,7 @@ function contactForm(id, preset){
    ${fldNote("kExpertise","What are they great at?",k.expertise,"e.g. e-commerce growth; brand films and editing; acquisition finance",2)}
   </div>
   <div class="hint" id="kCoHint"></div>
+  ${bgFields(k)}
   <div class="fsec">Who in our team knows them?</div>
   <div class="fields">${S.partners.map((p,i)=>`<div class="fld"><label for="rel${i}">${esc(p)}</label><select id="rel${i}" data-partner="${esc(p)}">${opts([{v:"",l:"Doesn't know them"},...Object.entries(RELS).map(([v,l])=>({v,l}))],rel[p]||"")}</select></div>`).join("")}</div>
   <div class="fields" style="margin-top:10px"><div class="fld"><label for="kInfl">How influential are they?</label><select id="kInfl">${opts([{v:0,l:"Not rated"},{v:1,l:"★ Some reach"},{v:2,l:"★★ Well connected locally"},{v:3,l:"★★★ Respected in their industry"},{v:4,l:"★★★★ Opens doors nationally"},{v:5,l:"★★★★★ Top of the network"}],k.influence||0)}</select></div></div>
@@ -2660,7 +2669,7 @@ async function submitContact(){
   const me=myPartner(); const primary=(d.conns.find(c=>c.partner===me)||d.conns[0]||{}).partner||"";
   const prev=FORM.id? S.contacts.get(FORM.id):null;
   const data={name:d.name, tier, tags, firm:d.firm, type:d.type, partner:primary, companyId:d.companyId, companyRole:d.companyRole, ownsCompanyId: OWNER_ROLES.includes(d.companyRole)? d.companyId : "", title:d.title, country:d.country, industry:d.industry, expertise:d.expertise, linkedin:d.linkedin, cell:d.cell, email:d.email, language:d.language, province:d.province, town:d.town, notes:d.notes, influence:d.influence, hnwi:d.hnwi, wealthSource:d.hnwi?d.wealthSource:"", doNotContact:d.doNotContact, talent:d.talent, example:prev?.example||false};
-  Object.assign(data, ciRead()); data.cells=readExtras("cell"); data.emails=readExtras("email");
+  Object.assign(data, ciRead(), bgRead()); data.cells=readExtras("cell"); data.emails=readExtras("email");
   if(prev && prev.companyId && prev.companyId!==d.companyId){ const pc=S.companies.get(prev.companyId); data.pastRoles=[...(prev.pastRoles||[]),{company:pc?.name||"", role:prev.companyRole||prev.title||"", until:today()}]; }
   const id=FORM.id||newId();
   const nc=newCoChoice(d); let addBiz=false;
@@ -2825,7 +2834,7 @@ document.addEventListener("click", async e=>{
       if(out==="won"){ patch.status="won"; patch.nextCheckIn=""; text=`🎉 Deal done${note?`: ${note}`:""}`; }
       if(out==="sold"){ patch.status="sold"; patch.nextCheckIn=""; const to=$("#qSold").value.trim(); text=`Sold to ${to||"someone else"}${note?`: ${note}`:""}`; }
       if(out==="passed"){ patch.status="passed"; patch.nextCheckIn=""; text=`Not for us any more${note?`: ${note}`:""}`; }
-      patch.log=[...(c.log||[]),{d:today(),by,text}].slice(-200);
+      patch.log=[...(c.log||[]),{d:today(),by,text,type:"checkin"}].slice(-200);
       const ok=await dbUpdate("companies/"+id, patch); t.disabled=false; if(ok){ closeModal(); toast(out==="won"?"Congratulations!":out==="keep"?"Check-in logged":"Updated – off the check-in list"); } break; }
     case "ch-add": { S.chDraft=readChannels(); S.chDraft.push({id:"", label:"", kind:"none", archived:false}); render(); setTimeout(()=>{ const i=S.chDraft.length-1; $("#chL"+i)?.focus(); },50); break; }
     case "ch-save": { const list=readChannels().filter(c=>c.label.trim()); list.forEach(c=>{ if(!c.id) c.id=(c.label.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,24)||"ch")+"-"+Math.random().toString(36).slice(2,6); });
@@ -3071,7 +3080,7 @@ document.addEventListener("click",async e=>{
   if(a==="k-ci-log"){ const k=S.contacts.get(id); if(!k) return; t.disabled=true; const by=await myName(); const v=$("#qkNext").value; const note=($("#qkNote")?.value||"").trim();
     let next="", weeks=k.checkInWeeks||0, rep=k.checkInRepeat;
     if(v==="same") next=addWeeks(weeks); else if(v==="date") { next=$("#qkDate").value||""; rep=false; } else if(v!=="none"){ weeks=Number(v); next=addWeeks(weeks); rep=true; }
-    const patch={lastContact:today(), nextCheckIn:next, checkInWeeks:next?weeks:0, checkInRepeat:!!next&&rep, checkInNote: next? ($("#qkTodo")?.value||"").trim() : "", log:[...(k.log||[]),{d:today(),by,text:`Checked in${note?`: ${note}`:""}${next?` · next ${fmtD(next)}`:""}`}].slice(-200)};
+    const patch={lastContact:today(), nextCheckIn:next, checkInWeeks:next?weeks:0, checkInRepeat:!!next&&rep, checkInNote: next? ($("#qkTodo")?.value||"").trim() : "", log:[...(k.log||[]),{d:today(),by,type:"checkin",text:`Checked in${note?`: ${note}`:""}${next?` · next ${fmtD(next)}`:""}`}].slice(-200)};
     if(await dbUpdate("contacts/"+id,patch)){ closeModal(); toast(next?`Logged · next ${fmtD(next)}`:"Logged"); } t.disabled=false; }
 });
 
@@ -3879,6 +3888,69 @@ function aiExtras(r){
   ${(r.next||[]).length?`<div class="sec"><h2>Suggested next steps</h2></div><div class="card box">${r.next.map(n=>`<div>• ${esc(n)}</div>`).join("")}</div>`:""}`;
 }
 
+/* ================= Phase 17: background & context, public profiles, map filters, business check-in report ================= */
+const PROFILES=["Sportsperson","Artist","Influencer","Media personality","Academic"];
+const PROFILE_PL={Sportsperson:"Sports people",Artist:"Artists",Influencer:"Influencers","Media personality":"Media","Academic":"Academics"};
+const CEO_RX=/\b(ceo|chief executive|managing director|md|group ceo|founder)\b/i;
+const CSUITE_RX=/\b(ceo|cfo|coo|cto|cio|cmo|cro|chief|managing director|md|executive director|chair(man|person)?)\b/i;
+function isCEO(k){ return CEO_RX.test([k.title,k.companyRole].join(" ")) || ((k.tags||[]).includes("A") && /owner|founder/i.test(k.companyRole||"")); }
+function isCSuite(k){ return CSUITE_RX.test([k.title,k.companyRole].join(" ")); }
+function bgFields(k){ const pr=k.profiles||[];
+  return `<div class="fsec">Background & context</div>
+  <p class="tag" style="margin:-4px 2px 8px">Optional. The more context here, the better the AI can find the right person later.</p>
+  <div class="fields">
+   <div class="fld"><label for="kEdu">Education</label><input id="kEdu" value="${esc(k.education||"")}" placeholder="e.g. BEng Stellenbosch; CA(SA); MBA GIBS"></div>
+   ${fldNote("kBg","Career & backstory",k.background||"","e.g. Chemist at Sasol for 10 years, then engineer at ASML; actuary at PwC before starting his own firm",3)}
+   <div class="fld"><label for="kPol">Public or political role</label><input id="kPol" value="${esc(k.publicRole||"")}" placeholder="e.g. Ward councillor, Stellenbosch; former MEC; serves on a state board"></div>
+  </div>
+  <div class="lbl" style="margin:10px 2px 6px">Public profile</div>
+  <div class="rolechips">${PROFILES.map(p=>`<label><input type="checkbox" name="kProf" value="${esc(p)}" ${pr.includes(p)?"checked":""}><span>${esc(p)}</span></label>`).join("")}</div>`; }
+function bgRead(){ if(!$("#kEdu")) return {}; return {education:$("#kEdu").value.trim(), background:$("#kBg").value.trim(), publicRole:$("#kPol").value.trim(), profiles:[...document.querySelectorAll("input[name=kProf]:checked")].map(x=>x.value)}; }
+function bgHTML(k){ const pr=k.profiles||[]; if(!k.education && !k.background && !k.publicRole && !pr.length) return "";
+  return `<div class="fsec">Background & context</div><div class="card box">
+   ${pr.length?`<div class="sigs">${pr.map(p=>`<span class="pill">${esc(p)}</span>`).join("")}</div>`:""}
+   ${k.education?`<div><span class="lbl">Education</span><br>${esc(k.education)}</div>`:""}
+   ${k.background?`<div><span class="lbl">Career & backstory</span><div style="white-space:pre-wrap">${esc(k.background)}</div></div>`:""}
+   ${k.publicRole?`<div><span class="lbl">Public or political role</span><br>${esc(k.publicRole)}</div>`:""}
+  </div>`; }
+/* AI + local search see the new context */
+{ const base=askLine; askLine=function(k){ const extra=[k.education?`education: ${k.education}`:"", k.background?`background: ${k.background}`:"", k.publicRole?`public/political role: ${k.publicRole}`:"", (k.profiles||[]).length?`public profile: ${(k.profiles||[]).join(", ")}`:""].filter(Boolean).join("; ").replace(/\|/g,"/").replace(/\s+/g," ").slice(0,500); return base(k)+(extra?" | "+extra:""); }; }
+{ const base=hayOf; hayOf=function(k){ const h=base(k); const x=[k.education,k.background,k.publicRole,(k.profiles||[]).join(" ")].join(" ").toLowerCase(); h.role+=" "+[(k.profiles||[]).join(" "),k.publicRole].join(" ").toLowerCase(); h.notes+=" "+x; return h; }; }
+INTENTS.push(
+ {keys:["athlete","athletes","sportsman","sportsmen","sportsperson","rugby","cricket","soccer","football","golfer","springbok"], groups:[["Sports people",["sportsperson","athlete","rugby","cricket","soccer","golf","springbok"]]]},
+ {keys:["artist","artists","musician","singer","painter","influencer","influencers","celebrity","celebrities"], groups:[["Artists, influencers & media",["artist","influencer","media personality","musician","singer","painter"]]]},
+ {keys:["political","politically","politician","politicians","government","councillor","minister","mec","mayor","municipality","public"], groups:[["Public & political roles",["councillor","minister","mec","mayor","government","political","public"]]]}
+);
+/* ---- Network map filters ---- */
+S.netf=S.netf||{who:"",team:"",sector:""};
+const NET_WHO=[["","Everyone"],["A","Owners"],["B","Employees"],["C","Potential hires"],["D","Great contacts"],["ceo","CEOs & MDs"],["csuite","C-suite"],["talent","Talent bench"],["hnwi","HNWI"],["pol","Public / political"],["pr:Sportsperson","Sports people"],["pr:Artist","Artists"],["pr:Influencer","Influencers"],["family","People with family links"]];
+function netFilterOn(){ const f=S.netf; return !!(f.who||f.team||f.sector); }
+function netKOK(k){ const f=S.netf;
+  if(f.who){ const w=f.who; const ok= ["A","B","C","D"].includes(w)? hasTag(k,w) : w==="ceo"? isCEO(k) : w==="csuite"? isCSuite(k) : w==="talent"? isTalent(k) : w==="hnwi"? !!k.hnwi : w==="pol"? !!k.publicRole : w==="family"? familyOf(k).length>0 : w.startsWith("pr:")? (k.profiles||[]).includes(w.slice(3)) : true; if(!ok) return false; }
+  if(f.team && !knowers(k).some(x=>x.partner===f.team)) return false;
+  if(f.sector){ const co=companyOf(k); if(!String(k.industry||"").startsWith(f.sector) && !String(co?.industry||"").startsWith(f.sector)) return false; }
+  return true; }
+function netFilterUI(){ const f=S.netf; const n=contacts().filter(netKOK).length;
+  return `<div class="netf"><select id="nfWho" aria-label="Show people">${NET_WHO.map(([v,l])=>`<option value="${v}"${f.who===v?" selected":""}>${l}</option>`).join("")}</select><select id="nfTeam" aria-label="Known by">${opts(S.partners,f.team,"Known by anyone")}</select><select id="nfSector" aria-label="Industry">${opts(SECTORS,f.sector,"Any industry")}</select></div>
+  ${netFilterOn()?`<p class="tag" style="margin:-4px 2px 10px">${n} ${n===1?"person":"people"} match · <a href="#network" data-act="nf-clear">clear filters</a></p>`:""}`; }
+document.addEventListener("change",e=>{ const id=e.target.id; if(id==="nfWho"||id==="nfTeam"||id==="nfSector"){ S.netf[{nfWho:"who",nfTeam:"team",nfSector:"sector"}[id]]=e.target.value; render(); setTimeout(()=>{ try{ netBuildGraph(); netCount(); netFit(true); }catch(_){} },120); } });
+document.addEventListener("click",e=>{ const t=e.target.closest("[data-act=nf-clear]"); if(t){ e.preventDefault(); S.netf={who:"",team:"",sector:""}; render(); } });
+/* ---- Business check-in report ---- */
+const isCheckinEntry=e=>e.type==="checkin" || /^(Checked in|🎉 Deal done|Sold to|Not for us any more)/.test(e.text||"");
+function ciReportHTML(c){
+  const H=[...(c.log||[])].filter(isCheckinEntry).reverse(); const last=H[0]; const d=dueInfo(c);
+  return `<div class="fsec">Check-in report</div>
+  <div class="card box">
+   <div class="kvline"><span class="lbl">Last check-in</span><b>${last?`${esc(fmtD(last.d))}${last.by?` · ${esc(last.by)}`:""}`:"Not yet"}</b></div>
+   ${last?`<div style="white-space:pre-wrap">${esc(last.text.replace(/^Checked in:?\s*/,""))}</div>`:`<div class="tag">Nobody has logged a check-in with ${esc(c.name)} yet.</div>`}
+   <div class="kvline" style="margin-top:6px"><span class="lbl">Next follow-up</span><b>${c.nextCheckIn?esc(fmtD(c.nextCheckIn)):"Not set"}</b>${d?` <span class="pill ${d.cls}">${esc(d.txt)}</span>`:""}</div>
+   ${c.checkInNote?`<div><b>Plan:</b> ${esc(c.checkInNote)}</div>`:""}
+   <div class="tag">Lead: ${esc(c.partner||"not set")}</div>
+   ${S.readOnly?"":`<div class="acts" style="grid-template-columns:1fr 1fr"><button class="act dark" data-act="quick-checkin" data-id="${esc(c.id)}">${ic("check",18)}Log check-in</button><button class="act" data-act="ci-move" data-kind="c" data-id="${esc(c.id)}">${ic("cal",18)}Next follow-up</button></div>`}
+  </div>
+  ${H.length>1?`<details class="histd"><summary>${ic("history",16)} All check-ins (${H.length})</summary><div class="group log" style="margin-top:8px">${H.map(e=>`<div class="e"><small>${esc(fmtD(e.d))}${e.by?` · ${esc(e.by)}`:""}</small>${esc(e.text)}</div>`).join("")}</div></details>`:""}`;
+}
+
 
 function vNetwork(){
   return `<div class="ph"><div><h1>Network map</h1><p>Every partner, everyone they know, and the businesses those people own, work at or brought in. Tap a dot.</p></div></div>
@@ -3892,6 +3964,7 @@ function vNetwork(){
 function vNetwork(){
   return `<div class="ph"><div><h1>Network map</h1><p>Our team, everyone we know, the partner firms they work at and the businesses we want. Pinch to zoom, drag to move, tap a dot.</p></div></div>
   <div class="chips"><button class="chip on" data-net="p">Our team</button><button class="chip on" data-net="k">People</button><button class="chip on" data-net="c">Businesses</button></div>
+  ${netFilterUI()}
   <div class="netwrap" id="netwrap"><canvas id="net" aria-label="Network map of partners, people and businesses"></canvas>
   <div class="netctl"><button data-netz="in" aria-label="Zoom in">+</button><button data-netz="out" aria-label="Zoom out">−</button><button data-netz="fit" aria-label="Show the whole network">${ic("net",18)}</button><button data-netz="full" aria-label="Full screen">⤢</button></div>
   <div class="netcount" id="netcount"></div>

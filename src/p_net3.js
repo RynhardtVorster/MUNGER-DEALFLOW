@@ -2,6 +2,7 @@
 function vNetwork(){
   return `<div class="ph"><div><h1>Network map</h1><p>Our team, everyone we know, the partner firms they work at and the businesses we want. Pinch to zoom, drag to move, tap a dot.</p></div></div>
   <div class="chips"><button class="chip on" data-net="p">Our team</button><button class="chip on" data-net="k">People</button><button class="chip on" data-net="c">Businesses</button></div>
+  ${netFilterUI()}
   <div class="netwrap" id="netwrap"><canvas id="net" aria-label="Network map of partners, people and businesses"></canvas>
   <div class="netctl"><button data-netz="in" aria-label="Zoom in">+</button><button data-netz="out" aria-label="Zoom out">−</button><button data-netz="fit" aria-label="Show the whole network">${ic("net",18)}</button><button data-netz="full" aria-label="Full screen">⤢</button></div>
   <div class="netcount" id="netcount"></div>

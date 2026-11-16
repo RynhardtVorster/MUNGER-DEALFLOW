@@ -131,7 +131,7 @@ function myWeekText(){
 /* ---------- People ---------- */
 function vPeople(){
   const k=S.k, q=k.q.trim().toLowerCase(); const me=myPartner(); const all=contacts();
-  const special={top:()=>true, talent:isTalent, hnwi:x=>x.hnwi};
+  const special={top:()=>true, talent:isTalent, hnwi:x=>x.hnwi, ceo:isCEO, pol:x=>!!x.publicRole, "pr:Sportsperson":x=>(x.profiles||[]).includes("Sportsperson"), "pr:Artist":x=>(x.profiles||[]).includes("Artist"), "pr:Influencer":x=>(x.profiles||[]).includes("Influencer")};
   const arr=all.filter(c=>{ if(special[k.tier]){ if(!special[k.tier](c)) return false; } else if(k.tier&&!hasTag(c,k.tier)) return false; if(k.mine&&!isMineK(c)) return false; if(q){ const co=companyOf(c); const h=[c.name,c.firm,c.title,c.email,c.cell,c.town,c.province,c.country,c.notes,c.type,c.industry,c.expertise,c.companyRole,co?.name,knowsTxt(c),(c.talent?.roles||[]).join(" "),c.talent?.sectors,c.wealthSource].join(" ").toLowerCase(); if(!h.includes(q)) return false; } return true; })
     .sort((a,b)=> k.tier==="top"? influenceScore(b)-influenceScore(a) : k.tier==="talent"? (Number(b.talent?.rating)||0)-(Number(a.talent?.rating)||0) : (a.name||"").localeCompare(b.name||"",undefined,{sensitivity:"base"}));
   if(k.tier==="top") arr.splice(50);
@@ -144,7 +144,7 @@ function vPeople(){
     flush(); body=parts.join(""); }
   return `<div class="ph"><div><h1>People</h1><p>${all.length} in the network · A ${cnt("A")} · B ${cnt("B")} · C ${cnt("C")} · D ${cnt("D")}</p></div><button class="btn sm primary" data-act="new-contact">${ic("plus",18)} Add</button></div>
   <div class="search">${ic("search",20)}<input id="kq" type="search" placeholder="Search name, company, skill, town…" value="${esc(k.q)}" autocomplete="off" aria-label="Search people"></div>
-  <div class="chips">${chip("","All",all.length)}${chip("A","A · Owners",cnt("A"))}${chip("B","B · Employees",cnt("B"))}${chip("C","C · Potential hires",cnt("C"))}${chip("D","D · Great contacts",cnt("D"))}${chip("top","★ Most influential")}${chip("talent","Talent",all.filter(isTalent).length)}${chip("hnwi","HNWI",all.filter(x=>x.hnwi).length)}${me?`<button class="chip ${k.mine?"on":""}" data-act="k-mine">People I know</button>`:""}</div>
+  <div class="chips">${chip("","All",all.length)}${chip("A","A · Owners",cnt("A"))}${chip("B","B · Employees",cnt("B"))}${chip("C","C · Potential hires",cnt("C"))}${chip("D","D · Great contacts",cnt("D"))}${chip("top","★ Most influential")}${chip("talent","Talent",all.filter(isTalent).length)}${chip("hnwi","HNWI",all.filter(x=>x.hnwi).length)}${chip("ceo","CEOs & MDs",all.filter(isCEO).length)}${["Sportsperson","Artist","Influencer"].map(p=>chip("pr:"+p,PROFILE_PL[p],all.filter(x=>(x.profiles||[]).includes(p)).length)).join("")}${chip("pol","Public / political",all.filter(x=>x.publicRole).length)}${me?`<button class="chip ${k.mine?"on":""}" data-act="k-mine">People I know</button>`:""}</div>
   ${k.tier==="top"?`<p class="tag" style="margin:-4px 2px 10px">Ranked by your influence rating, how many of our team know them, friendships and the leads they've brought in.</p>`:""}
   ${body}`;
 }
@@ -325,7 +325,7 @@ function renderSheet(){
     </div>
     ${!fin&&g==="network"?`<div class="card box likebox"><div class="lbl">Prospect</div><div class="next">Make it a target?</div><div class="tag">A target goes on Today and into every target meeting: map the owners and key people, then check in until we get it.</div>${ro?"":`<div class="acts" style="grid-template-columns:2fr 1fr"><button class="act dark" data-act="like" data-id="${esc(c.id)}">★ Make it a target</button><button class="act" data-act="not-for-us" data-id="${esc(c.id)}">Not for us</button></div>`}</div>`:""}
     ${!fin&&g==="target"&&!ro?`<div class="acts" style="grid-template-columns:1fr 1fr;margin-top:12px"><button class="act dark" data-act="start-deal" data-id="${esc(c.id)}">Start discussions</button><button class="act" data-act="like" data-id="${esc(c.id)}">Change check-ins</button></div>`:""}
-    ${(!fin&&["target","active"].includes(g))||fin?`<div class="fsec">${fin?"Relationship check-ins":"Check-in"}</div>
+    ${false?`<div class="fsec">${fin?"Relationship check-ins":"Check-in"}</div>
     <div class="card box">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div class="lbl">Next check-in</div><div class="next">${c.nextCheckIn?esc(fmtD(c.nextCheckIn)):"Not scheduled"}</div></div>${due?`<span class="pill ${due.cls}">${esc(due.txt)}</span>`:""}</div>
       <div class="tag">${esc(CADENCE.find(x=>x.m===Number(c.followUpMonths))?.l||"No scheduled check-in")} · last contact ${esc(fmtD(c.lastContact))}</div>
@@ -333,6 +333,7 @@ function renderSheet(){
       ${fin&&!ro?`<button class="btn sm" data-act="like" data-id="${esc(c.id)}">${c.nextCheckIn?"Change check-ins":"Set check-ins"}</button>`:""}
     </div>`:""}
     ${!fin&&!ro?`<div class="fields" style="margin-top:12px"><div class="fld"><label for="dStage">Stage</label><select id="dStage">${opts(STAGES.map(s=>({v:s.id,l:s.label})),stageOf(c.status).id)}</select></div></div>`:""}
+    ${ciReportHTML(c)}
     ${!fin&&g!=="network"?`<div class="fsec">Our way in</div>${wayInHTML(c)}`:""}
     <div class="fsec">People we know here</div>
     ${(c.owners||[]).length||ppl.length? `<div class="group">${(c.owners||[]).filter(w=>!ppl.some(k=>k.name.toLowerCase()===String(w.name||"").toLowerCase())).map(w=>`<div class="rowi"><span class="avatar biz">${esc(initials(w.name))}</span><span class="main"><span class="t1" style="display:block">${esc(w.name||"Unnamed")} ${langTag(w.language)}</span><span class="t2" style="display:block">${esc([w.role||"Owner",w.cell,w.email].filter(Boolean).join(" · "))}</span></span>${w.cell?`<a class="btn sm" href="${esc(telHref(w.cell))}" aria-label="Call ${esc(w.name)}">${ic("phone",18)}</a>`:""}</div>`).join("")}${ppl.map(k=>`<button class="rowi" data-contact="${esc(k.id)}">${avatarP(k)}<span class="main"><span class="t1" style="display:block">${esc(k.name)}</span><span class="t2" style="display:block">${esc([k.companyRole||k.title||"Works here", knowers(k).length?"known by "+knowers(k).map(x=>x.partner.split(" ")[0]).join(", "):""].filter(Boolean).join(" · "))}</span></span>${ic("chev",18).replace('class="ic"','class="ic chev"')}</button>`).join("")}</div>` : `<div class="card empty">${fin?"Nobody we know here yet. Add the bankers, partners or advisors we deal with.":"Nobody linked yet."}</div>`}
@@ -371,6 +372,7 @@ function renderSheet(){
     ${k.hnwi?`<div class="fsec">High net worth</div><div class="card box">${esc(k.wealthSource||"Wealth source not captured")}</div>`:""}
     <div class="fsec">Who knows ${esc(k.name.split(" ")[0])}</div>
     ${knowers(k).length?`<div class="group">${knowers(k).map(x=>`<div class="rowi" style="min-height:52px"><span class="avatar biz" style="width:34px;height:34px;font-size:13px">${esc(initials(x.partner))}</span><span class="main"><span class="t1" style="display:block">${esc(x.partner)}</span></span><span class="pill ${x.relation==="friend"?"won":x.relation==="family"?"A":""}">${esc(RELS[x.relation]||"Not set")}</span></div>`).join("")}</div>`:`<div class="card empty">Nobody in our team linked yet.</div>`}
+    ${bgHTML(k)}
     ${familyHTML(k)}
     ${ownsLine(k)}
     <div class="fsec">Work</div>
@@ -433,6 +435,7 @@ function contactForm(id, preset){
    ${fldNote("kExpertise","What are they great at?",k.expertise,"e.g. e-commerce growth; brand films and editing; acquisition finance",2)}
   </div>
   <div class="hint" id="kCoHint"></div>
+  ${bgFields(k)}
   <div class="fsec">Who in our team knows them?</div>
   <div class="fields">${S.partners.map((p,i)=>`<div class="fld"><label for="rel${i}">${esc(p)}</label><select id="rel${i}" data-partner="${esc(p)}">${opts([{v:"",l:"Doesn't know them"},...Object.entries(RELS).map(([v,l])=>({v,l}))],rel[p]||"")}</select></div>`).join("")}</div>
   <div class="fields" style="margin-top:10px"><div class="fld"><label for="kInfl">How influential are they?</label><select id="kInfl">${opts([{v:0,l:"Not rated"},{v:1,l:"★ Some reach"},{v:2,l:"★★ Well connected locally"},{v:3,l:"★★★ Respected in their industry"},{v:4,l:"★★★★ Opens doors nationally"},{v:5,l:"★★★★★ Top of the network"}],k.influence||0)}</select></div></div>
@@ -494,7 +497,7 @@ async function submitContact(){
   const me=myPartner(); const primary=(d.conns.find(c=>c.partner===me)||d.conns[0]||{}).partner||"";
   const prev=FORM.id? S.contacts.get(FORM.id):null;
   const data={name:d.name, tier, tags, firm:d.firm, type:d.type, partner:primary, companyId:d.companyId, companyRole:d.companyRole, ownsCompanyId: OWNER_ROLES.includes(d.companyRole)? d.companyId : "", title:d.title, country:d.country, industry:d.industry, expertise:d.expertise, linkedin:d.linkedin, cell:d.cell, email:d.email, language:d.language, province:d.province, town:d.town, notes:d.notes, influence:d.influence, hnwi:d.hnwi, wealthSource:d.hnwi?d.wealthSource:"", doNotContact:d.doNotContact, talent:d.talent, example:prev?.example||false};
-  Object.assign(data, ciRead()); data.cells=readExtras("cell"); data.emails=readExtras("email");
+  Object.assign(data, ciRead(), bgRead()); data.cells=readExtras("cell"); data.emails=readExtras("email");
   if(prev && prev.companyId && prev.companyId!==d.companyId){ const pc=S.companies.get(prev.companyId); data.pastRoles=[...(prev.pastRoles||[]),{company:pc?.name||"", role:prev.companyRole||prev.title||"", until:today()}]; }
   const id=FORM.id||newId();
   const nc=newCoChoice(d); let addBiz=false;
@@ -659,7 +662,7 @@ document.addEventListener("click", async e=>{
       if(out==="won"){ patch.status="won"; patch.nextCheckIn=""; text=`🎉 Deal done${note?`: ${note}`:""}`; }
       if(out==="sold"){ patch.status="sold"; patch.nextCheckIn=""; const to=$("#qSold").value.trim(); text=`Sold to ${to||"someone else"}${note?`: ${note}`:""}`; }
       if(out==="passed"){ patch.status="passed"; patch.nextCheckIn=""; text=`Not for us any more${note?`: ${note}`:""}`; }
-      patch.log=[...(c.log||[]),{d:today(),by,text}].slice(-200);
+      patch.log=[...(c.log||[]),{d:today(),by,text,type:"checkin"}].slice(-200);
       const ok=await dbUpdate("companies/"+id, patch); t.disabled=false; if(ok){ closeModal(); toast(out==="won"?"Congratulations!":out==="keep"?"Check-in logged":"Updated – off the check-in list"); } break; }
     case "ch-add": { S.chDraft=readChannels(); S.chDraft.push({id:"", label:"", kind:"none", archived:false}); render(); setTimeout(()=>{ const i=S.chDraft.length-1; $("#chL"+i)?.focus(); },50); break; }
     case "ch-save": { const list=readChannels().filter(c=>c.label.trim()); list.forEach(c=>{ if(!c.id) c.id=(c.label.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,24)||"ch")+"-"+Math.random().toString(36).slice(2,6); });

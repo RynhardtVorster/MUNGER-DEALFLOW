@@ -85,6 +85,6 @@ document.addEventListener("click",async e=>{
   if(a==="k-ci-log"){ const k=S.contacts.get(id); if(!k) return; t.disabled=true; const by=await myName(); const v=$("#qkNext").value; const note=($("#qkNote")?.value||"").trim();
     let next="", weeks=k.checkInWeeks||0, rep=k.checkInRepeat;
     if(v==="same") next=addWeeks(weeks); else if(v==="date") { next=$("#qkDate").value||""; rep=false; } else if(v!=="none"){ weeks=Number(v); next=addWeeks(weeks); rep=true; }
-    const patch={lastContact:today(), nextCheckIn:next, checkInWeeks:next?weeks:0, checkInRepeat:!!next&&rep, checkInNote: next? ($("#qkTodo")?.value||"").trim() : "", log:[...(k.log||[]),{d:today(),by,text:`Checked in${note?`: ${note}`:""}${next?` · next ${fmtD(next)}`:""}`}].slice(-200)};
+    const patch={lastContact:today(), nextCheckIn:next, checkInWeeks:next?weeks:0, checkInRepeat:!!next&&rep, checkInNote: next? ($("#qkTodo")?.value||"").trim() : "", log:[...(k.log||[]),{d:today(),by,type:"checkin",text:`Checked in${note?`: ${note}`:""}${next?` · next ${fmtD(next)}`:""}`}].slice(-200)};
     if(await dbUpdate("contacts/"+id,patch)){ closeModal(); toast(next?`Logged · next ${fmtD(next)}`:"Logged"); } t.disabled=false; }
 });

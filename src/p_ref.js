@@ -58,8 +58,10 @@ const INDUSTRIES = {
   "Creative & media":["Publishing","Broadcasting & radio","Advertising agencies","Video, film & editing","Photography","Content & social media","Graphic design & branding","Copywriting, PR & communications","Events, MCs & presenters","Music & audio"],
   "Professional services":["Architecture & interior design","Engineering consulting","Quantity surveying","Town planning","Property valuation","Recruitment & executive search","Coaching & training"],
   "Gaming & betting":["Sports betting & bookmakers","Casinos","Lotteries","Online gaming","Gaming technology"],
-  "Sport & recreation":["Sports clubs & franchises","Fitness & gyms","Sports equipment & apparel"],
+  "Sport & recreation":["Professional athletes","Sports management & agencies","Sports clubs & franchises","Fitness & gyms","Sports equipment & apparel"],
   "Public sector & non-profit":["Government & SOEs","Municipalities","NGOs & non-profits","Development finance institutions"],
+  "Aviation & aerospace":["Airlines","Charter & private aviation","Aircraft maintenance (MRO)","Airports & ground services","Aerospace manufacturing","Drones"],
+  "Arts & entertainment":["Visual arts & galleries","Music & performing arts","Film & TV production","Talent & influencer management","Fashion & design","Museums & heritage"],
   "Other":["Family office / private investor","Funeral services","Other"]
 };
 const SECTORS = Object.keys(INDUSTRIES);
