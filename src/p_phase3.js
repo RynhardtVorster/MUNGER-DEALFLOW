@@ -372,6 +372,7 @@ function renderSheet(){
     ${k.hnwi?`<div class="fsec">High net worth</div><div class="card box">${esc(k.wealthSource||"Wealth source not captured")}</div>`:""}
     <div class="fsec">Who knows ${esc(k.name.split(" ")[0])}</div>
     ${knowers(k).length?`<div class="group">${knowers(k).map(x=>`<div class="rowi" style="min-height:52px"><span class="avatar biz" style="width:34px;height:34px;font-size:13px">${esc(initials(x.partner))}</span><span class="main"><span class="t1" style="display:block">${esc(x.partner)}</span></span><span class="pill ${x.relation==="friend"?"won":x.relation==="family"?"A":""}">${esc(RELS[x.relation]||"Not set")}</span></div>`).join("")}</div>`:`<div class="card empty">Nobody in our team linked yet.</div>`}
+    ${familyHTML(k)}
     ${ownsLine(k)}
     <div class="fsec">Work</div>
     <div class="card kv">${co?`<div class="k">Works at</div><div class="v"><a href="#" data-open="${esc(co.id)}">${esc(co.name)}</a></div><div class="k">Role there</div><div class="v">${esc(k.companyRole||"—")}</div>`:`<div class="k">Company</div><div class="v">${esc(k.firm||"—")}</div>`}<div class="k">Title</div><div class="v">${esc(k.title||k.type||"—")}</div><div class="k">Industry</div><div class="v">${esc(k.industry||"—")}</div><div class="k">Can help with</div><div class="v">${esc(k.expertise||"—")}</div></div>
@@ -381,7 +382,7 @@ function renderSheet(){
     ${deals.length||t==="B"?`<div class="fsec">Leads they brought in (${deals.length})</div>${deals.length?`<div class="group">${deals.map(bizRow).join("")}</div>`:`<div class="card empty">None yet.</div>`}
     <div class="card box" style="margin-top:10px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div><div class="lbl">Thank-yous</div><div>${(k.thanks||[]).length?`${k.thanks.length} logged · last ${esc(fmtD(lastThx))}`:"Not thanked yet"}</div></div>${ro?"":`<button class="btn sm" data-act="thank" data-id="${esc(k.id)}">Log a thank-you</button>`}</div>${(k.thanks||[]).slice(-3).reverse().map(x=>`<div class="tag">${esc(fmtD(x.d))} · ${esc(x.what)}${x.by?` · ${esc(x.by)}`:""}</div>`).join("")}</div>`:""}
     <div class="fsec">Contact details</div>
-    <div class="card kv"><div class="k">Cell</div><div class="v">${linkTel(k.cell)}</div><div class="k">Email</div><div class="v">${linkMail(k.email)}</div>${k.linkedin?`<div class="k">LinkedIn</div><div class="v"><a href="${esc(/^https?:/i.test(k.linkedin)?k.linkedin:"https://"+k.linkedin)}" target="_blank" rel="noopener">Profile</a></div>`:""}<div class="k">Location</div><div class="v">${esc([k.town,k.province,k.country].filter(Boolean).join(", ")||"—")}</div><div class="k">Speaks</div><div class="v">${esc(LANGS[k.language]||"—")}</div></div>
+    <div class="card kv"><div class="k">Cell</div><div class="v">${linkTel(k.cell)}</div>${(k.cells||[]).filter(x=>x.v).map(x=>`<div class="k">${esc(x.label||"Other number")}</div><div class="v">${linkTel(x.v)}</div>`).join("")}<div class="k">Email</div><div class="v">${linkMail(k.email)}</div>${(k.emails||[]).filter(x=>x.v).map(x=>`<div class="k">${esc(x.label||"Other email")}</div><div class="v">${linkMail(x.v)}</div>`).join("")}${k.linkedin?`<div class="k">LinkedIn</div><div class="v"><a href="${esc(/^https?:/i.test(k.linkedin)?k.linkedin:"https://"+k.linkedin)}" target="_blank" rel="noopener">Profile</a></div>`:""}<div class="k">Location</div><div class="v">${esc([k.town,k.province,k.country].filter(Boolean).join(", ")||"—")}</div><div class="k">Speaks</div><div class="v">${esc(LANGS[k.language]||"—")}</div></div>
     ${k.notes?`<div class="fsec">About</div><div class="card box" style="white-space:pre-wrap">${esc(k.notes)}</div>`:""}
     <div class="fsec">Notes & activity</div>
     ${ro?"":`<div class="fields">${fldNote("noteTxt","Add a note (type or speak)",keepNote,"Why are they in our network? What did you talk about?")}</div><div style="margin:8px 0 12px"><button class="btn block" data-act="add-pnote" data-id="${esc(k.id)}">Save note</button></div>`}
@@ -410,7 +411,11 @@ function contactForm(id, preset){
   <div class="fields">
    <div class="fld"><label for="kName">Full name *</label><input id="kName" value="${esc(k.name)}" autocomplete="off" autocapitalize="words"></div>
    <div class="fld"><label for="kCell">Cell</label><input id="kCell" type="tel" inputmode="tel" value="${esc(k.cell)}" placeholder="082 123 4567"></div>
+   <div id="kCellsX">${(k.cells||[]).map((x,i)=>extraRow("cell",i,x)).join("")}</div>
+   <button type="button" class="linkbtn addx" data-act="x-add" data-k="cell">+ Add another number</button>
    <div class="fld"><label for="kEmail">Email</label><input id="kEmail" type="email" inputmode="email" autocapitalize="off" value="${esc(k.email)}"></div>
+   <div id="kEmailsX">${(k.emails||[]).map((x,i)=>extraRow("email",i,x)).join("")}</div>
+   <button type="button" class="linkbtn addx" data-act="x-add" data-k="email">+ Add another email</button>
    <div class="fld"><label for="kTown">Town / city</label><input id="kTown" list="townList" value="${esc(k.town)}" autocomplete="off" placeholder="e.g. Pretoria, Stellenbosch">${townList()}</div>
    <div class="fld"><label for="kCountry">Country</label><input id="kCountry" list="countryList" value="${esc(k.country||"South Africa")}" autocomplete="off" placeholder="Start typing a country">${countryList()}</div>
   </div><div id="kDup" class="warnline"></div>
@@ -490,7 +495,7 @@ async function submitContact(){
   const me=myPartner(); const primary=(d.conns.find(c=>c.partner===me)||d.conns[0]||{}).partner||"";
   const prev=FORM.id? S.contacts.get(FORM.id):null;
   const data={name:d.name, tier, firm:d.firm, type:d.type, partner:primary, companyId:d.companyId, companyRole:d.companyRole, ownsCompanyId: OWNER_ROLES.includes(d.companyRole)? d.companyId : "", title:d.title, country:d.country, industry:d.industry, expertise:d.expertise, linkedin:d.linkedin, cell:d.cell, email:d.email, language:d.language, province:d.province, town:d.town, notes:d.notes, influence:d.influence, hnwi:d.hnwi, wealthSource:d.hnwi?d.wealthSource:"", doNotContact:d.doNotContact, talent:d.talent, example:prev?.example||false};
-  Object.assign(data, ciRead());
+  Object.assign(data, ciRead()); data.cells=readExtras("cell"); data.emails=readExtras("email");
   if(prev && prev.companyId && prev.companyId!==d.companyId){ const pc=S.companies.get(prev.companyId); data.pastRoles=[...(prev.pastRoles||[]),{company:pc?.name||"", role:prev.companyRole||prev.title||"", until:today()}]; }
   const id=FORM.id||newId();
   const nc=newCoChoice(d); let addBiz=false;

@@ -568,6 +568,7 @@ function netBuildGraph(){
   if(G.show.c) companies().forEach(c=>add("c:"+c.id,"c",c.name,{r:7,group:isPartnerCo(c)?"pfirm":stageOf(c.status).group,sub:isPartnerCo(c)?"Partner · "+(PKINDS[c.kind]||""):industryShort(c)}));
   const link=(a,b,kind)=>{ if(by.has(a)&&by.has(b)) edges.push({a:by.get(a),b:by.get(b),kind}); };
   contacts().forEach(k=>{ knowers(k).forEach(x=>link("k:"+k.id,"p:"+x.partner,x.relation==="friend"?"friend":"network")); if(k.companyId) link("k:"+k.id,"c:"+k.companyId,"works"); });
+  (S.links||[]).forEach(l=>link("k:"+l.a,"k:"+l.b,"family"));
   companies().forEach(c=>{ if(c.source?.contactId) link("c:"+c.id,"k:"+c.source.contactId,"referred"); if(c.source?.partner) link("c:"+c.id,"p:"+c.source.partner,"referred"); if(c.partner) link("c:"+c.id,"p:"+c.partner,"lead"); });
   nodes.forEach(n=>n.deg=0); edges.forEach(e=>{e.a.deg++; e.b.deg++;});
   nodes.forEach(n=>{ if(n.type!=="p") n.r += Math.min(8, n.deg*1.2); });

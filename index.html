@@ -292,6 +292,12 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 .stars{color:#b8862b;font-size:12px;letter-spacing:1px;vertical-align:1px}
 .likebox{margin-top:14px;border-color:var(--ink)}
 [hidden]{display:none!important}
+.chips{flex-wrap:wrap!important;overflow:visible!important;margin:0 0 14px!important;padding:0!important}
+.activef{display:flex;flex-wrap:wrap;gap:8px;margin:-4px 0 12px}
+.xin{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center}
+.xin select,.xin input{min-height:40px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font-size:16px;background:var(--surface);color:var(--ink);min-width:0}
+.xdel{border:0;background:transparent;color:var(--muted);font-size:18px;min-width:36px;min-height:36px}
+.addx{display:block;padding:8px 14px!important;text-align:left}
 .due-note{font-size:14.5px;line-height:1.35;margin:-2px 2px 8px}.due-note.muted{color:var(--muted)}
 .acts.four{grid-template-columns:repeat(4,1fr)!important}
 .seg a{flex:1;display:flex;align-items:center;justify-content:center;height:36px;border-radius:9px;font-weight:600;font-size:14.5px;color:var(--muted);text-decoration:none}.seg a.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
@@ -576,9 +582,9 @@ function queueRender(){ if(renderQueued) return; renderQueued=true; requestAnima
 
 const nz = v => (v===undefined||v===null||v==="") ? null : v;
 function companyFromRow(r){ return {id:r.id, name:r.name, tradingAs:r.trading_as, industry:r.industry, province:r.province, town:r.town, website:r.website, ebit:r.ebit, turnover:r.turnover, employees:r.employees, owners:r.owners||[], language:r.language, source:{channel:r.source_channel, contactId:r.source_contact_id||"", partner:r.source_partner, detail:r.source_detail}, partner:r.partner, status:r.status, followUpMonths:r.follow_up_months, nextCheckIn:r.next_check_in||"", lastContact:r.last_contact||"", notes:r.notes, log:r.log||[], example:r.example, hqCountry:r.hq_country, footprint:r.footprint, countries:r.countries, regNo:r.reg_no, ebitConfirmed:r.ebit_confirmed, turnoverConfirmed:r.turnover_confirmed, financialsYear:r.financials_year, fit:r.fit||{}, kind:r.kind||"target", kindNote:r.kind_note||"", checkInNote:r.check_in_note||"", signals:r.signals||{}, updatedByName:r.updated_by_name||"", createdBy:r.created_by, createdByName:r.created_by_name, createdAt:r.created_at, updatedAt:r.updated_at}; }
-function contactFromRow(r){ return {nextCheckIn:r.next_check_in||"", checkInWeeks:r.check_in_weeks||0, checkInRepeat:!!r.check_in_repeat, checkInNote:r.check_in_note||"", checkInOwner:r.check_in_owner||"", lastContact:r.last_contact||"", id:r.id, name:r.name, tier:r.tier, type:r.type, firm:r.firm, partner:r.partner, ownsCompanyId:r.owns_company_id||"", companyId:r.company_id||r.owns_company_id||"", companyRole:r.company_role||(r.owns_company_id?"Owner":""), title:r.title||"", country:r.country||"", industry:r.industry||"", expertise:r.expertise||"", linkedin:r.linkedin||"", influence:r.influence||0, talent:r.talent||{}, hnwi:!!r.hnwi, wealthSource:r.wealth_source||"", doNotContact:!!r.do_not_contact, thanks:r.thanks||[], log:r.log||[], pastRoles:r.past_roles||[], updatedByName:r.updated_by_name||"", cell:r.cell, email:r.email, language:r.language, province:r.province, town:r.town, notes:r.notes, example:r.example, createdBy:r.created_by, createdAt:r.created_at, updatedAt:r.updated_at}; }
+function contactFromRow(r){ return {cells:Array.isArray(r.cells)?r.cells:[], emails:Array.isArray(r.emails)?r.emails:[], nextCheckIn:r.next_check_in||"", checkInWeeks:r.check_in_weeks||0, checkInRepeat:!!r.check_in_repeat, checkInNote:r.check_in_note||"", checkInOwner:r.check_in_owner||"", lastContact:r.last_contact||"", id:r.id, name:r.name, tier:r.tier, type:r.type, firm:r.firm, partner:r.partner, ownsCompanyId:r.owns_company_id||"", companyId:r.company_id||r.owns_company_id||"", companyRole:r.company_role||(r.owns_company_id?"Owner":""), title:r.title||"", country:r.country||"", industry:r.industry||"", expertise:r.expertise||"", linkedin:r.linkedin||"", influence:r.influence||0, talent:r.talent||{}, hnwi:!!r.hnwi, wealthSource:r.wealth_source||"", doNotContact:!!r.do_not_contact, thanks:r.thanks||[], log:r.log||[], pastRoles:r.past_roles||[], updatedByName:r.updated_by_name||"", cell:r.cell, email:r.email, language:r.language, province:r.province, town:r.town, notes:r.notes, example:r.example, createdBy:r.created_by, createdAt:r.created_at, updatedAt:r.updated_at}; }
 const CMAP={name:"name",tradingAs:"trading_as",industry:"industry",province:"province",town:"town",website:"website",ebit:"ebit",turnover:"turnover",employees:"employees",owners:"owners",language:"language",partner:"partner",status:"status",followUpMonths:"follow_up_months",nextCheckIn:"next_check_in",lastContact:"last_contact",notes:"notes",log:"log",example:"example",createdByName:"created_by_name",hqCountry:"hq_country",footprint:"footprint",countries:"countries",regNo:"reg_no",ebitConfirmed:"ebit_confirmed",turnoverConfirmed:"turnover_confirmed",financialsYear:"financials_year",fit:"fit",kind:"kind",kindNote:"kind_note",checkInNote:"check_in_note",signals:"signals"};
-const KMAP={nextCheckIn:"next_check_in",checkInWeeks:"check_in_weeks",checkInRepeat:"check_in_repeat",checkInNote:"check_in_note",checkInOwner:"check_in_owner",lastContact:"last_contact",name:"name",tier:"tier",type:"type",firm:"firm",partner:"partner",ownsCompanyId:"owns_company_id",cell:"cell",email:"email",language:"language",province:"province",town:"town",notes:"notes",example:"example",companyId:"company_id",companyRole:"company_role",title:"title",country:"country",industry:"industry",expertise:"expertise",linkedin:"linkedin",influence:"influence",talent:"talent",hnwi:"hnwi",wealthSource:"wealth_source",doNotContact:"do_not_contact",thanks:"thanks",log:"log",pastRoles:"past_roles"};
+const KMAP={cells:"cells",emails:"emails",nextCheckIn:"next_check_in",checkInWeeks:"check_in_weeks",checkInRepeat:"check_in_repeat",checkInNote:"check_in_note",checkInOwner:"check_in_owner",lastContact:"last_contact",name:"name",tier:"tier",type:"type",firm:"firm",partner:"partner",ownsCompanyId:"owns_company_id",cell:"cell",email:"email",language:"language",province:"province",town:"town",notes:"notes",example:"example",companyId:"company_id",companyRole:"company_role",title:"title",country:"country",industry:"industry",expertise:"expertise",linkedin:"linkedin",influence:"influence",talent:"talent",hnwi:"hnwi",wealthSource:"wealth_source",doNotContact:"do_not_contact",thanks:"thanks",log:"log",pastRoles:"past_roles"};
 const NULLABLE=new Set(["next_check_in","last_contact","owns_company_id","source_contact_id","company_id","ebit_confirmed","turnover_confirmed"]);
 function toRow(table, d){
   const map=table==="companies"?CMAP:KMAP; const row={};
@@ -625,18 +631,19 @@ async function loadMembers(){ const {data}=await sb.from("members").select("user
 async function loadConnections(){ const {data,error}=await sb.from("connections").select("contact_id,partner,relation"); if(error){ console.warn(error); return; } const m=new Map(); (data||[]).forEach(r=>{ if(!m.has(r.contact_id)) m.set(r.contact_id,[]); m.get(r.contact_id).push({partner:r.partner, relation:r.relation||""}); }); S.conns=m; queueRender(); }
 async function loadCommitments(){ const {data,error}=await sb.from("commitments").select("*").order("created_at"); if(error){ console.warn(error); return; } S.commitments=(data||[]).map(r=>({id:r.id, meetingId:r.meeting_id, owner:r.owner, action:r.action, due:r.due||"", status:r.status, why:r.why, companyId:r.company_id||"", contactId:r.contact_id||"", createdAt:r.created_at})); queueRender(); }
 async function loadMeetings(){ const {data,error}=await sb.from("meetings").select("*").order("held_on",{ascending:false}); if(error){ console.warn(error); return; } S.meetings=data||[]; queueRender(); }
-let reloadT={}; function reloadSoon(table){ clearTimeout(reloadT[table]); reloadT[table]=setTimeout(()=>{ ({companies:loadCompanies,contacts:loadContacts,settings:loadSettings,connections:loadConnections,commitments:loadCommitments,meetings:loadMeetings})[table](); },300); }
+let reloadT={}; function reloadSoon(table){ clearTimeout(reloadT[table]); reloadT[table]=setTimeout(()=>{ ({companies:loadCompanies,contacts:loadContacts,settings:loadSettings,connections:loadConnections,commitments:loadCommitments,meetings:loadMeetings,person_links:loadLinks})[table](); },300); }
 let channel=null;
 async function startData(){
   await loadMembers();
   if(!S.me){ S.readOnly=true; render(); return; }
-  await Promise.all([loadCompanies(),loadContacts(),loadSettings(),loadConnections(),loadCommitments(),loadMeetings()]);
+  await Promise.all([loadCompanies(),loadContacts(),loadSettings(),loadConnections(),loadCommitments(),loadMeetings(),loadLinks()]);
   if(channel) sb.removeChannel(channel);
   channel=sb.channel("munger-live")
     .on("postgres_changes",{event:"*",schema:"public",table:"companies"},()=>reloadSoon("companies"))
     .on("postgres_changes",{event:"*",schema:"public",table:"contacts"},()=>reloadSoon("contacts"))
     .on("postgres_changes",{event:"*",schema:"public",table:"settings"},()=>reloadSoon("settings"))
     .on("postgres_changes",{event:"*",schema:"public",table:"connections"},()=>reloadSoon("connections"))
+    .on("postgres_changes",{event:"*",schema:"public",table:"person_links"},()=>reloadSoon("person_links"))
     .on("postgres_changes",{event:"*",schema:"public",table:"commitments"},()=>reloadSoon("commitments"))
     .on("postgres_changes",{event:"*",schema:"public",table:"meetings"},()=>reloadSoon("meetings"))
     .subscribe();
@@ -652,7 +659,7 @@ sb.auth.onAuthStateChange((ev,session)=>{
   if(ev==="SIGNED_OUT"){ S.session=null; S.companies=new Map(); S.contacts=new Map(); S.me=null; showLogin(true); render(); }
   else if(session){ S.session=session; S.uid=session.user.id; }
 });
-document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible" && S.me){ loadCompanies(); loadContacts(); loadConnections(); loadCommitments(); loadMeetings(); } });
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible" && S.me){ loadCompanies(); loadContacts(); loadConnections(); loadLinks(); loadCommitments(); loadMeetings(); } });
 document.getElementById("loginForm").addEventListener("submit",async e=>{
   e.preventDefault(); const btn=$("#lBtn"); const err=$("#lErr"); err.textContent=""; btn.disabled=true; btn.textContent="Signing in…";
   const {data,error}=await sb.auth.signInWithPassword({email:$("#lEmail").value.trim().toLowerCase(), password:$("#lPass").value});
@@ -1496,7 +1503,7 @@ function netDraw(){
   const col={D:cssVar("--tierD"),"":cssVar("--tierD"),pfirm:cssVar("--tierB"),p:cssVar("--line"),A:cssVar("--tierA"),B:cssVar("--tierB"),C:cssVar("--tierC"),active:cssVar("--ok"),target:cssVar("--warn"),network:cssVar("--faint"),nurture:cssVar("--warn"),won:cssVar("--ok"),closed:cssVar("--muted"),line:cssVar("--line"),ink:cssVar("--ink"),muted:cssVar("--muted"),surface:cssVar("--surface")};
   ctx.save(); ctx.translate(G.w/2+G.t.x, G.h/2+G.t.y); ctx.scale(G.t.k,G.t.k);
   const focus=G.sel||G.hover; const nb=new Set(); if(focus){ nb.add(focus); G.edges.forEach(e=>{ if(e.a===focus) nb.add(e.b); if(e.b===focus) nb.add(e.a); }); }
-  for(const e of G.edges){ const on=focus&&(e.a===focus||e.b===focus); ctx.globalAlpha=focus?(on?1:.12):.8; ctx.strokeStyle=on?col.ink:col.line; ctx.lineWidth=(on?1.6:1)/G.t.k; if(e.kind==="lead") ctx.setLineDash([4/G.t.k,4/G.t.k]); else ctx.setLineDash([]); ctx.beginPath(); ctx.moveTo(e.a.x,e.a.y); ctx.lineTo(e.b.x,e.b.y); ctx.stroke(); }
+  for(const e of G.edges){ const on=focus&&(e.a===focus||e.b===focus); ctx.globalAlpha=focus?(on?1:.12):.8; ctx.strokeStyle=e.kind==="family"?cssVar("--tierA"):(on?col.ink:col.line); ctx.lineWidth=(e.kind==="family"?2:(on?1.6:1))/G.t.k; if(e.kind==="lead") ctx.setLineDash([4/G.t.k,4/G.t.k]); else ctx.setLineDash([]); ctx.beginPath(); ctx.moveTo(e.a.x,e.a.y); ctx.lineTo(e.b.x,e.b.y); ctx.stroke(); }
   ctx.setLineDash([]);
   for(const n of G.nodes){ ctx.globalAlpha=focus&&!nb.has(n)?.25:1; ctx.fillStyle=n.type==="p"?col.ink:n.type==="k"?col[n.tier]:(col[n.group]||col.active); ctx.beginPath(); if(n.type==="c"){ const s=n.r*.9; ctx.rect(n.x-s,n.y-s,s*2,s*2); } else ctx.arc(n.x,n.y,n.r,0,Math.PI*2); ctx.fill(); if(n===G.sel){ ctx.strokeStyle=col.p; ctx.lineWidth=4/G.t.k; ctx.stroke(); } else { ctx.strokeStyle=n.type==="p"?col.p:col.surface; ctx.lineWidth=(n.type==="p"?3:1.5)/G.t.k; ctx.stroke(); } }
   ctx.textAlign="center"; ctx.textBaseline="top";
@@ -2086,6 +2093,7 @@ function netBuildGraph(){
   if(G.show.c) companies().forEach(c=>add("c:"+c.id,"c",c.name,{r:7,group:isPartnerCo(c)?"pfirm":stageOf(c.status).group,sub:isPartnerCo(c)?"Partner · "+(PKINDS[c.kind]||""):industryShort(c)}));
   const link=(a,b,kind)=>{ if(by.has(a)&&by.has(b)) edges.push({a:by.get(a),b:by.get(b),kind}); };
   contacts().forEach(k=>{ knowers(k).forEach(x=>link("k:"+k.id,"p:"+x.partner,x.relation==="friend"?"friend":"network")); if(k.companyId) link("k:"+k.id,"c:"+k.companyId,"works"); });
+  (S.links||[]).forEach(l=>link("k:"+l.a,"k:"+l.b,"family"));
   companies().forEach(c=>{ if(c.source?.contactId) link("c:"+c.id,"k:"+c.source.contactId,"referred"); if(c.source?.partner) link("c:"+c.id,"p:"+c.source.partner,"referred"); if(c.partner) link("c:"+c.id,"p:"+c.partner,"lead"); });
   nodes.forEach(n=>n.deg=0); edges.forEach(e=>{e.a.deg++; e.b.deg++;});
   nodes.forEach(n=>{ if(n.type!=="p") n.r += Math.min(8, n.deg*1.2); });
@@ -2520,6 +2528,7 @@ function renderSheet(){
     ${k.hnwi?`<div class="fsec">High net worth</div><div class="card box">${esc(k.wealthSource||"Wealth source not captured")}</div>`:""}
     <div class="fsec">Who knows ${esc(k.name.split(" ")[0])}</div>
     ${knowers(k).length?`<div class="group">${knowers(k).map(x=>`<div class="rowi" style="min-height:52px"><span class="avatar biz" style="width:34px;height:34px;font-size:13px">${esc(initials(x.partner))}</span><span class="main"><span class="t1" style="display:block">${esc(x.partner)}</span></span><span class="pill ${x.relation==="friend"?"won":x.relation==="family"?"A":""}">${esc(RELS[x.relation]||"Not set")}</span></div>`).join("")}</div>`:`<div class="card empty">Nobody in our team linked yet.</div>`}
+    ${familyHTML(k)}
     ${ownsLine(k)}
     <div class="fsec">Work</div>
     <div class="card kv">${co?`<div class="k">Works at</div><div class="v"><a href="#" data-open="${esc(co.id)}">${esc(co.name)}</a></div><div class="k">Role there</div><div class="v">${esc(k.companyRole||"—")}</div>`:`<div class="k">Company</div><div class="v">${esc(k.firm||"—")}</div>`}<div class="k">Title</div><div class="v">${esc(k.title||k.type||"—")}</div><div class="k">Industry</div><div class="v">${esc(k.industry||"—")}</div><div class="k">Can help with</div><div class="v">${esc(k.expertise||"—")}</div></div>
@@ -2529,7 +2538,7 @@ function renderSheet(){
     ${deals.length||t==="B"?`<div class="fsec">Leads they brought in (${deals.length})</div>${deals.length?`<div class="group">${deals.map(bizRow).join("")}</div>`:`<div class="card empty">None yet.</div>`}
     <div class="card box" style="margin-top:10px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div><div class="lbl">Thank-yous</div><div>${(k.thanks||[]).length?`${k.thanks.length} logged · last ${esc(fmtD(lastThx))}`:"Not thanked yet"}</div></div>${ro?"":`<button class="btn sm" data-act="thank" data-id="${esc(k.id)}">Log a thank-you</button>`}</div>${(k.thanks||[]).slice(-3).reverse().map(x=>`<div class="tag">${esc(fmtD(x.d))} · ${esc(x.what)}${x.by?` · ${esc(x.by)}`:""}</div>`).join("")}</div>`:""}
     <div class="fsec">Contact details</div>
-    <div class="card kv"><div class="k">Cell</div><div class="v">${linkTel(k.cell)}</div><div class="k">Email</div><div class="v">${linkMail(k.email)}</div>${k.linkedin?`<div class="k">LinkedIn</div><div class="v"><a href="${esc(/^https?:/i.test(k.linkedin)?k.linkedin:"https://"+k.linkedin)}" target="_blank" rel="noopener">Profile</a></div>`:""}<div class="k">Location</div><div class="v">${esc([k.town,k.province,k.country].filter(Boolean).join(", ")||"—")}</div><div class="k">Speaks</div><div class="v">${esc(LANGS[k.language]||"—")}</div></div>
+    <div class="card kv"><div class="k">Cell</div><div class="v">${linkTel(k.cell)}</div>${(k.cells||[]).filter(x=>x.v).map(x=>`<div class="k">${esc(x.label||"Other number")}</div><div class="v">${linkTel(x.v)}</div>`).join("")}<div class="k">Email</div><div class="v">${linkMail(k.email)}</div>${(k.emails||[]).filter(x=>x.v).map(x=>`<div class="k">${esc(x.label||"Other email")}</div><div class="v">${linkMail(x.v)}</div>`).join("")}${k.linkedin?`<div class="k">LinkedIn</div><div class="v"><a href="${esc(/^https?:/i.test(k.linkedin)?k.linkedin:"https://"+k.linkedin)}" target="_blank" rel="noopener">Profile</a></div>`:""}<div class="k">Location</div><div class="v">${esc([k.town,k.province,k.country].filter(Boolean).join(", ")||"—")}</div><div class="k">Speaks</div><div class="v">${esc(LANGS[k.language]||"—")}</div></div>
     ${k.notes?`<div class="fsec">About</div><div class="card box" style="white-space:pre-wrap">${esc(k.notes)}</div>`:""}
     <div class="fsec">Notes & activity</div>
     ${ro?"":`<div class="fields">${fldNote("noteTxt","Add a note (type or speak)",keepNote,"Why are they in our network? What did you talk about?")}</div><div style="margin:8px 0 12px"><button class="btn block" data-act="add-pnote" data-id="${esc(k.id)}">Save note</button></div>`}
@@ -2558,7 +2567,11 @@ function contactForm(id, preset){
   <div class="fields">
    <div class="fld"><label for="kName">Full name *</label><input id="kName" value="${esc(k.name)}" autocomplete="off" autocapitalize="words"></div>
    <div class="fld"><label for="kCell">Cell</label><input id="kCell" type="tel" inputmode="tel" value="${esc(k.cell)}" placeholder="082 123 4567"></div>
+   <div id="kCellsX">${(k.cells||[]).map((x,i)=>extraRow("cell",i,x)).join("")}</div>
+   <button type="button" class="linkbtn addx" data-act="x-add" data-k="cell">+ Add another number</button>
    <div class="fld"><label for="kEmail">Email</label><input id="kEmail" type="email" inputmode="email" autocapitalize="off" value="${esc(k.email)}"></div>
+   <div id="kEmailsX">${(k.emails||[]).map((x,i)=>extraRow("email",i,x)).join("")}</div>
+   <button type="button" class="linkbtn addx" data-act="x-add" data-k="email">+ Add another email</button>
    <div class="fld"><label for="kTown">Town / city</label><input id="kTown" list="townList" value="${esc(k.town)}" autocomplete="off" placeholder="e.g. Pretoria, Stellenbosch">${townList()}</div>
    <div class="fld"><label for="kCountry">Country</label><input id="kCountry" list="countryList" value="${esc(k.country||"South Africa")}" autocomplete="off" placeholder="Start typing a country">${countryList()}</div>
   </div><div id="kDup" class="warnline"></div>
@@ -2638,7 +2651,7 @@ async function submitContact(){
   const me=myPartner(); const primary=(d.conns.find(c=>c.partner===me)||d.conns[0]||{}).partner||"";
   const prev=FORM.id? S.contacts.get(FORM.id):null;
   const data={name:d.name, tier, firm:d.firm, type:d.type, partner:primary, companyId:d.companyId, companyRole:d.companyRole, ownsCompanyId: OWNER_ROLES.includes(d.companyRole)? d.companyId : "", title:d.title, country:d.country, industry:d.industry, expertise:d.expertise, linkedin:d.linkedin, cell:d.cell, email:d.email, language:d.language, province:d.province, town:d.town, notes:d.notes, influence:d.influence, hnwi:d.hnwi, wealthSource:d.hnwi?d.wealthSource:"", doNotContact:d.doNotContact, talent:d.talent, example:prev?.example||false};
-  Object.assign(data, ciRead());
+  Object.assign(data, ciRead()); data.cells=readExtras("cell"); data.emails=readExtras("email");
   if(prev && prev.companyId && prev.companyId!==d.companyId){ const pc=S.companies.get(prev.companyId); data.pastRoles=[...(prev.pastRoles||[]),{company:pc?.name||"", role:prev.companyRole||prev.title||"", until:today()}]; }
   const id=FORM.id||newId();
   const nc=newCoChoice(d); let addBiz=false;
@@ -3670,6 +3683,69 @@ document.addEventListener("click",async e=>{
     if(!clear){ if(kind==="k") patch.checkInOwner=$("#mvOwner").value; else patch.partner=$("#mvOwner").value; }
     if(clear && kind==="k"){ patch.checkInWeeks=0; patch.checkInRepeat=false; }
     t.disabled=true; if(await dbUpdate(path,patch)){ closeModal(); toast(clear?"Check-in stopped":`Check-in on ${fmtD(patch.nextCheckIn)}`); } t.disabled=false; }
+});
+
+/* ================= Phase 14: family links, extra numbers/emails, wrapping filters ================= */
+S.links=S.links||[];
+async function loadLinks(){ const {data,error}=await sb.from("person_links").select("*"); if(error){ console.warn(error); return; } S.links=data||[]; queueRender(); }
+const FAM=["father","mother","son","daughter","brother","sister","husband","wife","partner","parent","child","sibling","spouse","grandfather","grandmother","grandson","granddaughter","grandparent","grandchild","uncle","aunt","nephew","niece","cousin","father-in-law","mother-in-law","son-in-law","daughter-in-law","brother-in-law","sister-in-law","family"];
+const FAM_REV={father:"child",mother:"child",son:"parent",daughter:"parent",brother:"sibling",sister:"sibling",husband:"wife",wife:"husband",partner:"partner",parent:"child",child:"parent",sibling:"sibling",spouse:"spouse",grandfather:"grandchild",grandmother:"grandchild",grandson:"grandparent",granddaughter:"grandparent",grandparent:"grandchild",grandchild:"grandparent",uncle:"nephew",aunt:"nephew",nephew:"uncle",niece:"uncle",cousin:"cousin","father-in-law":"son-in-law","mother-in-law":"son-in-law","son-in-law":"father-in-law","daughter-in-law":"father-in-law","brother-in-law":"brother-in-law","sister-in-law":"brother-in-law",family:"family"};
+const famLabel=s=>String(s||"family").replace(/^./,m=>m.toUpperCase());
+function familyOf(k){ return (S.links||[]).filter(l=>l.a===k.id||l.b===k.id).map(l=>{ const mine=l.a===k.id; const o=S.contacts.get(mine?l.b:l.a); return o? {l, o, rel: mine? l.b_is : l.a_is} : null; }).filter(Boolean); }
+function familyHTML(k){
+  const F=familyOf(k);
+  return `<div class="fsec">Family in our network</div>
+  ${F.length?`<div class="group">${F.map(({l,o,rel})=>{ const same=o.companyId&&o.companyId===k.companyId? S.companies.get(o.companyId) : null; return `<div class="rowi">${avatarP(o)}<span class="main" data-contact="${esc(o.id)}" style="cursor:pointer"><span class="t1" style="display:block">${esc(o.name)} <span class="pill A">${esc(famLabel(rel))}</span></span><span class="t2" style="display:block">${esc([workLine(o), same?`also at ${same.name}`:"", l.note].filter(Boolean).join(" · "))}</span></span>${S.readOnly?"":`<button class="btn sm" data-act="fam-del" data-id="${esc(l.id)}" aria-label="Remove link">✕</button>`}</div>`; }).join("")}</div>`:""}
+  ${S.readOnly?"":`<button class="linkbtn" data-act="fam-add" data-id="${esc(k.id)}">+ Link a family member</button>`}`;
+}
+function famModal(id){
+  const k=S.contacts.get(id); if(!k) return; const linked=new Set(familyOf(k).map(x=>x.o.id));
+  const others=contacts().filter(o=>o.id!==id && !linked.has(o.id)).sort((a,b)=>a.name.localeCompare(b.name));
+  const first=k.name.split(" ")[0];
+  showModal(`${ovHead("Link a family member",`<button class="hbtn" data-act="close-modal">Cancel</button>`)}<div class="ovb">
+   ${others.length?`<div class="fields">
+    <div class="fld"><label for="famQ">Find the person</label><input id="famQ" type="search" placeholder="Type a name…" autocomplete="off"></div>
+    <div class="fld"><label for="famWho">Person</label><select id="famWho">${opts(others.map(o=>({v:o.id,l:o.name+(o.companyId&&S.companies.get(o.companyId)?" · "+S.companies.get(o.companyId).name:"")})),"","Choose…")}</select></div>
+    <div class="fld"><label for="famB" id="famBL">They are ${esc(first)}'s</label><select id="famB">${opts(FAM.map(f=>({v:f,l:famLabel(f)})),"","Choose…")}</select></div>
+    <div class="fld"><label for="famA">${esc(first)} is their</label><select id="famA">${opts(FAM.map(f=>({v:f,l:famLabel(f)})),"","Choose…")}</select></div>
+    <div class="fld"><label for="famNote">Note (optional)</label><input id="famNote" placeholder="e.g. runs the farm with his father"></div>
+   </div>
+   <div style="margin-top:14px"><button class="btn primary block" data-act="fam-save" data-id="${esc(id)}">Link them</button></div>
+   <p class="tag" style="margin:10px 2px">Family member not in Munger yet? Add them as a person first, then link them here.</p>`:`<div class="card empty">Add the family member as a person first, then link them here.</div>`}
+  </div>`, true);
+}
+/* extra numbers and emails */
+const XLABELS={cell:["Mobile 2","Work","Home","WhatsApp","Office","Other"],email:["Work","Personal","Other"]};
+function extraRow(kind,i,x){ return `<div class="fld xrow" data-x="${kind}"><label>${kind==="cell"?"Another number":"Another email"}</label><div class="xin"><select class="xlab" aria-label="Label">${opts(XLABELS[kind],x?.label||XLABELS[kind][0])}</select><input class="xval" ${kind==="cell"?'type="tel" inputmode="tel"':'type="email" inputmode="email" autocapitalize="off"'} value="${esc(x?.v||"")}"><button type="button" class="xdel" data-act="x-del" aria-label="Remove">✕</button></div></div>`; }
+function readExtras(kind){ return [...document.querySelectorAll(`.xrow[data-x=${kind}]`)].map(r=>({label:r.querySelector(".xlab").value, v:r.querySelector(".xval").value.trim()})).filter(x=>x.v); }
+{ const base=dupPeople; dupPeople=function(d,exceptId){ const out=base(d,exceptId);
+  const xs=[...document.querySelectorAll(".xrow .xval")].map(i=>i.value.trim()).filter(Boolean);
+  const pk=new Set([d.cell,...xs].map(phoneKey).filter(Boolean)), ek=new Set([d.email,...xs].map(v=>String(v||"").trim().toLowerCase()).filter(v=>v.includes("@")));
+  contacts().forEach(k=>{ if(k.id===exceptId) return; const kp=[k.cell,...(k.cells||[]).map(x=>x.v)].map(phoneKey).filter(Boolean), ke=[k.email,...(k.emails||[]).map(x=>x.v)].map(v=>String(v||"").trim().toLowerCase()).filter(Boolean);
+    const why=[]; if(kp.some(p=>pk.has(p))) why.push("same cell number"); if(ke.some(e=>ek.has(e))) why.push("same email");
+    if(!why.length) return; const h=out.find(x=>x.k.id===k.id); if(h){ why.forEach(w=>{ if(!h.why.includes(w)) h.why.push(w); }); h.strong=true; } else out.unshift({k,why,strong:true}); });
+  return out.sort((a,b)=>b.strong-a.strong); }; }
+/* business filters: active filters shown as removable pills */
+{ const base=vBusinesses; vBusinesses=function(){ const h=base(); const f=S.f; const L=[["sector","Sector"],["partner","Lead"],["province","Province"],["channel","Source"],["lang","Language"]].filter(([k])=>f[k]);
+  if(!L.length) return h; const lab=(k,v)=>k==="channel"?(CHANNEL[v]?.label||v):k==="lang"?(LANGS[v]||v):v;
+  const pills=`<div class="activef">${L.map(([k,l])=>`<button class="chip on" data-act="f-clear" data-k="${k}">${esc(l)}: ${esc(lab(k,f[k]))} ✕</button>`).join("")}<button class="chip" data-act="f-clear" data-k="*">Clear all</button></div>`;
+  return h.replace('<div class="group">', pills+'<div class="group">'); }; }
+document.addEventListener("input",e=>{ if(e.target.id==="famQ"){ const q=e.target.value.toLowerCase(); const s=$("#famWho"); [...s.options].forEach(o=>{ if(o.value) o.hidden=!o.textContent.toLowerCase().includes(q); }); const vis=[...s.options].filter(o=>o.value&&!o.hidden); if(vis.length===1) s.value=vis[0].value; } });
+document.addEventListener("change",e=>{
+  if(e.target.id==="famA"){ const r=FAM_REV[e.target.value]; if(r && !$("#famB").dataset.touched) $("#famB").value=r; }
+  if(e.target.id==="famB"){ e.target.dataset.touched="1"; const r=FAM_REV[e.target.value]; if(r && !$("#famA").dataset.touched) $("#famA").value=r; }
+  if(e.target.id==="famA") e.target.dataset.touched="1";
+});
+document.addEventListener("click",async e=>{
+  const t=e.target.closest("[data-act]"); if(!t) return; const a=t.dataset.act;
+  if(a==="fam-add"){ famModal(t.dataset.id); }
+  if(a==="fam-save"){ const id=t.dataset.id, o=$("#famWho").value, aIs=$("#famA").value||"family", bIs=$("#famB").value||"family"; if(!o){ toast("Choose the person"); return; }
+    t.disabled=true; const {error}=await sb.from("person_links").insert({a:id,b:o,a_is:aIs,b_is:bIs,note:$("#famNote").value.trim()}); t.disabled=false;
+    if(error){ if(error.code==="23505") toast("They're already linked"); else writeErr(error); return; } closeModal(); await loadLinks(); toast("Family linked"); }
+  if(a==="fam-del"){ const id=t.dataset.id; confirmBox("Remove this family link?","The people stay in the network; only the link is removed.","Remove",async()=>{ const {error}=await sb.from("person_links").delete().eq("id",id); if(error) writeErr(error); else { closeModal(); await loadLinks(); toast("Link removed"); } }); }
+  if(a==="x-add"){ const k=t.dataset.k; const box=$(k==="cell"?"#kCellsX":"#kEmailsX"); if(!box) return; box.insertAdjacentHTML("beforeend", extraRow(k, box.children.length, null)); box.lastElementChild.querySelector(".xval").focus(); }
+  if(a==="x-del"){ t.closest(".xrow")?.remove(); }
+  if(a==="f-clear"){ const k=t.dataset.k; if(k==="*") ["sector","partner","province","channel","lang"].forEach(x=>S.f[x]=""); else S.f[k]=""; render(); }
 });
 
 
