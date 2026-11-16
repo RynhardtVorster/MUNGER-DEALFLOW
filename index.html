@@ -2753,7 +2753,7 @@ function dealForm(id, preset){
     <div class="fld"><label for="cEbitC">EBIT – confirmed (R million)</label><input id="cEbitC" inputmode="decimal" value="${esc(c.ebitConfirmed??"")}" placeholder="Once we've seen the numbers"></div>
     <div class="fld"><label for="cTurnC">Turnover – confirmed (R million)</label><input id="cTurnC" inputmode="decimal" value="${esc(c.turnoverConfirmed??"")}"></div>
     <div class="fld"><label for="cFy">Financial year of confirmed numbers</label><input id="cFy" value="${esc(c.financialsYear)}" placeholder="e.g. FY2026"></div>
-    <div class="fld"><label for="cEmp">Employees</label><input id="cEmp" inputmode="numeric" value="${esc(c.employees)}"></div>
+    <div class="fld"><label for="cEmp">Employees (a number or a range)</label><input id="cEmp" list="empList" autocomplete="off" placeholder="e.g. 300–500" value="${esc(c.employees)}"><datalist id="empList">${["1–10","10–50","50–100","100–200","200–300","300–500","500–1,000","1,000–2,000","2,000–5,000","5,000+"].map(x=>`<option value="${x}">`).join("")}</datalist></div>
    </div>
    <div class="fsec">Mandate fit (1 = poor, 5 = excellent)</div>
    <div class="fields">${FITDIMS.map(([d,l])=>`<div class="fld"><label for="fit_${d}">${esc(l)}</label><select id="fit_${d}">${opts([1,2,3,4,5].map(n=>({v:n,l:`${n} ${"●".repeat(n)}${"○".repeat(5-n)}`})),fit[d]||"","Not scored")}</select></div>`).join("")}</div></div>
