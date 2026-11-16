@@ -685,3 +685,5 @@ document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act
       if(await linkPC(kid,id,role)) lnDone(); }
     t.disabled=false; }
 },true);
+document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act="net2prospect"]'); if(!t) return; e.preventDefault(); e.stopPropagation(); const c=S.companies.get(t.dataset.id); if(!c) return;
+  confirmBox(`Make ${c.name} a prospect?`,"It moves to the businesses we'd look at buying, with stages and a responsible partner.","Make it a prospect",async()=>{ if(await dbUpdate("companies/"+c.id,{kind:"target",status:"network",responsible:[defaultResp()]})){ toast(`${c.name} is now a prospect`); try{ renderSheet(); }catch(_){} } }); },true);

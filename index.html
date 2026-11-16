@@ -491,7 +491,7 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 <script src="supabase.js"></script>
 <script>
 "use strict";
-const APP_V="v49";
+const APP_V="v50";
 /* ---------------- Reference data ---------------- */
 const STAGES = [
   {id:"network", label:"Prospect – we'd look at it", group:"network"},
@@ -2534,14 +2534,14 @@ function renderSheet(){
     const due=dueInfo(c); const o=bizContact(c); const src=c.source||{}; const sk=src.contactId?S.contacts.get(src.contactId):null;
     const ppl=peopleAt(c); const fp=fitPct(c); const g=grp(c);
     el.innerHTML=`${ovHead(c.name,null,ro?"":`<button class="hbtn" data-act="edit-deal" data-id="${esc(c.id)}">Edit</button>`)}<div class="ovb">
-    <div class="hero">${fin?`<span class="avatar biz lg">${ic(pkIcon(c),30)}</span>`:avatarB(c,true)}<h2>${esc(c.name)}</h2><div class="sub">${esc([fin?"Partner · "+(PKINDS[c.kind]||""):(industryShort(c)!=="—"?industryShort(c):""),[c.town,c.province].filter(Boolean).join(", "),c.hqCountry&&c.hqCountry!=="South Africa"?c.hqCountry:""].filter(Boolean).join(" · ")||"No details yet")}</div><div class="pills">${fin?"":stagePill(c.status)}${c.partner?`<span class="pill">${esc(c.partner)}</span>`:""}${fin?"":fitPill(c)}${!fin&&likelySeller(c)?`<span class="pill soon">Likely seller</span>`:""}${c.kind==="other"?`<span class="pill">${esc(c.kindNote||"Other")}</span>`:""}</div></div>
+    <div class="hero">${fin?`<span class="avatar biz lg">${ic(pkIcon(c),30)}</span>`:avatarB(c,true)}<h2>${esc(c.name)}</h2><div class="sub">${esc([fin?"Partner · "+(PKINDS[c.kind]||""):(industryShort(c)!=="—"?industryShort(c):""),[c.town,c.province].filter(Boolean).join(", "),c.hqCountry&&c.hqCountry!=="South Africa"?c.hqCountry:""].filter(Boolean).join(" · ")||"No details yet")}</div><div class="pills">${fin||c.kind==="other"?"":stagePill(c.status)}${c.partner&&c.kind!=="other"?`<span class="pill">${esc(c.partner)}</span>`:""}${fin||c.kind==="other"?"":fitPill(c)}${!fin&&likelySeller(c)?`<span class="pill soon">Likely seller</span>`:""}${c.kind==="other"?`<span class="pill">Network company – not to buy</span>${c.kindNote?`<span class="pill">${esc(c.kindNote)}</span>`:""}`:""}</div></div>
     <div class="bigacts">
       <a class="bigact" ${o?.cell?`href="${esc(telHref(o.cell))}"`:'aria-disabled="true"'}>${ic("phone",22)}Call</a>
       <a class="bigact" ${o?.cell?`href="${esc(waHref(o.cell))}" target="_blank" rel="noopener"`:'aria-disabled="true"'}>${ic("wa",22)}WhatsApp</a>
       <a class="bigact" ${o?.email?`href="mailto:${esc(o.email)}"`:'aria-disabled="true"'}>${ic("mail",22)}Email</a>
-      ${g==="network"&&!fin?`<button class="bigact" data-act="like" data-id="${esc(c.id)}" ${ro?'aria-disabled="true"':""}><span style="font-size:20px;line-height:22px">★</span>Like</button>`:`<button class="bigact" data-act="quick-checkin" data-id="${esc(c.id)}" ${ro||(!c.nextCheckIn&&fin)?'aria-disabled="true"':""}>${ic("check",22)}Check in</button>`}
+      ${g==="network"&&!fin&&c.kind!=="other"?`<button class="bigact" data-act="like" data-id="${esc(c.id)}" ${ro?'aria-disabled="true"':""}><span style="font-size:20px;line-height:22px">★</span>Like</button>`:c.kind==="other"?`<button class="bigact" data-act="link19" data-mode="c" data-id="${esc(c.id)}" ${ro?'aria-disabled="true"':""}>${ic("plus",22)}Add person</button>`:`<button class="bigact" data-act="quick-checkin" data-id="${esc(c.id)}" ${ro||(!c.nextCheckIn&&fin)?'aria-disabled="true"':""}>${ic("check",22)}Check in</button>`}
     </div>
-    ${!fin&&g==="network"?`<div class="card box likebox"><div class="lbl">Prospect</div><div class="next">Make it a target?</div><div class="tag">A target goes on Today and into every target meeting: map the owners and key people, then check in until we get it.</div>${ro?"":`<div class="acts" style="grid-template-columns:2fr 1fr"><button class="act dark" data-act="like" data-id="${esc(c.id)}">★ Make it a target</button><button class="act" data-act="not-for-us" data-id="${esc(c.id)}">Not for us</button></div>`}</div>`:""}
+    ${!fin&&c.kind!=="other"&&g==="network"?`<div class="card box likebox"><div class="lbl">Prospect</div><div class="next">Make it a target?</div><div class="tag">A target goes on Today and into every target meeting: map the owners and key people, then check in until we get it.</div>${ro?"":`<div class="acts" style="grid-template-columns:2fr 1fr"><button class="act dark" data-act="like" data-id="${esc(c.id)}">★ Make it a target</button><button class="act" data-act="not-for-us" data-id="${esc(c.id)}">Not for us</button></div>`}</div>`:""}
     ${!fin&&g==="target"&&!ro?`<div class="acts" style="grid-template-columns:1fr 1fr;margin-top:12px"><button class="act dark" data-act="start-deal" data-id="${esc(c.id)}">Start discussions</button><button class="act" data-act="like" data-id="${esc(c.id)}">Change check-ins</button></div>`:""}
     ${false?`<div class="fsec">${fin?"Relationship check-ins":"Check-in"}</div>
     <div class="card box">
@@ -2550,16 +2550,15 @@ function renderSheet(){
       ${ciMoreHTML(c,"c")}
       ${fin&&!ro?`<button class="btn sm" data-act="like" data-id="${esc(c.id)}">${c.nextCheckIn?"Change check-ins":"Set check-ins"}</button>`:""}
     </div>`:""}
-    ${!fin&&!ro?`<div class="fields" style="margin-top:12px"><div class="fld"><label for="dStage">Stage</label><select id="dStage">${opts(STAGES.map(s=>({v:s.id,l:s.label})),stageOf(c.status).id)}</select></div></div>`:""}
-    ${!fin?teamCardHTML(c,ro):""}
-    ${ciReportHTML(c)}
+    ${!fin&&!ro&&c.kind!=="other"?`<div class="fields" style="margin-top:12px"><div class="fld"><label for="dStage">Stage</label><select id="dStage">${opts(STAGES.map(s=>({v:s.id,l:s.label})),stageOf(c.status).id)}</select></div></div>`:""}
+    ${!fin&&c.kind!=="other"?teamCardHTML(c,ro)+ciReportHTML(c):`<div class="card box" style="margin-top:12px"><div class="lbl">Network company – not to buy</div><div class="tag">We know people here, so Ask the network can find a contact. No stages or check-ins.${ro?"":` <button class="linkbtn" data-act="net2prospect" data-id="${esc(c.id)}">Change to a prospect</button>`}</div></div>`}
     ${!fin&&g!=="network"?`<div class="fsec">Our way in</div>${wayInHTML(c)}`:""}
     <div class="fsec">People we know here</div>
     ${(c.owners||[]).length||ppl.length? `<div class="group">${(c.owners||[]).filter(w=>!ppl.some(k=>k.name.toLowerCase()===String(w.name||"").toLowerCase())).map(w=>`<div class="rowi"><span class="avatar biz">${esc(initials(w.name))}</span><span class="main"><span class="t1" style="display:block">${esc(w.name||"Unnamed")} ${langTag(w.language)}</span><span class="t2" style="display:block">${esc([w.role||"Owner",w.cell,w.email].filter(Boolean).join(" · "))}</span></span>${w.cell?`<a class="btn sm" href="${esc(telHref(w.cell))}" aria-label="Call ${esc(w.name)}">${ic("phone",18)}</a>`:""}</div>`).join("")}${ppl.map(k=>`<button class="rowi" data-contact="${esc(k.id)}">${avatarP(k)}<span class="main"><span class="t1" style="display:block">${esc(k.name)}</span><span class="t2" style="display:block">${esc([k.companyRole||k.title||"Works here", knowers(k).length?"known by "+knowers(k).map(x=>x.partner.split(" ")[0]).join(", "):""].filter(Boolean).join(" · "))}</span></span>${ic("chev",18).replace('class="ic"','class="ic chev"')}</button>`).join("")}</div>` : `<div class="card empty">${fin?"Nobody we know here yet. Add the bankers, partners or advisors we deal with.":"Nobody linked yet."}</div>`}
     ${ro?"":`<button class="btn block" data-act="link19" data-mode="c" data-id="${esc(c.id)}" style="margin-top:8px">+ Add owner or employee</button>`}
     ${fin?partnerLeadsHTML(c):""}
-    ${!fin?`<div class="fsec">Sale signals</div>${sigCount(c)?`<div class="card box"><div class="sigs">${SIGNALS.filter(([s])=>(c.signals||{})[s]).map(([,l])=>`<span class="pill soon">${esc(l)}</span>`).join("")}</div></div>`:`<div class="card box tag">None captured. Edit the business to tick what you know: owner's age, no successor, wants out…</div>`}
-    <div class="fsec">Size & mandate fit</div>
+    ${!fin&&c.kind!=="other"?`<div class="fsec">Sale signals</div>${sigCount(c)?`<div class="card box"><div class="sigs">${SIGNALS.filter(([s])=>(c.signals||{})[s]).map(([,l])=>`<span class="pill soon">${esc(l)}</span>`).join("")}</div></div>`:`<div class="card box tag">None captured. Edit the business to tick what you know: owner's age, no successor, wants out…</div>`}
+    <div class="fsec">${c.kind==="other"?"Size":"Size & mandate fit"}</div>
     <div class="card kv"><div class="k">Profit</div><div class="v">${esc(sizeTxt(c))}</div><div class="k">Turnover</div><div class="v">${esc(c.turnoverConfirmed!=null&&c.turnoverConfirmed!==""?`R${c.turnoverConfirmed}m (confirmed)`:(c.turnover?`${c.turnover} (estimate)`:"—"))}</div><div class="k">Employees</div><div class="v">${esc(c.employees||"—")}</div><div class="k">Mandate fit</div><div class="v">${fp===null?"Not scored":`${fp}%`}</div>${FITDIMS.filter(([d])=>(c.fit||{})[d]).map(([d,l])=>`<div class="k">${esc(l)}</div><div class="v">${"●".repeat(Number(c.fit[d]))}${"○".repeat(5-Number(c.fit[d]))}</div>`).join("")}</div>`:""}
     ${groupHTML(c)}
     <div class="fsec">Where it operates</div>
@@ -4728,6 +4727,8 @@ document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act
       if(await linkPC(kid,id,role)) lnDone(); }
     t.disabled=false; }
 },true);
+document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act="net2prospect"]'); if(!t) return; e.preventDefault(); e.stopPropagation(); const c=S.companies.get(t.dataset.id); if(!c) return;
+  confirmBox(`Make ${c.name} a prospect?`,"It moves to the businesses we'd look at buying, with stages and a responsible partner.","Make it a prospect",async()=>{ if(await dbUpdate("companies/"+c.id,{kind:"target",status:"network",responsible:[defaultResp()]})){ toast(`${c.name} is now a prospect`); try{ renderSheet(); }catch(_){} } }); },true);
 
 
 function vNetwork(){
