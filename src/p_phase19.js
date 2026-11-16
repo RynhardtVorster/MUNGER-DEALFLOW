@@ -735,3 +735,17 @@ function senPill(k){ const s=senShort(k.seniority); return s?` <span class="pill
   h=h.replace('<div class="sec" style="margin-top:6px"><h2>Only business owners of</h2></div>','<div class="sec" style="margin-top:18px"><h2>Only business owners of</h2></div>').replace(">Acquired<",">Deal done<");
   if(any) h=h.replace('<div class="stats">',`<div style="text-align:right;margin:4px 2px 0"><button class="linkbtn" data-act="l-all">Clear filters – back to everyone</button></div><div class="stats">`);
   return h; }; }
+
+/* ---------- 29. Main contact: tick it on the person's row, or when linking someone ---------- */
+async function setMainContact(cid,kid){ const c=S.companies.get(cid); if(!c) return; const v= c.mainContactId===kid? "" : kid;
+  if(await dbUpdate("companies/"+cid,{mainContactId:v})){ toast(v?`${S.contacts.get(kid)?.name||""} is now the main contact for ${c.name}`:"Main contact set back to automatic"); try{ renderSheet(); }catch(_){} } }
+{ const base=renderSheet; renderSheet=function(){ base(); try{
+  const sh=document.getElementById("sheet"); if(!sh || S.readOnly) return; const cid=S.sheet?.id; const c=cid&&S.companies.get(cid); if(!c || S.sheet.kind!=="company") return;
+  const main=bizContact(c); sh.querySelectorAll('.group [data-contact]').forEach(row=>{ const kid=row.dataset.contact; if(row.querySelector(".mc-star")) return;
+    const on=main && main.id===kid; const pinned=c.mainContactId===kid;
+    const chev=row.querySelector(".chev"); (chev?chev:row).insertAdjacentHTML(chev?"beforebegin":"beforeend",`<span class="mc-star ${on?"on":""}" role="button" tabindex="0" data-act="mc-star" data-c="${esc(cid)}" data-k="${esc(kid)}" aria-label="${pinned?"Main contact – tap to unset":"Make main contact"}" title="${on?"Main contact":"Make main contact"}">${on?"★ Main":"☆"}</span>`); });
+  }catch(_){} }; }
+document.addEventListener("click",e=>{ const t=e.target.closest('[data-act="mc-star"]'); if(!t) return; e.preventDefault(); e.stopPropagation(); setMainContact(t.dataset.c,t.dataset.k); },true);
+{ const base=linkModal; linkModal=function(mode,id){ base(mode,id); const r=$("#lnRole")?.closest(".fields"); if(!r) return;
+  r.insertAdjacentHTML("afterend",`<label class="check" style="margin:8px 4px 0"><input type="checkbox" id="lnMain"> Make them the main contact${mode==="c"?` for ${esc(S.companies.get(id)?.name||"")}`:" there"} (Call / WhatsApp / Email go to them)</label>`); }; }
+{ const base=linkPC; linkPC=async function(kid,cid,role){ const want=$("#lnMain")?.checked; const ok=await base(kid,cid,role); if(ok && want) await dbUpdate("companies/"+cid,{mainContactId:kid}); return ok; }; }
