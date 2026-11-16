@@ -342,9 +342,9 @@ function ssFilter(sel,inp){
 }
 function ssEnhance(root){
   (root||document).querySelectorAll("select:not([data-ss])").forEach(sel=>{
-    const n=sel.querySelectorAll("option").length; if(n<=20 || sel.disabled) return; sel.dataset.ss="1";
+    const n=sel.querySelectorAll("option").length; if(n<=20 || sel.disabled || sel.id==="famA" || sel.id==="famB") return; sel.dataset.ss="1";
     const inp=document.createElement("input"); inp.type="search"; inp.className="ss-input"; inp.autocomplete="off"; inp.setAttribute("autocapitalize","off");
-    const lab=sel.id && document.querySelector(`label[for="${sel.id}"]`)?.textContent; inp.placeholder=`Search ${n} – type a name…`; inp.setAttribute("aria-label",`Search ${lab||"the list"}`);
+    const lab=sel.id && document.querySelector(`label[for="${sel.id}"]`)?.textContent; inp.placeholder=`Search ${n-1} – type to find…`; inp.setAttribute("aria-label",`Search ${lab||"the list"}`);
     sel.parentNode.insertBefore(inp,sel); inp.addEventListener("input",()=>ssFilter(sel,inp));
     inp.addEventListener("keydown",ev=>{ if(ev.key==="Enter"){ ev.preventDefault(); inp.blur(); } });
   });
@@ -440,3 +440,45 @@ document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act
   if(a==="md-copy"){ const m=mdText("{first name}"); try{ await navigator.clipboard.writeText(`${m.subject}\n\n${m.body}`); toast("Subject and message copied"); }catch(_){ toast("Couldn't copy – select the text and copy it"); } }
   if(a==="md-merge"){ const L=S.lists; download(`munger-mail-merge-${today()}.csv`,[["First name","Name","Email","Organisation","Type","Subject","Message"],...emails.map(r=>[firstName(r.name),r.name,r.email,r.org,r.kind,S.mailDraft.subject||"",String(S.mailDraft.body||"").replace(/\{first ?name\}/gi,firstName(r.name))])]); }
 },true);
+
+/* ---------- 12. "Add lead" on a person always means a business they introduced (owners can still add their own) ---------- */
+function leadFrom(contactId){ const kk=S.contacts.get(contactId); if(!kk) return;
+  const map={"Accountant / auditor":"accounting","Attorney":"law","Tax advisor":"tax","Banker / financier":"bank","Business broker":"broker","Well-connected friend":"friend"};
+  const ch=map[kk.type] || (activeChannels("").some(x=>x.id==="friend")?"friend":"connector");
+  dealForm(null,{source:{channel:ch, contactId}, partner:kk.partner||defaultPartner(), name:""}); FORM.fromOwner=null; }
+function ownBizMissing(k){ return (tierOf(k)==="A"||OWNER_ROLES.includes(k.companyRole)) && !(k.companyId && S.companies.get(k.companyId)) && !companies().some(c=>(c.owners||[]).some(o=>normName(o.name)===normName(k.name))); }
+document.addEventListener("click",e=>{ const t=e.target.closest('[data-act="new-deal-from"],[data-act="lead-pick"]'); if(!t) return; e.preventDefault(); e.stopImmediatePropagation(); if(S.readOnly) return;
+  const id=t.dataset.id; const k=S.contacts.get(id); if(!k) return;
+  if(t.dataset.act==="lead-pick"){ closeModal(); setTimeout(()=> t.dataset.k==="own"? ownerDealForm(id,true) : leadFrom(id), 80); return; }
+  if(!ownBizMissing(k)){ leadFrom(id); return; }
+  const first=k.name.split(" ")[0];
+  showModal(`${ovHead("Add a business",`<button class="hbtn" data-act="close-modal">Cancel</button>`)}<div class="ovb"><div class="choice">
+   <button type="button" data-act="lead-pick" data-k="lead" data-id="${esc(id)}"><span class="ci">${ic("bizplus",24)}</span><span><b>A lead ${esc(first)} introduced</b><span>Someone else's business ${esc(first)} brought to us. It counts as ${esc(first)}'s lead.</span></span></button>
+   <button type="button" data-act="lead-pick" data-k="own" data-id="${esc(id)}"><span class="ci">${ic("biz",24)}</span><span><b>${esc(first)}'s own business</b><span>The company ${esc(first)} owns, if it isn't in Munger yet.</span></span></button>
+  </div></div>`, true);
+},true);
+
+/* ---------- 13. Link family while capturing a person ---------- */
+function famRowHTML(i){ return `<div class="famrow19" data-i="${i}"><div class="fld"><label>Family member in our network</label><select class="famWho19">${opts(contacts().filter(o=>o.id!==FORM.id).sort((a,b)=>a.name.localeCompare(b.name)).map(o=>({v:o.id,l:o.name+(companyOf(o)?" · "+companyOf(o).name:"")})),"","Choose…")}</select></div>
+  <div class="fld"><label>They are this person's</label><select class="famB19" data-ss="off">${opts(FAM.map(f=>({v:f,l:famLabel(f)})),"","Choose…")}</select></div>
+  <div class="fld"><label>This person is their</label><select class="famA19" data-ss="off">${opts(FAM.map(f=>({v:f,l:famLabel(f)})),"","Choose…")}</select></div>
+  <button type="button" class="linkbtn" data-act="fam19-del" style="color:var(--bad,#b3261e);margin:2px 4px 8px">Remove</button></div>`; }
+{ const base=contactForm; contactForm=function(id,preset){ base(id,preset); const ov=document.querySelector("#contactForm .ovb"); if(!ov || S.readOnly) return;
+  const anchor=[...ov.querySelectorAll(".fsec")].find(x=>/Check in with them/.test(x.textContent));
+  const fam=id&&S.contacts.get(id)? familyOf(S.contacts.get(id)) : [];
+  const html=`<div class="fsec">Family in our network</div>${fam.length?`<p class="tag" style="margin:0 4px 6px">Already linked: ${esc(fam.map(x=>`${x.o.name} (${famLabel(x.rel)})`).join(", "))}</p>`:""}<div id="famRows19" class="fields" hidden></div><button type="button" class="linkbtn" data-act="fam19-add" style="margin:6px 4px 0">+ Link a family member</button>`;
+  if(anchor) anchor.insertAdjacentHTML("beforebegin",html); else ov.insertAdjacentHTML("beforeend",html); }; }
+document.addEventListener("click",e=>{ const t=e.target.closest('[data-act="fam19-add"],[data-act="fam19-del"]'); if(!t) return; e.preventDefault();
+  if(t.dataset.act==="fam19-add"){ const w=$("#famRows19"); w.hidden=false; w.insertAdjacentHTML("beforeend",famRowHTML(w.children.length)); }
+  else { const r=t.closest(".famrow19"); const w=r.parentElement; r.remove(); if(!w.children.length) w.hidden=true; } });
+document.addEventListener("change",e=>{ const r=e.target.closest?.(".famrow19"); if(!r) return;
+  if(e.target.classList.contains("famB19")){ e.target.dataset.touched="1"; const v=FAM_REV[e.target.value]; const a=r.querySelector(".famA19"); if(v && !a.dataset.touched) a.value=v; }
+  if(e.target.classList.contains("famA19")){ e.target.dataset.touched="1"; const v=FAM_REV[e.target.value]; const b=r.querySelector(".famB19"); if(v && !b.dataset.touched) b.value=v; } });
+function famRead19(){ return [...document.querySelectorAll(".famrow19")].map(r=>({o:r.querySelector(".famWho19").value, bIs:r.querySelector(".famB19").value||"family", aIs:r.querySelector(".famA19").value||"family"})).filter(x=>x.o); }
+{ const base=submitContact; submitContact=async function(){ const fam=famRead19(); const editId=FORM.id; const before=new Set(S.contacts.keys()); const name=($("#kName")?.value||"").trim();
+  const r=await base(); if(!fam.length) return r;
+  let id=editId; if(!id){ const nw=[...S.contacts.values()].filter(k=>!before.has(k.id)); id=(nw.find(k=>k.name===name)||nw[0])?.id; }
+  if(!id || !S.contacts.has(id)) return r;
+  const have=new Set((S.links||[]).filter(l=>l.a===id||l.b===id).map(l=>l.a===id?l.b:l.a)); const rows=fam.filter(x=>x.o!==id && !have.has(x.o)).map(x=>({a:id,b:x.o,a_is:x.aIs,b_is:x.bIs,note:""}));
+  if(rows.length){ const {error}=await sb.from("person_links").insert(rows); if(error) writeErr(error); else { await loadLinks(); toast(rows.length===1?"Family member linked":`${rows.length} family members linked`); try{ if(sheetOpen()) renderSheet(); }catch(_){} } }
+  return r; }; }

@@ -367,7 +367,7 @@ function renderSheet(){
       <a class="bigact" ${k.cell&&!k.doNotContact?`href="${esc(telHref(k.cell))}"`:'aria-disabled="true"'}>${ic("phone",22)}Call</a>
       <a class="bigact" ${k.cell&&!k.doNotContact?`href="${esc(waHref(k.cell))}" target="_blank" rel="noopener"`:'aria-disabled="true"'}>${ic("wa",22)}WhatsApp</a>
       <a class="bigact" ${k.email&&!k.doNotContact?`href="mailto:${esc(k.email)}"`:'aria-disabled="true"'}>${ic("mail",22)}Email</a>
-      <button class="bigact" data-act="new-deal-from" data-id="${esc(k.id)}" ${ro?'aria-disabled="true"':""}>${ic("bizplus",22)}${OWNER_ROLES.includes(k.companyRole)||t==="A"?"Their business":"Add lead"}</button>
+      <button class="bigact" data-act="new-deal-from" data-id="${esc(k.id)}" ${ro?'aria-disabled="true"':""}>${ic("bizplus",22)}Add lead</button>
     </div>
     ${personCheckinCard(k)}
     ${k.doNotContact?`<div class="notice err" style="margin-top:12px"><span>This person asked not to be contacted. Respect it.</span></div>`:""}
