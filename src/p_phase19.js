@@ -350,3 +350,34 @@ function ssEnhance(root){
   });
 }
 new MutationObserver(muts=>{ for(const m of muts) for(const n of m.addedNodes){ if(n.nodeType===1 && (n.tagName==="SELECT" || n.querySelector?.("select"))){ requestAnimationFrame(()=>ssEnhance()); return; } } }).observe(document.body,{childList:true,subtree:true});
+
+/* ---------- 9. Admin (and the author) can correct or remove notes and check-ins ---------- */
+function canEditLog(e){ if(S.readOnly) return false; if(S.me?.is_admin) return true; const me=(S.me?.name||"").toLowerCase(); return !!me && String(e?.by||"").toLowerCase().split(" ")[0]===me.split(" ")[0]; }
+function logAttr(rec,e){ if(!rec||!e||!canEditLog(e)) return ""; const i=(rec.log||[]).indexOf(e); if(i<0) return "";
+  const kind=S.companies.has(rec.id)?"c":"k"; return ` data-act="log-edit" data-kind="${kind}" data-id="${esc(rec.id)}" data-i="${i}" role="button" tabindex="0" title="Tap to edit"`; }
+function logEditModal(kind,id,i){ const rec=kind==="c"?S.companies.get(id):S.contacts.get(id); const e=rec?.log?.[i]; if(!e) return;
+  const by=[...new Set([...S.partners,e.by].filter(Boolean))];
+  showModal(`${ovHead("Edit note",`<button class="hbtn" data-act="close-modal">Cancel</button>`)}<div class="ovb">
+   <p style="margin:0 2px 10px;font-size:15px"><b>${esc(rec.name)}</b></p>
+   <div class="fields">
+    <div class="fld"><label for="leDate">Date</label><input type="date" id="leDate" value="${esc(e.d||today())}"></div>
+    <div class="fld"><label for="leBy">Who in our team</label><select id="leBy">${opts(by,e.by||"")}</select></div>
+    ${fldNote("leText","What happened",String(e.text||"").replace(/^Checked in:?\s*/,""),"",5)}
+   </div>
+   <p class="tag" style="margin:8px 4px 0">The correction is recorded in the edit history.</p>
+   <div style="margin-top:14px;display:grid;gap:10px"><button class="btn primary block" data-act="log-save" data-kind="${kind}" data-id="${esc(id)}" data-i="${i}">Save</button><button class="linkbtn" style="color:var(--bad,#b3261e)" data-act="log-del" data-kind="${kind}" data-id="${esc(id)}" data-i="${i}">Delete this note</button></div></div>`, true);
+}
+async function logWrite(kind,id,fn){ const rec=kind==="c"?S.companies.get(id):S.contacts.get(id); if(!rec) return false; const log=[...(rec.log||[])].map(x=>({...x})); fn(log);
+  log.sort((a,b)=>(a.d||"").localeCompare(b.d||"")); return dbUpdate(`${kind==="c"?"companies":"contacts"}/${id}`,{log}); }
+document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act="log-edit"],[data-act="log-save"],[data-act="log-del"]'); if(!t) return; e.preventDefault(); e.stopPropagation();
+  const {kind,id}=t.dataset, i=Number(t.dataset.i), a=t.dataset.act;
+  if(a==="log-edit"){ if(t.closest("details") && e.target.closest("summary")) return; logEditModal(kind,id,i); return; }
+  const rec=kind==="c"?S.companies.get(id):S.contacts.get(id); const orig=rec?.log?.[i]; if(!orig) return;
+  if(a==="log-save"){ let text=$("#leText").value.trim(); if(text && /^Checked in/.test(orig.text||"")) text="Checked in: "+text; if(!text){ toast("Write something, or delete the note"); return; } t.disabled=true;
+    const ok=await logWrite(kind,id,L=>{ const j=L.findIndex(x=>x.d===orig.d&&x.text===orig.text&&x.by===orig.by); if(j>=0) L[j]={...L[j],d:$("#leDate").value||orig.d,by:$("#leBy").value||orig.by,text,editedBy:S.me?.name||"",editedAt:today()}; });
+    t.disabled=false; if(ok){ closeModal(); toast("Note updated"); queueRender(); try{ renderSheet(); }catch(_){} } }
+  if(a==="log-del"){ confirmBox("Delete this note?","It is removed from the history. The edit history still shows that it was changed.","Delete",async()=>{
+    const ok=await logWrite(kind,id,L=>{ const j=L.findIndex(x=>x.d===orig.d&&x.text===orig.text&&x.by===orig.by); if(j>=0) L.splice(j,1); });
+    if(ok){ closeModal(); toast("Note deleted"); queueRender(); try{ renderSheet(); }catch(_){} } }); }
+},true);
+document.addEventListener("keydown",e=>{ if(e.key==="Enter" && e.target.matches?.('[data-act="log-edit"]')) e.target.click(); });

@@ -353,7 +353,7 @@ function renderSheet(){
     ${c.notes?`<div class="fsec">Notes</div><div class="card box" style="white-space:pre-wrap">${esc(c.notes)}</div>`:""}
     <div class="fsec">Activity & notes</div>
     ${ro?"":`<div class="fields">${fldNote("noteTxt","Add a note (type or speak)",keepNote,"What happened? Why does this business matter?")}</div><div style="margin:8px 0 12px"><button class="btn block" data-act="add-note" data-id="${esc(c.id)}">Save note</button></div>`}
-    ${(c.log||[]).length?`<div class="group log">${[...c.log].reverse().map(e=>`<div class="e"><small>${esc(fmtD(e.d))}${e.by?` · ${esc(e.by)}`:""}</small>${esc(e.text)}</div>`).join("")}</div>`:`<div class="card empty">No activity yet.</div>`}
+    ${(c.log||[]).length?`<div class="group log">${[...c.log].reverse().map(e=>`<div class="e"${logAttr(c,e)}><small>${esc(fmtD(e.d))}${e.by?` · ${esc(e.by)}`:""}</small>${esc(e.text)}</div>`).join("")}</div>`:`<div class="card empty">No activity yet.</div>`}
     ${histBlock(c.id, c.updatedAt, c.updatedByName)}
     ${ro?"":(S.me?.is_admin? `<div style="margin-top:26px"><button class="btn block danger" data-act="del-deal" data-id="${esc(c.id)}">${ic("trash",18)} Delete</button></div>` : `<p class="tag" style="text-align:center;margin-top:22px">Only an admin can delete. Ask Rynhardt if this should be removed.</p>`)}
     </div>`;
@@ -391,7 +391,7 @@ function renderSheet(){
     ${k.notes?`<div class="fsec">About</div><div class="card box" style="white-space:pre-wrap">${esc(k.notes)}</div>`:""}
     <div class="fsec">Notes & activity</div>
     ${ro?"":`<div class="fields">${fldNote("noteTxt","Add a note (type or speak)",keepNote,"Why are they in our network? What did you talk about?")}</div><div style="margin:8px 0 12px"><button class="btn block" data-act="add-pnote" data-id="${esc(k.id)}">Save note</button></div>`}
-    ${(k.log||[]).length?`<div class="group log">${[...k.log].reverse().map(e=>`<div class="e"><small>${esc(fmtD(e.d))}${e.by?` · ${esc(e.by)}`:""}</small>${esc(e.text)}</div>`).join("")}</div>`:""}
+    ${(k.log||[]).length?`<div class="group log">${[...k.log].reverse().map(e=>`<div class="e"${logAttr(k,e)}><small>${esc(fmtD(e.d))}${e.by?` · ${esc(e.by)}`:""}</small>${esc(e.text)}</div>`).join("")}</div>`:""}
     ${histBlock(k.id, k.updatedAt, k.updatedByName)}
     ${ro?"":(S.me?.is_admin? `<div style="margin-top:26px"><button class="btn block danger" data-act="del-contact" data-id="${esc(k.id)}">${ic("trash",18)} Delete person</button></div>` : `<p class="tag" style="text-align:center;margin-top:22px">Only an admin can delete. Ask Rynhardt if this should be removed.</p>`)}
     </div>`;
