@@ -109,7 +109,6 @@ function vToday(){
     <a class="stat" href="#people"><span class="n">${ppl.length}</span><span class="l">${mine?"People I know":"People tagged"}</span></a>
   </div>
   <div class="quick"><a class="act" href="#near">${ic("pin",18)}Map</a><a class="act" href="#partners">${ic("bank",18)}Partners</a><a class="act" href="#talent">${ic("star",18)}Talent</a></div>
-  ${contacts().length<15?`<div class="sec"><h2>Get started</h2></div><button class="card start" data-act="new-contact">${ic("plus",28)}<div><b>Build the network, one person at a time</b><span>Add the people who matter, tag them A, B, C or D and say who in our team knows them.</span></div></button>`:""}
   ${targetsBlock(mine)}
   <div class="sec"><h2>To call this week</h2>${due.length?`<a href="#checkins">All</a>`:""}</div>
   ${due.length? due.map(anyDueCard).join("") : `<div class="card empty"><b>You're up to date</b>${soon.length?`Next up: ${esc(soon[0].name)} on ${esc(fmtD(soon[0].nextCheckIn))}.`:"Set check-ins on targets you like and on people you want to stay close to."}</div>`}

@@ -129,7 +129,6 @@ function vToday(){
     <a class="stat" href="#businesses" data-act="biz-active"><span class="n">${active}</span><span class="l">Active businesses</span></a>
     <a class="stat" href="#people"><span class="n">${ppl.length}</span><span class="l">People tagged</span></a>
   </div>
-  ${contacts().length<15?`<div class="sec"><h2>Get started</h2></div><a class="card start" href="#import">${ic("upload",28)}<div><b>Start the network sweep</b><span>Import your phone contacts and tag the A, B and C people in one go.</span></div></a>`:""}
   <div class="sec"><h2>To call this week</h2>${due.length?`<a href="#checkins">All</a>`:""}</div>
   ${due.length? due.map(dueCard).join("") : `<div class="card empty"><b>You're up to date</b>${soon.length?`Next up: ${esc(soon[0].name)} on ${esc(fmtD(soon[0].nextCheckIn))}.`:"No check-ins due. Businesses you set to check in on will show up here."}</div>`}
   ${soon.length?`<div class="sec"><h2>Coming up</h2></div><div class="group">${soon.slice(0,5).map(bizRow).join("")}</div>`:""}
