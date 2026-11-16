@@ -16,11 +16,11 @@ const ASK_EX=[
     const wantsBiz=/business|company|companies|firm doing|operator|manufacturer|supplier/.test(ql) && /looking for|find|need|want|acquire|buy/.test(ql);
     const wantsTop=/influential|most connected|best connected|key person|key people|top person|biggest name|who matters/.test(ql);
     if(wantsFunding){
-      const fins=companies().filter(c=>isPartnerCo(c) && c.kind==="financier").sort((a,b)=>partnerLeads(b).length-partnerLeads(a).length||peopleAt(b).length-peopleAt(a).length);
+      const fins=companies().filter(c=>isPartnerCo(c) && FUNDING_KINDS.includes(c.kind)).sort((a,b)=>partnerLeads(b).length-partnerLeads(a).length||peopleAt(b).length-peopleAt(a).length);
       r.partners=fins.map(c=>c.id);
       const ppl=fins.flatMap(c=>peopleAt(c)).filter(k=>!r.groups.some(g=>g.people.some(p=>p.id===k.id)));
-      if(ppl.length) r.groups.unshift({title:"People at our banks & funders", people:ppl.slice(0,10).map(k=>({id:k.id, why:`${k.companyRole||k.title||"Works"} at ${companyOf(k)?.name||""}`}))});
-      if(!fins.length) r.gaps=[...(r.gaps||[]),"No banks or funders added under Partners yet"];
+      if(ppl.length) r.groups.unshift({title:"People at our banks & strategic funders", people:ppl.slice(0,10).map(k=>({id:k.id, why:`${k.companyRole||k.title||"Works"} at ${companyOf(k)?.name||""}`}))});
+      if(!fins.length) r.gaps=[...(r.gaps||[]),"No banks or strategic funders added under Partners yet"];
     }
     if(wantsBiz){ r.bizFirst=true; }
     if(wantsTop){
@@ -39,7 +39,7 @@ const ASK_EX=[
 function vAsk(){
   const A=S.ask||{q:"",res:null}; const r=A.res;
   const bizHTML= r&&r.biz&&r.biz.length? `<div class="sec"><h2>Businesses that match</h2></div><div class="group">${r.biz.map(id=>S.companies.get(id)).filter(Boolean).map(bizRow).join("")}</div>` : "";
-  const partHTML= r&&r.partners&&r.partners.length? `<div class="sec"><h2>Our banks & funders</h2></div><div class="group">${r.partners.map(id=>S.companies.get(id)).filter(Boolean).map(partnerRow).join("")}</div>` : "";
+  const partHTML= r&&r.partners&&r.partners.length? `<div class="sec"><h2>Our banks & strategic funders</h2></div><div class="group">${r.partners.map(id=>S.companies.get(id)).filter(Boolean).map(partnerRow).join("")}</div>` : "";
   return `<div class="ph"><div><h1>Ask the network</h1><p>Say what you need in plain words: funding, a type of business, an introduction, or who matters in an industry. We'll find the people, firms and businesses, and who in our team knows them.</p></div></div>
   <form id="askForm" class="askform"><textarea id="askQ" rows="2" placeholder="e.g. I need financing for an acquisition in agri">${esc(A.q||"")}</textarea><button type="submit" class="btn primary">${ic("spark",18)} Ask</button></form>
   ${!r&&!A.loading?`<div class="lbl" style="margin:14px 4px 6px">Try one of these</div><div class="group">${ASK_EX.map(e=>`<button class="rowi" data-act="ask-ex" data-k="${esc(e)}"><span class="avatar biz">${ic("spark",18)}</span><span class="main"><span class="t1" style="display:block;white-space:normal;font-weight:500">${esc(e)}</span></span></button>`).join("")}</div>`:""}

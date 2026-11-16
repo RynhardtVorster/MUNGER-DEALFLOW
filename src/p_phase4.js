@@ -1,7 +1,8 @@
 /* ================= Phase 4: People · Partners · Businesses ================= */
-const PKINDS={financier:"Bank / funder",accounting:"Accounting firm",legal:"Law firm",advisory:"Advisor / broker",service:"Other partner"};
-const PIND={financier:"Business & financial services › Financial services & lending",accounting:"Business & financial services › Accounting & tax",legal:"Business & financial services › Legal",advisory:"Business & financial services › Consulting"};
-const PKW={financier:"bank banker financier funding finance lender credit loan",accounting:"accountant accounting audit auditor tax",legal:"attorney lawyer legal law conveyancer",advisory:"advisor adviser broker corporate finance consultant m&a",other:"",service:""};
+const PKINDS={financier:"Bank",funder:"Strategic funder",accounting:"Accounting firm",legal:"Law firm",advisory:"Advisor",broker:"Broker",service:"Other partner"};
+const FUNDING_KINDS=["financier","funder"];
+const PIND={financier:"Business & financial services › Financial services & lending",funder:"Business & financial services › Financial services & lending",broker:"Business & financial services › Consulting",accounting:"Business & financial services › Accounting & tax",legal:"Business & financial services › Legal",advisory:"Business & financial services › Consulting"};
+const PKW={financier:"bank banker financier funding finance lender credit loan",funder:"strategic funder funding finance capital investor private equity co-invest shortfall equity mezzanine",broker:"broker business broker deal sale m&a transfer",accounting:"accountant accounting audit auditor tax",legal:"attorney lawyer legal law conveyancer",advisory:"advisor adviser corporate finance consultant m&a",other:"",service:""};
 function isPartnerKind(k){ return !!k && !["target","other","network","acquire"].includes(k); }
 const BIZSEL=[{v:"network",l:"Prospect – we'd look at buying it"},{v:"acquire",l:"Target – we go full out"},{v:"other",l:"Not to buy – just where people work"}];
 function kindFromSel(v){ return v==="network"||v==="acquire"? "target" : (v||"target"); }
@@ -9,8 +10,8 @@ function bizSelOf(c){ return c.kind==="other"? "other" : stageOf(c.status).group
 function isPartnerCo(c){ return !!c && isPartnerKind(c.kind); }
 function partnerHay(co){ return isPartnerCo(co)? `partner firm ${PKINDS[co.kind]||""} ${PKW[co.kind]||""}` : ""; }
 Object.keys(KINDS).forEach(k=>delete KINDS[k]);
-Object.assign(KINDS,{target:"Business we might buy",financier:"Partner · Bank / funder",accounting:"Partner · Accounting firm",legal:"Partner · Law firm",advisory:"Partner · Advisor / broker",other:"Partner · Other"});
-const pkIcon=c=>c.kind==="financier"?"bank":"biz";
+Object.assign(KINDS,{target:"Business we might buy",...Object.fromEntries(Object.entries(PKINDS).map(([k,v])=>[k,"Partner · "+v])),other:"Not for acquisition"});
+const pkIcon=c=>FUNDING_KINDS.includes(c.kind)?"bank":"biz";
 function partnerLeads(c){ const ids=new Set(peopleAt(c).map(k=>k.id)); return companies().filter(x=>!isPartnerCo(x) && x.source?.contactId && ids.has(x.source.contactId)); }
 function partnerCover(c){ return [...new Set(peopleAt(c).flatMap(k=>knowers(k).map(x=>x.partner.split(" ")[0])))]; }
 function partnerRow(c){
@@ -32,9 +33,9 @@ function vPartners(){
     .sort((a,b)=>partnerLeads(b).length-partnerLeads(a).length || peopleAt(b).length-peopleAt(a).length || a.name.localeCompare(b.name));
   const gaps=all.filter(c=>!peopleAt(c).length).length;
   const chip=(k,l)=>`<button class="chip ${P.kind===k?"on":""}" data-act="pf-kind" data-k="${k}">${l} <span class="n">${k?all.filter(c=>kk(c)===k).length:all.length}</span></button>`;
-  return `<div class="ph"><div><h1>Partners</h1><p>Banks, funders, accounting and law firms, and advisors who help us find and fund deals.${gaps?` ${gaps} where we know nobody yet.`:""}</p></div><button class="btn sm primary" data-act="new-partner">${ic("plus",18)} Add</button></div>
+  return `<div class="ph"><div><h1>Partners</h1><p>Banks, strategic funders (who help fund a shortfall on a deal), accounting firms, law firms, advisors and brokers.${gaps?` ${gaps} where we know nobody yet.`:""}</p></div><button class="btn sm primary" data-act="new-partner">${ic("plus",18)} Add</button></div>
   <div class="search">${ic("search",20)}<input id="pfq" type="search" placeholder="Search firm or person…" value="${esc(P.q)}" autocomplete="off" aria-label="Search partners"></div>
-  <div class="chips">${chip("","All")}${chip("financier","Banks & funders")}${chip("accounting","Accounting")}${chip("legal","Law firms")}${chip("advisory","Advisors & brokers")}${chip("other","Other")}</div>
+  <div class="chips">${chip("","All")}${chip("financier","Banks")}${chip("funder","Strategic funders")}${chip("accounting","Accounting")}${chip("legal","Law firms")}${chip("advisory","Advisors")}${chip("broker","Brokers")}${chip("other","Other")}</div>
   ${arr.length?`<div class="group">${arr.map(partnerRow).join("")}</div>`:`<div class="card empty"><b>No partners here yet</b>Tap Add, or add a person and type their firm under “Works at”.</div>`}
   <p class="tag" style="margin:12px 2px">Open a partner and tap “+ Add someone who works here” for each person we deal with there. Leads they send us are counted against the firm.</p>`;
 }
@@ -73,8 +74,8 @@ function vBusinesses(){
 
 /* ---------- Person form: new company → partner firm or business ---------- */
 function guessPKind(d){ const t=[d.type,d.title,d.expertise,d.coName].join(" ").toLowerCase();
-  if(/bank|financ|credit|lend|capital|fund/.test(t)) return "financier"; if(/account|audit|tax|chartered/.test(t)) return "accounting"; if(/attorney|lawyer|legal|advocate|incorporated|\binc\b/.test(t)) return "legal"; return "advisory"; }
-const PROLES=["Partner / director","Relationship manager / banker","Credit / deal team","Head of region / branch","Senior manager","Associate / analyst","Other"];
+  if(/broker/.test(t)) return "broker"; if(/bank|credit|lend/.test(t)) return "financier"; if(/fund|capital|private equity|invest|financ/.test(t)) return "funder"; if(/account|audit|tax|chartered/.test(t)) return "accounting"; if(/attorney|lawyer|legal|advocate|incorporated|\binc\b/.test(t)) return "legal"; return "advisory"; }
+const PROLES=["Partner / director","Relationship manager / banker","Investment manager / principal","Credit / deal team","Head of region / branch","Senior manager","Associate / analyst","Other"];
 function whereVal(){ return (document.querySelector("input[name=kWhere]:checked")||{}).value||"other"; }
 function fillCoPick(){
   const w=whereVal(), sel=$("#kCoPick"); if(!sel) return; const cur=sel.value||FORM.coInit||"";
