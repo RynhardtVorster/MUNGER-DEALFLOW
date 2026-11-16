@@ -488,3 +488,14 @@ function famRead19(){ return [...document.querySelectorAll(".famrow19")].map(r=>
 
 /* ---------- 15. A person's lead type follows their tags: Owner > Potential hire > Great contact > Employee ---------- */
 { const base=tierOf; tierOf=function(k){ const t=k&&Array.isArray(k.tags)? k.tags.filter(x=>TIERS[x]) : []; return t.length? TIER_PRIO.find(x=>t.includes(x)) : base(k); }; }
+
+/* ---------- 16. Responsible partner(s): who follows up, separate from who brought the business in ---------- */
+function respOf(c){ const R=Array.isArray(c?.responsible)?c.responsible.filter(Boolean):[]; return R.length? R : (c?.partner?[c.partner]:[]); }
+function respLine(c){ const R=respOf(c); return `Responsible: <b>${esc(R.join(" & ")||"not set")}</b>${c.partner&&!(R.length===1&&R[0]===c.partner)?` · brought in by ${esc(c.partner)}`:""}`; }
+function defaultResp(){ return S.partners.find(p=>/^rynhardt/i.test(p)) || myPartner() || S.partners[0] || ""; }
+function respFields(c,isNew){ if(!S.partners.length) return "";
+  const R=new Set(Array.isArray(c.responsible)&&c.responsible.length? c.responsible : isNew? [defaultResp()] : (c.partner?[c.partner]:[]));
+  return `<div class="fld" style="grid-column:1/-1"><label>Responsible to follow up (one or more)</label><div class="rolechips" id="cResp" style="margin-top:6px">${S.partners.map(p=>`<label><input type="checkbox" name="cResp" value="${esc(p)}" ${R.has(p)?"checked":""}><span>${esc(p.split(" ")[0])}</span></label>`).join("")}</div></div>`; }
+function respRead(){ const box=document.querySelector("#dealForm #cResp"); if(!box) return null; return [...box.querySelectorAll("input[name=cResp]:checked")].map(x=>x.value); }
+{ const base=dbSet; dbSet=async function(path,data){ if(String(path).startsWith("companies/") && data && "name" in data && document.querySelector("#dealForm #cResp")){ const R=respRead(); if(R) data={...data,responsible:R}; } return base(path,data); }; }
+{ const base=dbUpdate; dbUpdate=async function(path,patch){ if(String(path).startsWith("companies/") && patch && "name" in patch && document.querySelector("#dealForm #cResp")){ const R=respRead(); if(R) patch={...patch,responsible:R}; } return base(path,patch); }; }

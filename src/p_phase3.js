@@ -539,7 +539,7 @@ function dealForm(id, preset){
   <div id="newContact"></div></div>
   <div class="fsec">Munger</div>
   <div class="fields">
-    <div class="fld"><label for="cPartner">Lead (our team)</label><select id="cPartner">${opts(S.partners,c.partner,"Unassigned")}</select></div>
+    <div class="fld"><label for="cPartner">Brought in by (our team)</label><select id="cPartner">${opts(S.partners,c.partner,"Unassigned")}</select></div>${respFields(c,!id)}
     <div class="fld nofin"><label for="cStage">Stage</label><select id="cStage">${opts(STAGES.map(s=>({v:s.id,l:s.label})),stageOf(c.status).id)}</select></div>
     <div class="fld cadw"><label for="cCad">Check in</label><select id="cCad">${opts(CADENCE.map(x=>({v:x.m,l:x.l})),c.followUpMonths??0)}</select></div>
     <div class="fld cadw"><label for="cNext">Next check-in (or pick a specific date)</label><input id="cNext" type="date" value="${esc(c.nextCheckIn||"")}"></div>

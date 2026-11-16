@@ -32,7 +32,7 @@ function ic(n,s=22){ return `<svg class="ic" width="${s}" height="${s}" viewBox=
 const grp = c => stageOf(c.status).group;
 const isOpen = c => isPartnerCo(c)? !!c.nextCheckIn : ["target","active"].includes(grp(c));
 function myPartner(){ const n=S.me?.name||""; return S.partners.includes(n)? n : (S.partners.find(p=>n && p.toLowerCase().startsWith(n.toLowerCase().split(" ")[0]))||n); }
-const isMine = c => !!myPartner() && c.partner===myPartner();
+function isMine(c){ const me=myPartner(); if(!me||!c) return false; const R=Array.isArray(c.responsible)?c.responsible:[]; return R.length? R.includes(me) : c.partner===me; }
 function initials(n){ const p=String(n||"?").trim().split(/\s+/).filter(Boolean); return ((p[0]||"?")[0]+(p.length>1?p[p.length-1][0]:"")).toUpperCase(); }
 function avatarP(k,lg){ const t=tierOf(k); return `<span class="avatar ${t}${lg?" lg":""}">${esc(initials(k.name))}<span class="tg">${t}</span></span>`; }
 function avatarB(c,lg){ return `<span class="avatar biz${lg?" lg":""}">${esc(initials(c.name))}</span>`; }

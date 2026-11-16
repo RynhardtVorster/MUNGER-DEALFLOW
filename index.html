@@ -480,7 +480,7 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 <script src="supabase.js"></script>
 <script>
 "use strict";
-const APP_V="v42";
+const APP_V="v43";
 /* ---------------- Reference data ---------------- */
 const STAGES = [
   {id:"network", label:"Prospect – we'd look at it", group:"network"},
@@ -629,9 +629,9 @@ let renderQueued=false;
 function queueRender(){ if(renderQueued) return; renderQueued=true; requestAnimationFrame(()=>{ renderQueued=false; render(); }); }
 
 const nz = v => (v===undefined||v===null||v==="") ? null : v;
-function companyFromRow(r){ return {id:r.id, name:r.name, tradingAs:r.trading_as, industry:r.industry, province:r.province, town:r.town, website:r.website, ebit:r.ebit, turnover:r.turnover, employees:r.employees, owners:r.owners||[], language:r.language, source:{channel:r.source_channel, contactId:r.source_contact_id||"", partner:r.source_partner, detail:r.source_detail}, partner:r.partner, status:r.status, followUpMonths:r.follow_up_months, nextCheckIn:r.next_check_in||"", lastContact:r.last_contact||"", notes:r.notes, log:r.log||[], example:r.example, hqCountry:r.hq_country, footprint:r.footprint, countries:r.countries, regNo:r.reg_no, ebitConfirmed:r.ebit_confirmed, turnoverConfirmed:r.turnover_confirmed, financialsYear:r.financials_year, fit:r.fit||{}, kind:r.kind||"target", kindNote:r.kind_note||"", ownership:r.ownership||"", listing:r.listing||"", parentId:r.parent_id||"", checkInNote:r.check_in_note||"", signals:r.signals||{}, updatedByName:r.updated_by_name||"", createdBy:r.created_by, createdByName:r.created_by_name, createdAt:r.created_at, updatedAt:r.updated_at}; }
+function companyFromRow(r){ return {id:r.id, name:r.name, tradingAs:r.trading_as, industry:r.industry, province:r.province, town:r.town, website:r.website, ebit:r.ebit, turnover:r.turnover, employees:r.employees, owners:r.owners||[], language:r.language, source:{channel:r.source_channel, contactId:r.source_contact_id||"", partner:r.source_partner, detail:r.source_detail}, partner:r.partner, status:r.status, followUpMonths:r.follow_up_months, nextCheckIn:r.next_check_in||"", lastContact:r.last_contact||"", notes:r.notes, log:r.log||[], example:r.example, hqCountry:r.hq_country, footprint:r.footprint, countries:r.countries, regNo:r.reg_no, ebitConfirmed:r.ebit_confirmed, turnoverConfirmed:r.turnover_confirmed, financialsYear:r.financials_year, fit:r.fit||{}, kind:r.kind||"target", responsible:Array.isArray(r.responsible)?r.responsible:[], kindNote:r.kind_note||"", ownership:r.ownership||"", listing:r.listing||"", parentId:r.parent_id||"", checkInNote:r.check_in_note||"", signals:r.signals||{}, updatedByName:r.updated_by_name||"", createdBy:r.created_by, createdByName:r.created_by_name, createdAt:r.created_at, updatedAt:r.updated_at}; }
 function contactFromRow(r){ return {otherRoles:Array.isArray(r.other_roles)?r.other_roles:[], education:r.education||"", background:r.background||"", publicRole:r.public_role||"", profiles:Array.isArray(r.profiles)?r.profiles:[], tags:Array.isArray(r.tags)?r.tags:[], cells:Array.isArray(r.cells)?r.cells:[], emails:Array.isArray(r.emails)?r.emails:[], nextCheckIn:r.next_check_in||"", checkInWeeks:r.check_in_weeks||0, checkInRepeat:!!r.check_in_repeat, checkInNote:r.check_in_note||"", checkInOwner:r.check_in_owner||"", lastContact:r.last_contact||"", id:r.id, name:r.name, tier:r.tier, type:r.type, firm:r.firm, partner:r.partner, ownsCompanyId:r.owns_company_id||"", companyId:r.company_id||r.owns_company_id||"", companyRole:r.company_role||(r.owns_company_id?"Owner":""), title:r.title||"", country:r.country||"", industry:r.industry||"", expertise:r.expertise||"", linkedin:r.linkedin||"", influence:r.influence||0, talent:r.talent||{}, hnwi:!!r.hnwi, wealthSource:r.wealth_source||"", doNotContact:!!r.do_not_contact, thanks:r.thanks||[], log:r.log||[], pastRoles:r.past_roles||[], updatedByName:r.updated_by_name||"", cell:r.cell, email:r.email, language:r.language, province:r.province, town:r.town, notes:r.notes, example:r.example, createdBy:r.created_by, createdAt:r.created_at, updatedAt:r.updated_at}; }
-const CMAP={name:"name",tradingAs:"trading_as",industry:"industry",province:"province",town:"town",website:"website",ebit:"ebit",turnover:"turnover",employees:"employees",owners:"owners",language:"language",partner:"partner",status:"status",followUpMonths:"follow_up_months",nextCheckIn:"next_check_in",lastContact:"last_contact",notes:"notes",log:"log",example:"example",createdByName:"created_by_name",hqCountry:"hq_country",footprint:"footprint",countries:"countries",regNo:"reg_no",ebitConfirmed:"ebit_confirmed",turnoverConfirmed:"turnover_confirmed",financialsYear:"financials_year",fit:"fit",kind:"kind",kindNote:"kind_note",ownership:"ownership",listing:"listing",parentId:"parent_id",checkInNote:"check_in_note",signals:"signals"};
+const CMAP={name:"name",tradingAs:"trading_as",industry:"industry",province:"province",town:"town",website:"website",ebit:"ebit",turnover:"turnover",employees:"employees",owners:"owners",language:"language",partner:"partner",status:"status",followUpMonths:"follow_up_months",nextCheckIn:"next_check_in",lastContact:"last_contact",notes:"notes",log:"log",example:"example",createdByName:"created_by_name",hqCountry:"hq_country",footprint:"footprint",countries:"countries",regNo:"reg_no",ebitConfirmed:"ebit_confirmed",turnoverConfirmed:"turnover_confirmed",financialsYear:"financials_year",fit:"fit",kind:"kind",responsible:"responsible",kindNote:"kind_note",ownership:"ownership",listing:"listing",parentId:"parent_id",checkInNote:"check_in_note",signals:"signals"};
 const KMAP={otherRoles:"other_roles",education:"education",background:"background",publicRole:"public_role",profiles:"profiles",tags:"tags",cells:"cells",emails:"emails",nextCheckIn:"next_check_in",checkInWeeks:"check_in_weeks",checkInRepeat:"check_in_repeat",checkInNote:"check_in_note",checkInOwner:"check_in_owner",lastContact:"last_contact",name:"name",tier:"tier",type:"type",firm:"firm",partner:"partner",ownsCompanyId:"owns_company_id",cell:"cell",email:"email",language:"language",province:"province",town:"town",notes:"notes",example:"example",companyId:"company_id",companyRole:"company_role",title:"title",country:"country",industry:"industry",expertise:"expertise",linkedin:"linkedin",influence:"influence",talent:"talent",hnwi:"hnwi",wealthSource:"wealth_source",doNotContact:"do_not_contact",thanks:"thanks",log:"log",pastRoles:"past_roles"};
 const NULLABLE=new Set(["parent_id","next_check_in","last_contact","owns_company_id","source_contact_id","company_id","ebit_confirmed","turnover_confirmed"]);
 function toRow(table, d){
@@ -752,7 +752,7 @@ function ic(n,s=22){ return `<svg class="ic" width="${s}" height="${s}" viewBox=
 const grp = c => stageOf(c.status).group;
 const isOpen = c => isPartnerCo(c)? !!c.nextCheckIn : ["target","active"].includes(grp(c));
 function myPartner(){ const n=S.me?.name||""; return S.partners.includes(n)? n : (S.partners.find(p=>n && p.toLowerCase().startsWith(n.toLowerCase().split(" ")[0]))||n); }
-const isMine = c => !!myPartner() && c.partner===myPartner();
+function isMine(c){ const me=myPartner(); if(!me||!c) return false; const R=Array.isArray(c.responsible)?c.responsible:[]; return R.length? R.includes(me) : c.partner===me; }
 function initials(n){ const p=String(n||"?").trim().split(/\s+/).filter(Boolean); return ((p[0]||"?")[0]+(p.length>1?p[p.length-1][0]:"")).toUpperCase(); }
 function avatarP(k,lg){ const t=tierOf(k); return `<span class="avatar ${t}${lg?" lg":""}">${esc(initials(k.name))}<span class="tg">${t}</span></span>`; }
 function avatarB(c,lg){ return `<span class="avatar biz${lg?" lg":""}">${esc(initials(c.name))}</span>`; }
@@ -2743,7 +2743,7 @@ function dealForm(id, preset){
   <div id="newContact"></div></div>
   <div class="fsec">Munger</div>
   <div class="fields">
-    <div class="fld"><label for="cPartner">Lead (our team)</label><select id="cPartner">${opts(S.partners,c.partner,"Unassigned")}</select></div>
+    <div class="fld"><label for="cPartner">Brought in by (our team)</label><select id="cPartner">${opts(S.partners,c.partner,"Unassigned")}</select></div>${respFields(c,!id)}
     <div class="fld nofin"><label for="cStage">Stage</label><select id="cStage">${opts(STAGES.map(s=>({v:s.id,l:s.label})),stageOf(c.status).id)}</select></div>
     <div class="fld cadw"><label for="cCad">Check in</label><select id="cCad">${opts(CADENCE.map(x=>({v:x.m,l:x.l})),c.followUpMonths??0)}</select></div>
     <div class="fld cadw"><label for="cNext">Next check-in (or pick a specific date)</label><input id="cNext" type="date" value="${esc(c.nextCheckIn||"")}"></div>
@@ -3726,7 +3726,7 @@ function moveModal(kind,id){
    <div class="fields">
     <div class="fld"><label for="mvDate">Next check-in</label><input type="date" id="mvDate" value="${esc(rec.nextCheckIn||addDays(7))}"></div>
     <div class="fld"><label for="mvTodo">What to do</label><input id="mvTodo" value="${esc(rec.checkInNote||"")}" placeholder="e.g. Ask about the expansion; send NDA"></div>
-    <div class="fld"><label for="mvOwner">${kind==="k"?"Who checks in":"Lead (our team)"}</label><select id="mvOwner">${opts(ownerOpts,owner)}</select></div>
+    ${kind==="k"?`<div class="fld"><label for="mvOwner">Who checks in</label><select id="mvOwner">${opts(ownerOpts,owner)}</select></div>`:`<div class="fld"><label>Responsible to follow up</label><div class="rolechips" style="margin-top:6px">${S.partners.map(p=>`<label><input type="checkbox" name="mvResp" value="${esc(p)}" ${respOf(rec).includes(p)?"checked":""}><span>${esc(p.split(" ")[0])}</span></label>`).join("")}</div></div>`}
    </div>
    ${historyHTML(rec).replace('margin-bottom:12px','margin:12px 0')}
    <div style="margin-top:14px;display:grid;gap:10px"><button class="btn primary block" data-act="mv-save" data-kind="${kind}" data-id="${esc(id)}">Save</button><button class="linkbtn" style="color:var(--bad,#b3261e)" data-act="mv-clear" data-kind="${kind}" data-id="${esc(id)}">Stop checking in</button></div></div>`, true);
@@ -3737,7 +3737,7 @@ document.addEventListener("click",async e=>{
   if(a==="mv-quick"){ $("#mvDate").value=t.dataset.k; document.querySelectorAll("[data-act=mv-quick]").forEach(b=>b.classList.toggle("on",b===t)); }
   if(a==="mv-save"||a==="mv-clear"){ const kind=t.dataset.kind, id=t.dataset.id; const path=(kind==="k"?"contacts/":"companies/")+id; const clear=a==="mv-clear";
     const patch= clear? {nextCheckIn:"", checkInNote:""} : {nextCheckIn:$("#mvDate").value||"", checkInNote:$("#mvTodo").value.trim()};
-    if(!clear){ if(kind==="k") patch.checkInOwner=$("#mvOwner").value; else patch.partner=$("#mvOwner").value; }
+    if(!clear){ if(kind==="k") patch.checkInOwner=$("#mvOwner").value; else { const R=[...document.querySelectorAll("input[name=mvResp]:checked")].map(x=>x.value); if(R.length) patch.responsible=R; } }
     if(clear && kind==="k"){ patch.checkInWeeks=0; patch.checkInRepeat=false; }
     t.disabled=true; if(await dbUpdate(path,patch)){ closeModal(); toast(clear?"Check-in stopped":`Check-in on ${fmtD(patch.nextCheckIn)}`); } t.disabled=false; }
 });
@@ -3984,7 +3984,7 @@ function ciReportHTML(c){
    ${last?`<div style="white-space:pre-wrap">${esc(last.text.replace(/^Checked in:?\s*/,""))}</div>`:`<div class="tag">Nobody has logged a check-in with ${esc(c.name)} yet.</div>`}
    <div class="kvline" style="margin-top:6px"><span class="lbl">Next follow-up</span><b>${c.nextCheckIn?esc(fmtD(c.nextCheckIn)):"Not set"}</b>${d?` <span class="pill ${d.cls}">${esc(d.txt)}</span>`:""}</div>
    ${c.checkInNote?`<div><b>Plan:</b> ${esc(c.checkInNote)}</div>`:""}
-   <div class="tag">Lead: ${esc(c.partner||"not set")}</div>
+   <div class="tag">${respLine(c)}</div>
    ${S.readOnly?"":`<div class="acts" style="grid-template-columns:1fr 1fr"><button class="act dark" data-act="quick-checkin" data-id="${esc(c.id)}">${ic("check",18)}Log check-in</button><button class="act" data-act="ci-move" data-kind="c" data-id="${esc(c.id)}">${ic("cal",18)}Next follow-up</button></div>`}
   </div>
   ${H.length>1?`<details class="histd"><summary>${ic("history",16)} All check-ins (${H.length})</summary><div class="group log" style="margin-top:8px">${H.map(e=>`<div class="e"${logAttr(c,e)}><small>${esc(fmtD(e.d))}${e.by?` · ${esc(e.by)}`:""}</small>${esc(e.text)}</div>`).join("")}</div></details>`:""}`;
@@ -4519,6 +4519,17 @@ function famRead19(){ return [...document.querySelectorAll(".famrow19")].map(r=>
 
 /* ---------- 15. A person's lead type follows their tags: Owner > Potential hire > Great contact > Employee ---------- */
 { const base=tierOf; tierOf=function(k){ const t=k&&Array.isArray(k.tags)? k.tags.filter(x=>TIERS[x]) : []; return t.length? TIER_PRIO.find(x=>t.includes(x)) : base(k); }; }
+
+/* ---------- 16. Responsible partner(s): who follows up, separate from who brought the business in ---------- */
+function respOf(c){ const R=Array.isArray(c?.responsible)?c.responsible.filter(Boolean):[]; return R.length? R : (c?.partner?[c.partner]:[]); }
+function respLine(c){ const R=respOf(c); return `Responsible: <b>${esc(R.join(" & ")||"not set")}</b>${c.partner&&!(R.length===1&&R[0]===c.partner)?` · brought in by ${esc(c.partner)}`:""}`; }
+function defaultResp(){ return S.partners.find(p=>/^rynhardt/i.test(p)) || myPartner() || S.partners[0] || ""; }
+function respFields(c,isNew){ if(!S.partners.length) return "";
+  const R=new Set(Array.isArray(c.responsible)&&c.responsible.length? c.responsible : isNew? [defaultResp()] : (c.partner?[c.partner]:[]));
+  return `<div class="fld" style="grid-column:1/-1"><label>Responsible to follow up (one or more)</label><div class="rolechips" id="cResp" style="margin-top:6px">${S.partners.map(p=>`<label><input type="checkbox" name="cResp" value="${esc(p)}" ${R.has(p)?"checked":""}><span>${esc(p.split(" ")[0])}</span></label>`).join("")}</div></div>`; }
+function respRead(){ const box=document.querySelector("#dealForm #cResp"); if(!box) return null; return [...box.querySelectorAll("input[name=cResp]:checked")].map(x=>x.value); }
+{ const base=dbSet; dbSet=async function(path,data){ if(String(path).startsWith("companies/") && data && "name" in data && document.querySelector("#dealForm #cResp")){ const R=respRead(); if(R) data={...data,responsible:R}; } return base(path,data); }; }
+{ const base=dbUpdate; dbUpdate=async function(path,patch){ if(String(path).startsWith("companies/") && patch && "name" in patch && document.querySelector("#dealForm #cResp")){ const R=respRead(); if(R) patch={...patch,responsible:R}; } return base(path,patch); }; }
 
 
 function vNetwork(){

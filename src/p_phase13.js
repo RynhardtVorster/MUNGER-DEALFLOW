@@ -58,7 +58,7 @@ function moveModal(kind,id){
    <div class="fields">
     <div class="fld"><label for="mvDate">Next check-in</label><input type="date" id="mvDate" value="${esc(rec.nextCheckIn||addDays(7))}"></div>
     <div class="fld"><label for="mvTodo">What to do</label><input id="mvTodo" value="${esc(rec.checkInNote||"")}" placeholder="e.g. Ask about the expansion; send NDA"></div>
-    <div class="fld"><label for="mvOwner">${kind==="k"?"Who checks in":"Lead (our team)"}</label><select id="mvOwner">${opts(ownerOpts,owner)}</select></div>
+    ${kind==="k"?`<div class="fld"><label for="mvOwner">Who checks in</label><select id="mvOwner">${opts(ownerOpts,owner)}</select></div>`:`<div class="fld"><label>Responsible to follow up</label><div class="rolechips" style="margin-top:6px">${S.partners.map(p=>`<label><input type="checkbox" name="mvResp" value="${esc(p)}" ${respOf(rec).includes(p)?"checked":""}><span>${esc(p.split(" ")[0])}</span></label>`).join("")}</div></div>`}
    </div>
    ${historyHTML(rec).replace('margin-bottom:12px','margin:12px 0')}
    <div style="margin-top:14px;display:grid;gap:10px"><button class="btn primary block" data-act="mv-save" data-kind="${kind}" data-id="${esc(id)}">Save</button><button class="linkbtn" style="color:var(--bad,#b3261e)" data-act="mv-clear" data-kind="${kind}" data-id="${esc(id)}">Stop checking in</button></div></div>`, true);
@@ -69,7 +69,7 @@ document.addEventListener("click",async e=>{
   if(a==="mv-quick"){ $("#mvDate").value=t.dataset.k; document.querySelectorAll("[data-act=mv-quick]").forEach(b=>b.classList.toggle("on",b===t)); }
   if(a==="mv-save"||a==="mv-clear"){ const kind=t.dataset.kind, id=t.dataset.id; const path=(kind==="k"?"contacts/":"companies/")+id; const clear=a==="mv-clear";
     const patch= clear? {nextCheckIn:"", checkInNote:""} : {nextCheckIn:$("#mvDate").value||"", checkInNote:$("#mvTodo").value.trim()};
-    if(!clear){ if(kind==="k") patch.checkInOwner=$("#mvOwner").value; else patch.partner=$("#mvOwner").value; }
+    if(!clear){ if(kind==="k") patch.checkInOwner=$("#mvOwner").value; else { const R=[...document.querySelectorAll("input[name=mvResp]:checked")].map(x=>x.value); if(R.length) patch.responsible=R; } }
     if(clear && kind==="k"){ patch.checkInWeeks=0; patch.checkInRepeat=false; }
     t.disabled=true; if(await dbUpdate(path,patch)){ closeModal(); toast(clear?"Check-in stopped":`Check-in on ${fmtD(patch.nextCheckIn)}`); } t.disabled=false; }
 });

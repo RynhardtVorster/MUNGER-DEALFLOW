@@ -55,7 +55,7 @@ function ciReportHTML(c){
    ${last?`<div style="white-space:pre-wrap">${esc(last.text.replace(/^Checked in:?\s*/,""))}</div>`:`<div class="tag">Nobody has logged a check-in with ${esc(c.name)} yet.</div>`}
    <div class="kvline" style="margin-top:6px"><span class="lbl">Next follow-up</span><b>${c.nextCheckIn?esc(fmtD(c.nextCheckIn)):"Not set"}</b>${d?` <span class="pill ${d.cls}">${esc(d.txt)}</span>`:""}</div>
    ${c.checkInNote?`<div><b>Plan:</b> ${esc(c.checkInNote)}</div>`:""}
-   <div class="tag">Lead: ${esc(c.partner||"not set")}</div>
+   <div class="tag">${respLine(c)}</div>
    ${S.readOnly?"":`<div class="acts" style="grid-template-columns:1fr 1fr"><button class="act dark" data-act="quick-checkin" data-id="${esc(c.id)}">${ic("check",18)}Log check-in</button><button class="act" data-act="ci-move" data-kind="c" data-id="${esc(c.id)}">${ic("cal",18)}Next follow-up</button></div>`}
   </div>
   ${H.length>1?`<details class="histd"><summary>${ic("history",16)} All check-ins (${H.length})</summary><div class="group log" style="margin-top:8px">${H.map(e=>`<div class="e"${logAttr(c,e)}><small>${esc(fmtD(e.d))}${e.by?` · ${esc(e.by)}`:""}</small>${esc(e.text)}</div>`).join("")}</div></details>`:""}`;
