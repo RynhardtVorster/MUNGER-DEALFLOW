@@ -108,8 +108,8 @@ function vToday(){
     <a class="stat" href="#businesses" data-act="biz-targets"><span class="n">${targets}</span><span class="l">Targets & discussions</span></a>
     <a class="stat" href="#people"><span class="n">${ppl.length}</span><span class="l">${mine?"People I know":"People tagged"}</span></a>
   </div>
-  <div class="quick"><a class="act" href="#near">${ic("pin",18)}Near me</a><a class="act" href="#partners">${ic("bank",18)}Partners</a><a class="act" href="#talent">${ic("star",18)}Talent</a></div>
-  ${contacts().length<15?`<div class="sec"><h2>Get started</h2></div><a class="card start" href="#import">${ic("upload",28)}<div><b>Start the network sweep</b><span>Import your phone contacts and tag the A, B and C people in one go.</span></div></a>`:""}
+  <div class="quick"><a class="act" href="#near">${ic("pin",18)}Map</a><a class="act" href="#partners">${ic("bank",18)}Partners</a><a class="act" href="#talent">${ic("star",18)}Talent</a></div>
+  ${contacts().length<15?`<div class="sec"><h2>Get started</h2></div><button class="card start" data-act="new-contact">${ic("plus",28)}<div><b>Build the network, one person at a time</b><span>Add the people who matter, tag them A, B, C or D and say who in our team knows them.</span></div></button>`:""}
   ${targetsBlock(mine)}
   <div class="sec"><h2>To call this week</h2>${due.length?`<a href="#checkins">All</a>`:""}</div>
   ${due.length? due.map(anyDueCard).join("") : `<div class="card empty"><b>You're up to date</b>${soon.length?`Next up: ${esc(soon[0].name)} on ${esc(fmtD(soon[0].nextCheckIn))}.`:"Set check-ins on targets you like and on people you want to stay close to."}</div>`}
@@ -138,11 +138,11 @@ function vPeople(){
   const cnt=t=>all.filter(c=>tierOf(c)===t).length;
   const chip=(t,l,n)=>`<button class="chip ${k.tier===t?"on":""}" data-act="k-tier" data-k="${t}">${l}${n!==undefined?` <span class="n">${n}</span>`:""}</button>`;
   let body="";
-  if(!arr.length) body=`<div class="card empty">${all.length?"<b>Nobody matches</b>Try a different search or filter, or use Ask the network.":`<b>Your network starts here</b>Import your contacts and tag who matters, or tap + to add one person.<div style="margin-top:14px"><a class="btn primary" href="#import">${ic("upload",18)} Import contacts</a></div>`}</div>`;
+  if(!arr.length) body=`<div class="card empty">${all.length?"<b>Nobody matches</b>Try a different search or filter, or use Ask the network.":`<b>Your network starts here</b>Add the people who matter, one at a time.<div style="margin-top:14px"><button class="btn primary" data-act="new-contact">${ic("plus",18)} Add a person</button></div>`}</div>`;
   else { let last=""; const parts=[]; let buf=[]; const flush=()=>{ if(buf.length){ parts.push(`<div class="group">${buf.join("")}</div>`); buf=[]; } };
     for(const c of arr){ const L=(c.name||"#")[0].toUpperCase(); const letter=/[A-Z]/.test(L)?L:"#"; if(!special[k.tier] && letter!==last && arr.length>12){ flush(); parts.push(`<div class="letter">${letter}</div>`); last=letter; } buf.push(personRow(c)); }
     flush(); body=parts.join(""); }
-  return `<div class="ph"><div><h1>People</h1><p>${all.length} in the network · A ${cnt("A")} · B ${cnt("B")} · C ${cnt("C")} · D ${cnt("D")}</p></div><a class="btn sm" href="#import">${ic("upload",18)} Import</a></div>
+  return `<div class="ph"><div><h1>People</h1><p>${all.length} in the network · A ${cnt("A")} · B ${cnt("B")} · C ${cnt("C")} · D ${cnt("D")}</p></div><button class="btn sm primary" data-act="new-contact">${ic("plus",18)} Add</button></div>
   <div class="search">${ic("search",20)}<input id="kq" type="search" placeholder="Search name, company, skill, town…" value="${esc(k.q)}" autocomplete="off" aria-label="Search people"></div>
   <div class="chips">${chip("","All",all.length)}${chip("A","A · Owners",cnt("A"))}${chip("B","B · Employees",cnt("B"))}${chip("C","C · Potential hires",cnt("C"))}${chip("D","D · Great contacts",cnt("D"))}${chip("top","★ Most influential")}${chip("talent","Talent",all.filter(isTalent).length)}${chip("hnwi","HNWI",all.filter(x=>x.hnwi).length)}${me?`<button class="chip ${k.mine?"on":""}" data-act="k-mine">People I know</button>`:""}</div>
   ${k.tier==="top"?`<p class="tag" style="margin:-4px 2px 10px">Ranked by your influence rating, how many of our team know them, friendships and the leads they've brought in.</p>`:""}
@@ -228,13 +228,12 @@ function vMore(){
   return `<div class="ph"><div><h1>More</h1></div></div>
   <div class="group">
    ${item("#ask","spark","Ask the network","Who should we talk to for…")}
-   ${item("#near","pin","Near me","Who's close by, wherever you are")}
+   ${item("#near","pin","Map","Who's connected to a town, province or country")}
    ${item("#partners","bank","Partners","Banks, accountants, lawyers and advisors who help us do deals")}
    ${item("#talent","star","Talent bench","Future CEOs, CFOs and the hit squad")}
    ${item("#meeting","flag","Target meeting","Scorecard, commitments, chase / keep warm / drop")}
    ${item("#checkins","cal","Check-ins","Who to call and when")}
    ${item("#network","net","Network map","Our team, people, partners and businesses, connected")}
-   ${item("#import","upload","Import contacts","Bring in your phone contacts and tag them")}
    ${item("#lists","send","Mail lists","Afrikaans and English recipient lists")}
    ${item("#settings","gear","Team & settings","Team members, channels, logins, privacy")}
   </div>

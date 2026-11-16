@@ -77,9 +77,9 @@ function ovHead(title, left, right){ return `<div class="ovh">${left||`<button c
 
 /* ---------------- Shell ---------------- */
 const TABS=[["today","Today","home"],["people","People","people"],["+","",""],["partners","Partners","bank"],["businesses","Businesses","biz"]];
-const RAIL=[["today","Today","home"],["ask","Ask the network","spark"],["people","People","people"],["businesses","Businesses","biz"],["meeting","Target meeting","flag"],["near","Near me","pin"],["partners","Partners","bank"],["talent","Talent bench","star"],["checkins","Check-ins","cal"],["network","Network map","net"],["import","Import contacts","upload"],["lists","Mail lists","send"],["settings","Team & settings","gear"]];
-const TITLES={near:"NEAR ME",partners:"PARTNERS",funders:"PARTNERS",talent:"TALENT",ask:"ASK",meeting:"MEETING",today:"MUNGER",people:"PEOPLE",businesses:"BUSINESSES",more:"MORE",checkins:"CHECK-INS",network:"NETWORK",import:"IMPORT",lists:"MAIL LISTS",settings:"SETTINGS"};
-const VIEWFN=()=>({others:vOthers,near:vNear,partners:vPartners,funders:vPartners,talent:vTalent,ask:vAsk,meeting:vMeeting,today:vToday,people:vPeople,businesses:vBusinesses,more:vMore,checkins:vCheckins,network:vNetwork,import:vImport,lists:vLists,settings:vSettings});
+const RAIL=[["today","Today","home"],["ask","Ask the network","spark"],["people","People","people"],["businesses","Businesses","biz"],["meeting","Target meeting","flag"],["partners","Partners","bank"],["talent","Talent bench","star"],["checkins","Check-ins","cal"],["network","Network map","net"],["near","Map","pin"],["lists","Mail lists","send"],["settings","Team & settings","gear"]];
+const TITLES={near:"MAP",partners:"PARTNERS",funders:"PARTNERS",talent:"TALENT",ask:"ASK",meeting:"MEETING",today:"MUNGER",people:"PEOPLE",businesses:"BUSINESSES",more:"MORE",checkins:"CHECK-INS",network:"NETWORK",import:"IMPORT",lists:"MAIL LISTS",settings:"SETTINGS"};
+const VIEWFN=()=>({others:vOthers,near:vNear,partners:vPartners,funders:vPartners,talent:vTalent,ask:vAsk,meeting:vMeeting,today:vToday,people:vPeople,businesses:vBusinesses,more:vMore,checkins:vCheckins,network:vNetwork,import:vPeople,lists:vLists,settings:vSettings});
 function currentView(){ const v=(location.hash||"").replace("#",""); return TITLES[v]? v : "today"; }
 function render(){
   S.view=currentView();
@@ -92,7 +92,7 @@ function render(){
    ${RAIL.map(([id,l,i])=>`<a class="nav ${S.view===id?"on":""}" href="#${id}">${ic(i,20)}<span>${l}</span>${id==="today"&&due?`<span class="dot">${due}</span>`:""}</a>`).join("")}
    <div class="foot">${S.me?`${esc(S.me.name||S.me.email)} · ${S.companies.size} businesses · ${S.contacts.size} people`:""}</div>`;
   $("#topTitle").textContent=TITLES[S.view];
-  $("#topActions").innerHTML = `<span style="display:flex">${S.view==="people"? `<button class="tbtn" data-act="goto" data-v="import" aria-label="Import contacts">${ic("upload",22)}</button>` : ""}${["today","people","businesses"].includes(S.view)?`<button class="tbtn" data-act="goto" data-v="near" aria-label="Near me">${ic("pin",22)}</button>`:""}${S.view!=="ask"?`<button class="tbtn" data-act="goto" data-v="ask" aria-label="Ask the network">${ic("search",22)}</button>`:""}<button class="tbtn ${S.view==="more"?"on":""}" data-act="goto" data-v="more" aria-label="More">${ic("more",22)}</button></span>`;
+  $("#topActions").innerHTML = `<span style="display:flex">${["today","people","businesses"].includes(S.view)?`<button class="tbtn" data-act="goto" data-v="near" aria-label="Map">${ic("pin",22)}</button>`:""}${S.view!=="ask"?`<button class="tbtn" data-act="goto" data-v="ask" aria-label="Ask the network">${ic("search",22)}</button>`:""}<button class="tbtn ${S.view==="more"?"on":""}" data-act="goto" data-v="more" aria-label="More">${ic("more",22)}</button></span>`;
   const m=$("#main");
   if(S.view==="network"){ if(!m.querySelector("#net")){ m.innerHTML=vNetwork(); netInit(); } else netRebuild(); }
   else { netStop(); const keep=captureFocus(); m.innerHTML=banner()+VIEWFN()[S.view](); restoreFocus(keep); }

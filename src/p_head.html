@@ -292,6 +292,11 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 .stars{color:#b8862b;font-size:12px;letter-spacing:1px;vertical-align:1px}
 .likebox{margin-top:14px;border-color:var(--ink)}
 [hidden]{display:none!important}
+.plmap{height:300px;border-radius:var(--r,16px);overflow:hidden;border:1px solid var(--line);margin:0 0 12px;background:var(--soft);z-index:0}
+.plmap .leaflet-control-attribution{font-size:10px}
+.plpick{display:grid;grid-template-columns:1fr auto;gap:8px;margin:10px 0}
+.plpick input,.plpick select{min-height:48px;border-radius:12px;border:1px solid var(--line);padding:0 14px;font-size:16px;background:var(--surface);color:var(--ink);min-width:0}
+.why{display:block;font-size:13.5px;color:var(--muted);white-space:normal}
 .chips{flex-wrap:wrap!important;overflow:visible!important;margin:0 0 14px!important;padding:0!important}
 .activef{display:flex;flex-wrap:wrap;gap:8px;margin:-4px 0 12px}
 .xin{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center}
@@ -408,6 +413,7 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 }
 @media (prefers-reduced-motion: reduce){ .sheet,.modal,.toast,.scrim{transition:none} }
 </style>
+<link rel="stylesheet" href="leaflet.css">
 </head>
 <body>
 <header class="topbar" id="topbar">
@@ -435,6 +441,7 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
     <p class="fine">Partners only. Ask Rynhardt for a login.</p>
   </form>
 </div>
+<script src="leaflet.js"></script>
 <script src="supabase.js"></script>
 <script>
 "use strict";
