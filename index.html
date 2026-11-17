@@ -323,6 +323,7 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 .pill.sen-senior{background:#b5651d;color:#fff}
 .mc-star{flex:none;font-size:13px;font-weight:600;padding:5px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted,#777);margin-left:6px;white-space:nowrap}
 .mc-star.on{background:#b5651d;border-color:#b5651d;color:#fff}
+.mdot.dim{opacity:.28;background:#888}
 .mdot-wrap{background:none;border:0}
 .mdot{border-radius:50%;background:var(--tierA,#b5651d);color:#fff;display:grid;place-items:center;font:700 12.5px/1 "Source Sans 3",system-ui,sans-serif;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);opacity:.93}
 .mdot.sel{background:var(--ink,#1d2b36);transform:scale(1.12)}
@@ -496,7 +497,7 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 <script src="supabase.js"></script>
 <script>
 "use strict";
-const APP_V="v58";
+const APP_V="v59";
 /* ---------------- Reference data ---------------- */
 const STAGES = [
   {id:"network", label:"Prospect – we'd look at it", group:"network"},
@@ -4797,6 +4798,50 @@ document.addEventListener("click",e=>{ const t=e.target.closest('[data-act="mc-s
 { const base=linkModal; linkModal=function(mode,id){ base(mode,id); const r=$("#lnRole")?.closest(".fields"); if(!r) return;
   r.insertAdjacentHTML("afterend",`<label class="check" style="margin:8px 4px 0"><input type="checkbox" id="lnMain"> Make them the main contact${mode==="c"?` for ${esc(S.companies.get(id)?.name||"")}`:" there"} (Call / WhatsApp / Email go to them)</label>`); }; }
 { const base=linkPC; linkPC=async function(kid,cid,role){ const want=$("#lnMain")?.checked; const ok=await base(kid,cid,role); if(ok && want) await dbUpdate("companies/"+cid,{mainContactId:kid}); return ok; }; }
+
+/* ---------- 30. Countries: pick from a list, and show people abroad on the map; province/country filters move the map ---------- */
+const CTRY_LL={"South Africa":[-29,24.5],"Namibia":[-22.6,17.1],"Botswana":[-24.65,25.9],"Zimbabwe":[-17.83,31.05],"Mozambique":[-25.97,32.57],"Zambia":[-15.4,28.3],"Malawi":[-13.97,33.79],"Eswatini":[-26.3,31.13],"Lesotho":[-29.31,27.48],"Angola":[-8.84,13.23],"Mauritius":[-20.16,57.5],"Madagascar":[-18.88,47.51],"Seychelles":[-4.62,55.45],"Kenya":[-1.29,36.82],"Tanzania":[-6.8,39.28],"Uganda":[0.35,32.58],"Rwanda":[-1.95,30.06],"Ethiopia":[9.03,38.74],"DR Congo":[-4.32,15.31],"Republic of the Congo":[-4.27,15.28],"Gabon":[0.42,9.47],"Cameroon":[3.85,11.5],"Nigeria":[6.52,3.38],"Ghana":[5.6,-0.19],"Côte d'Ivoire":[5.36,-4.01],"Senegal":[14.72,-17.47],"Mali":[12.64,-8],"Burkina Faso":[12.37,-1.52],"Benin":[6.37,2.39],"Togo":[6.13,1.22],"Sierra Leone":[8.48,-13.23],"Liberia":[6.3,-10.8],"Guinea":[9.64,-13.58],"Gambia":[13.45,-16.58],"Cabo Verde":[14.93,-23.51],"Mauritania":[18.08,-15.98],"Morocco":[33.97,-6.85],"Algeria":[36.75,3.06],"Tunisia":[36.81,10.18],"Libya":[32.89,13.19],"Egypt":[30.04,31.24],"Sudan":[15.5,32.56],"South Sudan":[4.85,31.58],"Somalia":[2.05,45.32],"Djibouti":[11.59,43.15],"Eritrea":[15.32,38.93],"Burundi":[-3.38,29.36],"Comoros":[-11.7,43.26],"Chad":[12.13,15.06],"Niger":[13.51,2.11],"Central African Republic":[4.39,18.56],"Equatorial Guinea":[3.75,8.78],"São Tomé and Príncipe":[0.34,6.73],
+"United Kingdom":[51.51,-0.13],"Ireland":[53.35,-6.26],"Netherlands":[52.37,4.9],"Belgium":[50.85,4.35],"Luxembourg":[49.61,6.13],"Germany":[52.52,13.4],"France":[48.86,2.35],"Switzerland":[46.95,7.45],"Austria":[48.21,16.37],"Italy":[41.9,12.5],"Spain":[40.42,-3.7],"Portugal":[38.72,-9.14],"Malta":[35.9,14.51],"Cyprus":[35.17,33.36],"Greece":[37.98,23.73],"Denmark":[55.68,12.57],"Norway":[59.91,10.75],"Sweden":[59.33,18.07],"Finland":[60.17,24.94],"Iceland":[64.15,-21.94],"Poland":[52.23,21.01],"Czech Republic":[50.08,14.44],"Slovakia":[48.15,17.11],"Hungary":[47.5,19.04],"Romania":[44.43,26.1],"Bulgaria":[42.7,23.32],"Croatia":[45.81,15.98],"Slovenia":[46.06,14.51],"Serbia":[44.79,20.45],"Estonia":[59.44,24.75],"Latvia":[56.95,24.11],"Lithuania":[54.69,25.28],"Ukraine":[50.45,30.52],"Turkey":[41.01,28.98],"Monaco":[43.74,7.42],"Liechtenstein":[47.14,9.52],"Jersey":[49.19,-2.11],"Guernsey":[49.45,-2.54],"Isle of Man":[54.15,-4.48],"United States":[40.71,-74.01],"Canada":[43.65,-79.38],"Mexico":[19.43,-99.13],"Brazil":[-23.55,-46.63],"Argentina":[-34.6,-58.38],"Chile":[-33.45,-70.67],"Colombia":[4.71,-74.07],"Peru":[-12.05,-77.04],"Uruguay":[-34.9,-56.16],"United Arab Emirates":[25.2,55.27],"Saudi Arabia":[24.71,46.68],"Qatar":[25.29,51.53],"Kuwait":[29.38,47.99],"Bahrain":[26.23,50.59],"Oman":[23.59,58.41],"Israel":[32.09,34.78],"Jordan":[31.95,35.93],"India":[19.08,72.88],"China":[31.23,121.47],"Hong Kong":[22.32,114.17],"Singapore":[1.35,103.82],"Japan":[35.68,139.69],"South Korea":[37.57,126.98],"Taiwan":[25.03,121.57],"Malaysia":[3.14,101.69],"Indonesia":[-6.21,106.85],"Thailand":[13.76,100.5],"Vietnam":[10.82,106.63],"Philippines":[14.6,120.98],"Pakistan":[24.86,67.01],"Bangladesh":[23.81,90.41],"Sri Lanka":[6.93,79.86],"Australia":[-33.87,151.21],"New Zealand":[-36.85,174.76],"British Virgin Islands":[18.43,-64.62],"Cayman Islands":[19.29,-81.37],"Bermuda":[32.3,-64.78]};
+const PROV_LL={"Western Cape":[-33.4,20.2],"Eastern Cape":[-32.3,26.4],"Northern Cape":[-29.2,21.9],"Free State":[-28.7,26.6],"KwaZulu-Natal":[-28.9,30.9],"North West":[-26.2,25.8],"Gauteng":[-26.1,28.1],"Mpumalanga":[-25.6,30.4],"Limpopo":[-23.6,29.4],"Namibia":[-22.6,17.1],"Eswatini":[-26.5,31.4],"Botswana":[-22.3,24.7]};
+const ctryCanon=v=>{ const t=lc(String(v||"").trim()); if(!t) return ""; const al={"rsa":"South Africa","sa":"South Africa","za":"South Africa","uk":"United Kingdom","england":"United Kingdom","usa":"United States","us":"United States","america":"United States","uae":"United Arab Emirates","dubai":"United Arab Emirates","holland":"Netherlands","swaziland":"Eswatini","suid-afrika":"South Africa","portugaal":"Portugal"}; return al[t] || COUNTRY_LIST.find(c=>lc(c)===t) || String(v).trim(); };
+/* country dropdown in the person and business forms */
+function countrySelect(id,val){ const v=ctryCanon(val||"South Africa"); const known=COUNTRY_LIST.includes(v);
+  const sorted=["South Africa",...COUNTRY_LIST.filter(c=>c!=="South Africa").sort((a,b)=>a.localeCompare(b))];
+  return `<select id="${id}Sel" class="ctry19" data-for="${id}">${sorted.map(c=>`<option value="${esc(c)}" ${c===v?"selected":""}>${esc(c)}</option>`).join("")}<option value="__other" ${known?"":"selected"}>Other country…</option></select>
+   <input id="${id}" value="${esc(v)}" ${known?"hidden":""} placeholder="Type the country" autocomplete="off" style="margin-top:6px">`; }
+function swapCountry(id){ const inp=document.getElementById(id); if(!inp || inp.dataset.c19 || inp.tagName!=="INPUT") return; inp.dataset.c19="1"; const v=inp.value; const wrap=document.createElement("div"); wrap.innerHTML=countrySelect(id,v); inp.replaceWith(...wrap.childNodes); document.getElementById(id).dataset.c19="1"; }
+document.addEventListener("change",e=>{ if(!e.target.classList?.contains("ctry19")) return; const inp=document.getElementById(e.target.dataset.for); if(!inp) return;
+  if(e.target.value==="__other"){ inp.hidden=false; inp.value=""; inp.focus(); } else { inp.hidden=true; inp.value=e.target.value; } inp.dispatchEvent(new Event("input",{bubbles:true})); });
+{ const base=contactForm; contactForm=function(id,preset){ base(id,preset); swapCountry("kCountry"); }; }
+{ const base=dealForm; dealForm=function(id,preset){ base(id,preset); swapCountry("cHq"); }; }
+/* where each record sits on the map: SA town from the gazetteer, otherwise its country */
+function placeOf(r,isK){ const g=gazFind(r.town); if(g) return {key:g.name, label:g.name, ll:[g.lat,g.lng], region:g.region, country:"South Africa"};
+  const c=ctryCanon(isK? r.country : (r.hqCountry||r.country)); if(c && c!=="South Africa" && CTRY_LL[c]) return {key:"ctry:"+c, label:c, ll:CTRY_LL[c], country:c, abroad:true}; return null; }
+townGroups=function(){ const m=new Map();
+  const bump=(pl,id)=>{ if(!pl) return; if(!m.has(pl.key)) m.set(pl.key,{g:{name:pl.label,lat:pl.ll[0],lng:pl.ll[1],region:pl.region,country:pl.country,abroad:!!pl.abroad},ids:new Set()}); m.get(pl.key).ids.add(id); };
+  contacts().forEach(k=>{ bump(placeOf(k,true),"k"+k.id); const co=companyOf(k); if(co) bump(placeOf(co,false),"k"+k.id); });
+  companies().forEach(c=>bump(placeOf(c,false),"c"+c.id));
+  return [...m.values()].map(x=>({g:x.g,ids:[...x.ids],n:x.ids.size})); };
+{ const base=townPopup; townPopup=function(p){ let h=base(p); if(p.g.abroad) h=h.replace(`data-act="pl-town" data-k="${esc(p.g.name)}"`,`data-act="pl-country" data-k="${esc(p.g.name)}"`); return h; }; }
+document.addEventListener("click",e=>{ const t=e.target.closest('[data-act="pl-country"],[data-act="pl-pick"]'); if(!t) return; e.preventDefault(); e.stopImmediatePropagation(); if(PLMAP) PLMAP.closePopup();
+  S.pl={...S.pl, mode:t.dataset.mode||"country", val:t.dataset.k, fly:true}; render(); },true);
+/* highlight the chosen province or country, and fly there */
+function inSel(p){ const P=S.pl; if(!P.val) return true; if(P.mode==="town") return lc(p.g.name)===lc(P.val);
+  if(P.mode==="province") return lc(p.g.region)===lc(P.val) || (p.g.abroad && lc(p.g.country)===lc(P.val));
+  if(P.mode==="country") return lc(p.g.country||"")===lc(ctryCanon(P.val)); return true; }
+{ const base=plMarkers; plMarkers=function(map){ const pts=base(map); const P=S.pl;
+  if(P.val && P.mode!=="town") map._munLayer.eachLayer(mk=>{ const ll=mk.getLatLng(); const p=pts.find(x=>x.g.lat===ll.lat&&x.g.lng===ll.lng); const el=mk.getElement()?.querySelector(".mdot"); if(el && p) el.classList.toggle("dim",!inSel(p)); if(el && p && inSel(p)) el.classList.add("sel"); });
+  if(P.fly && P.val){ P.fly=false; const sel=pts.filter(inSel); setTimeout(()=>{ try{ if(sel.length>1) map.fitBounds(L.latLngBounds(sel.map(p=>[p.g.lat,p.g.lng])).pad(.4),{maxZoom:9}); else { const c= P.mode==="province"? PROV_LL[P.val] : P.mode==="country"? CTRY_LL[ctryCanon(P.val)] : sel[0]&&[sel[0].g.lat,sel[0].g.lng]; const z= P.mode==="country"? (ctryCanon(P.val)==="South Africa"?5:6) : P.mode==="province"? 7 : 10; if(c) map.setView(c,z); } }catch(_){} },80); }
+  return pts; }; }
+document.addEventListener("change",e=>{ if(e.target.name==="plMode"){ setTimeout(()=>{ S.pl.fly=false; },0); } if(e.target.id==="plVal" && e.target.tagName==="SELECT"){ S.pl.fly=true; } },true);
+document.addEventListener("submit",e=>{ if(e.target.id==="plForm") S.pl.fly=true; },true);
+/* province and country modes: show the options with counts straight away */
+{ const base=vNear; vNear=function(){ let h=base(); const P=S.pl; if(P.mode==="town") return h;
+  const pts=townGroups(); const cnt=new Map();
+  pts.forEach(p=>{ const k= P.mode==="province"? (p.g.region||(p.g.abroad?null:null)) : p.g.country; if(!k) return; cnt.set(k,(cnt.get(k)||0)+p.n); });
+  const L=[...cnt.entries()].sort((a,b)=>b[1]-a[1]); if(!L.length) return h;
+  const chips=`<div class="chips" style="margin:8px 0 4px">${L.map(([k,n])=>`<button class="chip ${lc(P.val)===lc(k)?"on":""}" data-act="pl-pick" data-mode="${P.mode}" data-k="${esc(k)}">${esc(k)} <span class="n">${n}</span></button>`).join("")}</div>`;
+  return h.replace('<form id="plForm" class="plpick">',chips+'<form id="plForm" class="plpick">'); }; }
 
 
 function vNetwork(){
