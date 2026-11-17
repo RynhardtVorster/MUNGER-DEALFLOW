@@ -324,6 +324,9 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 .mc-star{flex:none;font-size:13px;font-weight:600;padding:5px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted,#777);margin-left:6px;white-space:nowrap}
 .mc-star.on{background:#b5651d;border-color:#b5651d;color:#fff}
 .mdot.dim{opacity:.28;background:#888}
+.pp19 .ppSel{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper,#fff);display:flex;justify-content:space-between;align-items:center}
+.pp19 .ppNew input{display:block;width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:16px;background:var(--paper,#fff)}
+.pp19 .ppHits:empty{display:none}
 .mdot-wrap{background:none;border:0}
 .mdot{border-radius:50%;background:var(--tierA,#b5651d);color:#fff;display:grid;place-items:center;font:700 12.5px/1 "Source Sans 3",system-ui,sans-serif;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);opacity:.93}
 .mdot.sel{background:var(--ink,#1d2b36);transform:scale(1.12)}
@@ -497,7 +500,7 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 <script src="supabase.js"></script>
 <script>
 "use strict";
-const APP_V="v59";
+const APP_V="v60";
 /* ---------------- Reference data ---------------- */
 const STAGES = [
   {id:"network", label:"Prospect – we'd look at it", group:"network"},
@@ -4720,7 +4723,7 @@ document.addEventListener("input",e=>{ if(e.target.id==="lnQ"){ const b=document
 document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act="link19"],[data-act^="ln-"]'); if(!t) return; e.preventDefault(); e.stopPropagation(); const a=t.dataset.act;
   if(a==="link19"){ if(!S.readOnly) linkModal(t.dataset.mode,t.dataset.id); return; }
   if(a==="ln-mode"){ const nw=t.dataset.k==="new"; document.querySelectorAll('#modal .seg button').forEach(b=>b.classList.toggle("on",b.dataset.k===t.dataset.k)); $("#lnFind").hidden=nw; $("#lnNew").hidden=!nw;
-    if(nw){ if(t.dataset.name) $("#lnName").value=t.dataset.name.replace(/\b\p{L}/gu,m=>m.toUpperCase()); $("#lnName").focus(); $("#lnName").dispatchEvent(new Event("input",{bubbles:true})); } else $("#lnQ").focus(); return; }
+    if(nw){ if(t.dataset.name) { const q=t.dataset.name; $("#lnName").value= q===q.toLowerCase()? q.replace(/(^|\s)\p{L}/gu,m=>m.toUpperCase()) : q; } $("#lnName").focus(); $("#lnName").dispatchEvent(new Event("input",{bubbles:true})); } else $("#lnQ").focus(); return; }
   const mode=t.dataset.mode, id=t.dataset.id, role=$("#lnRole")?.value||"Owner";
   if(a==="ln-pick"){ t.disabled=true; const ok= mode==="k"? await linkPC(id,t.dataset.o,role) : await linkPC(t.dataset.o,id,role); t.disabled=false; if(ok) lnDone(); return; }
   if(a==="ln-addnew"){ const nm=($("#lnName")?.value||"").trim(); if(!nm){ toast("Type the name"); $("#lnName").focus(); return; } t.disabled=true; const by=await myName(); const nid=newId();
@@ -4842,6 +4845,55 @@ document.addEventListener("submit",e=>{ if(e.target.id==="plForm") S.pl.fly=true
   const L=[...cnt.entries()].sort((a,b)=>b[1]-a[1]); if(!L.length) return h;
   const chips=`<div class="chips" style="margin:8px 0 4px">${L.map(([k,n])=>`<button class="chip ${lc(P.val)===lc(k)?"on":""}" data-act="pl-pick" data-mode="${P.mode}" data-k="${esc(k)}">${esc(k)} <span class="n">${n}</span></button>`).join("")}</div>`;
   return h.replace('<form id="plForm" class="plpick">',chips+'<form id="plForm" class="plpick">'); }; }
+
+/* ---------- 31. Family links: search people by name, or add a new person on the spot ---------- */
+function ppHTML(ex){ return `<div class="pp19" data-ex="${esc((ex||[]).join(","))}"><input type="hidden" class="ppWho" value="">
+  <div class="ppSel" hidden></div>
+  <input type="search" class="ss-input ppQ" placeholder="Type their name…" autocomplete="off" aria-label="Find the family member">
+  <div class="ppHits group"></div>
+  <div class="ppNew" hidden><div class="tag" style="margin:2px 4px 6px">New person – they're added to Munger when you save.</div><input class="ppName" placeholder="Full name" autocapitalize="words" autocomplete="off"><input class="ppCell" type="tel" inputmode="tel" placeholder="Cell (optional)" autocomplete="off" style="margin-top:6px"></div></div>`; }
+function ppHits(box){ const q=box.querySelector(".ppQ").value; const ex=new Set(box.dataset.ex.split(",").filter(Boolean)); const w=ssNorm(q).trim().split(/\s+/).filter(Boolean); const hits=box.querySelector(".ppHits");
+  if(!w.length){ hits.innerHTML=""; return; }
+  const L=contacts().filter(k=>!ex.has(k.id) && w.every(t=>ssNorm(k.name).includes(t))).sort((a,b)=>a.name.localeCompare(b.name)).slice(0,6);
+  hits.innerHTML=L.map(k=>`<button type="button" class="rowi" data-act="pp-pick" data-id="${esc(k.id)}">${avatarP(k)}<span class="main"><span class="t1" style="display:block">${esc(k.name)}</span><span class="t2" style="display:block">${esc(workLine(k)||k.town||"")}</span></span></button>`).join("")
+   +`<button type="button" class="rowi" data-act="pp-new"><span class="avatar biz">${ic("plus",18)}</span><span class="main"><span class="t1" style="display:block">Add “${esc(q.trim())}” as a new person</span><span class="t2" style="display:block">Not in Munger yet</span></span></button>`; }
+function ppSet(box,html,who){ box.querySelector(".ppWho").value=who; const s=box.querySelector(".ppSel"); s.innerHTML=html+` <button type="button" class="linkbtn" data-act="pp-change">Change</button>`; s.hidden=false; box.querySelector(".ppQ").hidden=true; box.querySelector(".ppHits").innerHTML=""; }
+document.addEventListener("input",e=>{ if(e.target.classList?.contains("ppQ")) ppHits(e.target.closest(".pp19")); });
+document.addEventListener("click",e=>{ const t=e.target.closest('[data-act="pp-pick"],[data-act="pp-new"],[data-act="pp-change"]'); if(!t) return; e.preventDefault(); e.stopPropagation(); const box=t.closest(".pp19");
+  if(t.dataset.act==="pp-pick"){ const k=S.contacts.get(t.dataset.id); ppSet(box,`<b>${esc(k.name)}</b>`,k.id); box.querySelector(".ppNew").hidden=true; }
+  if(t.dataset.act==="pp-new"){ const q=box.querySelector(".ppQ").value.trim(); ppSet(box,`<b>New person</b>`,"__new"); const n=box.querySelector(".ppNew"); n.hidden=false; const nm=n.querySelector(".ppName"); nm.value= q===q.toLowerCase()? q.replace(/(^|\s)\p{L}/gu,m=>m.toUpperCase()) : q; nm.focus(); }
+  if(t.dataset.act==="pp-change"){ box.querySelector(".ppWho").value=""; box.querySelector(".ppSel").hidden=true; box.querySelector(".ppNew").hidden=true; const q=box.querySelector(".ppQ"); q.hidden=false; q.focus(); ppHits(box); } },true);
+async function ppResolve(box,like){ const who=box.querySelector(".ppWho").value; if(who && who!=="__new") return who; if(who!=="__new") return "";
+  const nm=box.querySelector(".ppName").value.trim(); if(!nm){ toast("Type the new person's name"); box.querySelector(".ppName").focus(); return null; }
+  const ex=contacts().find(k=>normName(k.name)===normName(nm)); if(ex) return ex.id;
+  const id=newId(); const by=await myName(); const src=like||{};
+  const ok=await dbSet("contacts/"+id,{name:nm, cell:box.querySelector(".ppCell").value.trim(), tier:"D", tags:["D"], partner:myPartner()||"", language:src.language||"af", country:src.country||"South Africa", town:src.town||"", province:src.province||"", log:[{d:today(),by,text:`Captured · family of ${src.name||"a contact"}`}]});
+  return ok? id : null; }
+famModal=function(id){ const k=S.contacts.get(id); if(!k) return; const linked=familyOf(k).map(x=>x.o.id); const first=k.name.split(" ")[0];
+  showModal(`${ovHead("Link a family member",`<button class="hbtn" data-act="close-modal">Cancel</button>`)}<div class="ovb">
+   <div class="lbl" style="margin:0 4px 6px">Who is it?</div>${ppHTML([id,...linked])}
+   <div class="fields" style="margin-top:10px">
+    <div class="fld"><label for="famB">They are ${esc(first)}'s</label><select id="famB" data-ss="off">${opts(FAM.map(f=>({v:f,l:famLabel(f)})),"","Choose…")}</select></div>
+    <div class="fld"><label for="famA">${esc(first)} is their</label><select id="famA" data-ss="off">${opts(FAM.map(f=>({v:f,l:famLabel(f)})),"","Choose…")}</select></div>
+    <div class="fld"><label for="famNote">Note (optional)</label><input id="famNote" placeholder="e.g. runs the farm with his father"></div></div>
+   <div style="margin-top:14px"><button class="btn primary block" data-act="fam19-save" data-id="${esc(id)}">Link them</button></div></div>`,true);
+  setTimeout(()=>document.querySelector("#modal .ppQ")?.focus(),60); };
+document.addEventListener("change",e=>{ if(e.target.id==="famB"){ e.target.dataset.touched="1"; const v=FAM_REV[e.target.value]; const a=$("#famA"); if(v&&a&&!a.dataset.touched) a.value=v; } if(e.target.id==="famA"){ e.target.dataset.touched="1"; const v=FAM_REV[e.target.value]; const b=$("#famB"); if(v&&b&&!b.dataset.touched) b.value=v; } });
+document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act="fam19-save"]'); if(!t) return; e.preventDefault(); e.stopPropagation(); const id=t.dataset.id; const k=S.contacts.get(id);
+  const box=document.querySelector("#modal .pp19"); if(!box.querySelector(".ppWho").value){ toast("Find the person, or add them as new"); box.querySelector(".ppQ").focus(); return; }
+  t.disabled=true; const o=await ppResolve(box,k); if(!o){ t.disabled=false; return; }
+  const {error}=await sb.from("person_links").insert({a:id,b:o,a_is:$("#famA").value||"family",b_is:$("#famB").value||"family",note:$("#famNote").value.trim()}); t.disabled=false;
+  if(error){ if(error.code==="23505") toast("They're already linked"); else writeErr(error); return; } closeModal(); await loadLinks(); toast("Family linked"); try{ renderSheet(); }catch(_){} },true);
+/* the same picker inside the person form */
+famRowHTML=function(i){ return `<div class="famrow19" data-i="${i}"><div class="lbl" style="margin:4px 4px 6px">Family member</div>${ppHTML(FORM.id?[FORM.id]:[])}
+  <div class="fld"><label>They are this person's</label><select class="famB19" data-ss="off">${opts(FAM.map(f=>({v:f,l:famLabel(f)})),"","Choose…")}</select></div>
+  <div class="fld"><label>This person is their</label><select class="famA19" data-ss="off">${opts(FAM.map(f=>({v:f,l:famLabel(f)})),"","Choose…")}</select></div>
+  <button type="button" class="linkbtn" data-act="fam19-del" style="color:var(--bad,#b3261e);margin:2px 4px 8px">Remove</button></div>`; };
+famRead19=function(){ return [...document.querySelectorAll(".famrow19")].map(r=>({o:r.querySelector(".ppWho")?.value||"", bIs:r.querySelector(".famB19").value||"family", aIs:r.querySelector(".famA19").value||"family"})).filter(x=>x.o && x.o!=="__new"); };
+{ const base=submitContact; submitContact=async function(){ const rows=[...document.querySelectorAll("#contactForm .famrow19 .pp19")].filter(b=>b.querySelector(".ppWho").value==="__new");
+  const like={name:($("#kName")?.value||"").trim(), town:($("#kTown")?.value||"").trim(), country:($("#kCountry")?.value||"South Africa"), language:"af"};
+  for(const b of rows){ const id=await ppResolve(b,like); if(!id) return; b.querySelector(".ppWho").value=id; }
+  return base(); }; }
 
 
 function vNetwork(){
