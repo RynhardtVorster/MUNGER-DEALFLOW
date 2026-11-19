@@ -732,7 +732,7 @@ function senPill(k){ const s=senShort(k.seniority); return s?` <span class="pill
 { const base=vLists; vLists=function(){ const L=S.lists; const any=L.groups.length||L.tiers.length||L.pkinds.length;
   let h=base().replace(/<div class="chips" style="margin-top:10px"><button class="chip[^"]*" data-act="l-all">Everyone<\/button><\/div>/,"");
   h=h.replace("<p>Start with everyone, then narrow it down if you need to.</p>",`<p>Everyone is on the list. Tick below to narrow it down.</p>`);
-  h=h.replace('<div class="sec" style="margin-top:6px"><h2>Only business owners of</h2></div>','<div class="sec" style="margin-top:18px"><h2>Only business owners of</h2></div>').replace(">Acquired<",">Deal done<");
+  h=h.replace('<div class="sec" style="margin-top:6px"><h2>Only business owners of</h2></div>','<div class="sec" style="margin-top:18px"><h2>Only owners and people at businesses that are</h2></div>').replace('<div class="sec" style="margin-top:6px"><h2>Only business owners of</h2></div>','<div class="sec" style="margin-top:18px"><h2>Only business owners of</h2></div>').replace(">Acquired<",">Deal done<");
   if(any) h=h.replace('<div class="stats">',`<div style="text-align:right;margin:4px 2px 0"><button class="linkbtn" data-act="l-all">Clear filters – back to everyone</button></div><div class="stats">`);
   return h; }; }
 
@@ -842,3 +842,19 @@ famRead19=function(){ return [...document.querySelectorAll(".famrow19")].map(r=>
   const like={name:($("#kName")?.value||"").trim(), town:($("#kTown")?.value||"").trim(), country:($("#kCountry")?.value||"South Africa"), language:"af"};
   for(const b of rows){ const id=await ppResolve(b,like); if(!id) return; b.querySelector(".ppWho").value=id; }
   return base(); }; }
+
+/* ---------- 32. Mail lists by business stage: include everyone linked to the business, and flag businesses with nobody to mail ---------- */
+{ const base=listRows; listRows=function(){ const L=S.lists; const rows=base(); if(!L.groups.length) return rows;
+  const seen=new Set(rows.map(r=>(r.email||r.cell).toLowerCase()));
+  companies().forEach(c=>{ if(!isAcq(c) || !L.groups.includes(stageOf(c.status).group)) return;
+    peopleAt(c).forEach(k=>{ if(k.doNotContact) return; if(L.lang!=="all" && !(k.language===L.lang||k.language==="both")) return;
+      const email=k.email||(k.emails||[])[0]?.v||"", cell=k.cell||(k.cells||[])[0]?.v||""; if(!email&&!cell) return; const key=(email||cell).toLowerCase(); if(seen.has(key)) return; seen.add(key);
+      const own=k.ownsCompanyId===c.id||OWNERISH.includes(k.companyRole)||(k.otherRoles||[]).some(r=>r.companyId===c.id&&OWNERISH.includes(r.role));
+      rows.push({name:k.name,email,cell,org:c.name,kind:own?"Business owner":`${k.companyRole||k.title||"Works there"}`,lang:k.language}); }); });
+  return rows.sort((a,b)=>a.name.localeCompare(b.name)); }; }
+function listGaps(){ const L=S.lists; if(!L.groups.length) return [];
+  const have=new Set(listRows().map(r=>r.org));
+  return companies().filter(c=>isAcq(c) && L.groups.includes(stageOf(c.status).group) && !have.has(c.name)); }
+{ const base=vLists; vLists=function(){ let h=base(); const G=listGaps(); if(!G.length) return h;
+  const box=`<div class="card box" style="margin-top:10px"><div class="lbl">No one to mail at ${G.length===1?"this business":`these ${G.length} businesses`} yet</div><div class="tag" style="margin-bottom:6px">Add the owner or a contact with an email or cell, and they'll be on this list.</div><div class="group">${G.map(c=>`<button class="rowi" data-open="${esc(c.id)}">${avatarB(c)}<span class="main"><span class="t1" style="display:block">${esc(c.name)}</span><span class="t2" style="display:block">${esc(stageOf(c.status).label||"")} · ${peopleAt(c).length?"no email or cell captured":"nobody linked"}</span></span></button>`).join("")}</div></div>`;
+  return h.replace('<div class="stats">',box+'<div class="stats">'); }; }
