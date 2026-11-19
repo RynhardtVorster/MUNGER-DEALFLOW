@@ -858,3 +858,24 @@ function listGaps(){ const L=S.lists; if(!L.groups.length) return [];
 { const base=vLists; vLists=function(){ let h=base(); const G=listGaps(); if(!G.length) return h;
   const box=`<div class="card box" style="margin-top:10px"><div class="lbl">No one to mail at ${G.length===1?"this business":`these ${G.length} businesses`} yet</div><div class="tag" style="margin-bottom:6px">Add the owner or a contact with an email or cell, and they'll be on this list.</div><div class="group">${G.map(c=>`<button class="rowi" data-open="${esc(c.id)}">${avatarB(c)}<span class="main"><span class="t1" style="display:block">${esc(c.name)}</span><span class="t2" style="display:block">${esc(stageOf(c.status).label||"")} · ${peopleAt(c).length?"no email or cell captured":"nobody linked"}</span></span></button>`).join("")}</div></div>`;
   return h.replace('<div class="stats">',box+'<div class="stats">'); }; }
+
+/* ---------- 33. One team list: each partner shows whether they can log in; adding a login never creates a second name ---------- */
+function partnerFor(name){ const n=normName(name); if(!n) return ""; const f=n.split(" ")[0];
+  return S.partners.find(p=>normName(p)===n) || S.partners.find(p=>normName(p).startsWith(n)||n.startsWith(normName(p))) || S.partners.find(p=>normName(p).split(" ")[0]===f) || ""; }
+function loginFor(p){ const f=normName(p).split(" ")[0]; return S.members.find(m=>normName(m.name||"")===normName(p)) || S.members.find(m=>normName(m.name||"").split(" ")[0]===f) || S.members.find(m=>(m.email||"").toLowerCase()===(teamEmail(p)||"").toLowerCase() && m.email); }
+{ const base=vSettings; vSettings=function(){ let h=base(); const admin=S.me?.is_admin;
+  h=h.replace(/(<label for="p(\d+)">Team member \d+<\/label>)/g,(all,lab,i)=>{ const p=S.partners[+i]; if(!p) return lab; const m=loginFor(p); return lab.replace("</label>",` ${m?`<span class="pill" style="margin-left:6px;background:#e5f4e4">✓ Can log in</span>`:`<span class="pill" style="margin-left:6px">No login yet</span>`}</label>`); });
+  h=h.replace('<div class="fsec">Team logins</div>','<div class="fsec">Logins</div><p class="tag" style="margin:0 2px 8px">The same people as the team above – this is just who can sign in.</p>');
+  const free=S.partners.filter(p=>!loginFor(p));
+  h=h.replace('<label for="mName">Name</label><input id="mName" autocomplete="off">',`<label for="mName">Name</label><input id="mName" autocomplete="off" list="mNameList" placeholder="${esc(free[0]||"Full name")}"><datalist id="mNameList">${free.map(p=>`<option value="${esc(p)}">`).join("")}</datalist>`);
+  h=h.replace('<div class="fsec">Add a team member</div>','<div class="fsec">Give a team member a login</div>');
+  return h; }; }
+document.addEventListener("input",e=>{ if(e.target.id==="mName"){ const p=S.partners.find(x=>x===e.target.value); if(p && $("#mEmail") && !$("#mEmail").value) $("#mEmail").value=teamEmail(p)||""; } });
+document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act="add-member"]'); if(!t) return; e.preventDefault(); e.stopImmediatePropagation();
+  const typed=$("#mName").value.trim(), email=$("#mEmail").value.trim().toLowerCase(), pw=$("#mPw").value.trim(); if(!typed||!email){ toast("Enter a name and email"); return; }
+  if(S.members.some(m=>(m.email||"").toLowerCase()===email)){ toast("That email already has a login"); return; }
+  const name=partnerFor(typed)||typed; if(loginFor(name) && partnerFor(typed)){ toast(`${name} already has a login`); return; }
+  t.disabled=true; const {error}=await sb.rpc("add_member",{p_email:email,p_name:name,p_password:pw,p_admin:$("#mAdmin").checked}); t.disabled=false; if(error){ toast(error.message); return; }
+  await loadMembers(); const ps=S.partners.filter(p=>!/^Partner \d$/.test(p)); if(!ps.includes(name)) ps.push(name);
+  await dbSet("settings/team",{partners:ps, emails:{...(S.teamEmails||{}), [name]:email}});
+  showOut("Send this to "+name.split(" ")[0], `Munger app: ${location.origin+location.pathname}\nEmail: ${email}\nPassword: ${pw}\n\nOpen the link on your phone or computer, sign in, then add it to your home screen.`); },true);
