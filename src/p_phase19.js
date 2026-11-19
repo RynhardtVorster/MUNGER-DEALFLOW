@@ -879,3 +879,78 @@ document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act
   await loadMembers(); const ps=S.partners.filter(p=>!/^Partner \d$/.test(p)); if(!ps.includes(name)) ps.push(name);
   await dbSet("settings/team",{partners:ps, emails:{...(S.teamEmails||{}), [name]:email}});
   showOut("Send this to "+name.split(" ")[0], `Munger app: ${location.origin+location.pathname}\nEmail: ${email}\nPassword: ${pw}\n\nOpen the link on your phone or computer, sign in, then add it to your home screen.`); },true);
+
+/* ---------- 34. Follow-ups done properly: what actually happened, when, editable, and a clear activity timeline ---------- */
+const ACT={checkin:{l:"We spoke / met",short:"Spoke / met",ic:"✓",pre:"Checked in"},attempt:{l:"No answer / left a message",short:"No answer",ic:"☎",pre:"Tried to reach them"},cancelled:{l:"Cancelled or postponed",short:"Cancelled / postponed",ic:"✕",pre:"Cancelled / postponed"},note:{l:"Just a note",short:"Note",ic:"✎",pre:""},meeting:{l:"Target meeting",short:"Target meeting",ic:"★",pre:""}};
+function actType(e){ if(e.type&&ACT[e.type]) return e.type; const t=e.text||""; if(/^(Checked in|🎉 Deal done|Sold to|Not for us any more)/.test(t)) return "checkin"; if(/^Target meeting/.test(t)) return "meeting"; return "note"; }
+function actBody(e){ return String(e.text||"").replace(/^(Checked in|Tried to reach them|Cancelled \/ postponed):?\s*/,"").replace(/^ ?·\s*/,""); }
+const NOISE=/^(Captured|Added as|Details added|Stage:|Linked to|Started a conversation)/;
+/* 1. the log screen asks what happened, and when */
+{ const base=ciEnhance; ciEnhance=function(rec,isK){ base(rec,isK); const ov=document.querySelector("#modal .ovb"); if(!ov||ov.querySelector(".ci19out")) return;
+  const first=ov.querySelector(".ci19reach")||ov.querySelector(".lbl");
+  [...ov.querySelectorAll("p,div")].forEach(el=>{ if(el.children.length<=2 && /^\s*Spoke to\s/.test(el.innerHTML)) el.innerHTML=el.innerHTML.replace(/^\s*Spoke to\s/,"With ").replace(/\?\s*$/,""); });
+  const hd=document.querySelector("#modal .ovh h2, #modal .ovh .ttl, #modal header h2"); if(hd && /check-in/i.test(hd.textContent)) hd.textContent="Log what happened";
+  (first||ov.firstElementChild).insertAdjacentHTML("beforebegin",`<div class="lbl" style="margin:0 4px 6px">What happened?</div><div class="ci19out outgrid">${["checkin","attempt","cancelled","note"].map((k,i)=>`<button type="button" class="chip ${i?"":"on"}" data-act="ci19-out" data-k="${k}"><span class="tlic tl-${k}">${ACT[k].ic}</span> ${ACT[k].short}</button>`).join("")}</div>
+   <div class="fields" style="margin:10px 0 6px"><div class="fld"><label for="ci19D">When</label><input type="date" id="ci19D" value="${today()}" max="${today()}"></div></div>`); }; }
+document.addEventListener("click",e=>{ const t=e.target.closest('[data-act="ci19-out"]'); if(!t) return; e.preventDefault(); t.parentElement.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===t));
+  const lbl=document.querySelector("#modal label[for=qNote], #modal label[for=qkNote]"); if(lbl) lbl.textContent= t.dataset.k==="checkin"?"What was discussed?":t.dataset.k==="cancelled"?"What happened? (e.g. she cancelled, moving to next week)":t.dataset.k==="attempt"?"Anything to note? (optional)":"Note";
+  const how=document.querySelector("#modal .ci19how"); if(how){ how.hidden=t.dataset.k==="note"||t.dataset.k==="cancelled"; if(how.previousElementSibling) how.previousElementSibling.hidden=how.hidden; } },true);
+function ciOutcome(){ return document.querySelector("#modal .ci19out button.on")?.dataset.k || ""; }
+{ const base=dbUpdate; dbUpdate=async function(path,patch){
+  const out=ciOutcome(); const when=$("#ci19D")?.value;
+  if(out && patch && Array.isArray(patch.log) && /^(companies|contacts)\//.test(path)){ const L=patch.log; const e=L[L.length-1];
+    if(e && e.type==="checkin" && e.d===today()){ const e2={...e}; if(when) e2.d=when;
+      if(out!=="checkin"){ e2.type=out; e2.text= out==="note"? actBody(e).replace(/^·\s*/,"") || "Note" : e.text.replace(/^Checked in/,ACT[out].pre); delete patch.lastContact; }
+      else if(when && patch.lastContact) patch.lastContact=when;
+      patch={...patch, log:[...L.slice(0,-1),e2]}; } }
+  return base(path,patch); }; }
+/* 2. editing any entry: change what it was, the date, who and the text */
+logEditModal=function(kind,id,i){ const rec=kind==="c"?S.companies.get(id):S.contacts.get(id); const e=rec?.log?.[i]; if(!e) return; const ty=actType(e);
+  const by=[...new Set([...S.partners,e.by].filter(Boolean))];
+  showModal(`${ovHead("Edit entry",`<button class="hbtn" data-act="close-modal">Cancel</button>`)}<div class="ovb">
+   <p style="margin:0 2px 10px;font-size:15px"><b>${esc(rec.name)}</b></p>
+   <div class="lbl" style="margin:0 4px 6px">What was it?</div>
+   <div class="outgrid" id="leType">${["checkin","attempt","cancelled","note"].concat(ty==="meeting"?["meeting"]:[]).map(k=>`<button type="button" class="chip ${k===ty?"on":""}" data-act="le-type" data-k="${k}">${ACT[k].short}</button>`).join("")}</div>
+   <div class="fields" style="margin-top:10px">
+    <div class="fld"><label for="leDate">Date</label><input type="date" id="leDate" value="${esc(e.d||today())}"></div>
+    <div class="fld"><label for="leBy">Who in our team</label><select id="leBy">${opts(by,e.by||"")}</select></div>
+    ${fldNote("leText","What happened",actBody(e),"",5)}</div>
+   <p class="tag" style="margin:8px 4px 0">Only "Spoke / met" counts as a check-in. The change is recorded in the edit history.</p>
+   <div style="margin-top:14px;display:grid;gap:10px"><button class="btn primary block" data-act="log19-save" data-kind="${kind}" data-id="${esc(id)}" data-i="${i}">Save</button><button class="linkbtn" style="color:var(--bad,#b3261e)" data-act="log-del" data-kind="${kind}" data-id="${esc(id)}" data-i="${i}">Delete this entry</button></div></div>`, true); };
+document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act="le-type"],[data-act="log19-save"]'); if(!t) return; e.preventDefault(); e.stopPropagation();
+  if(t.dataset.act==="le-type"){ t.parentElement.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===t)); return; }
+  const {kind,id}=t.dataset, i=Number(t.dataset.i); const rec=kind==="c"?S.companies.get(id):S.contacts.get(id); const orig=rec?.log?.[i]; if(!orig) return;
+  const ty=document.querySelector("#leType button.on")?.dataset.k||actType(orig); const body=$("#leText").value.trim(); if(!body && ty==="note"){ toast("Write something, or delete the entry"); return; }
+  const text= ty==="note"||ty==="meeting"? body : `${ACT[ty].pre}${body?`: ${body}`:""}`;
+  t.disabled=true; const ok=await logWrite(kind,id,L=>{ const j=L.findIndex(x=>x.d===orig.d&&x.text===orig.text&&x.by===orig.by); if(j>=0) L[j]={...L[j],type:ty,d:$("#leDate").value||orig.d,by:$("#leBy").value||orig.by,text,editedBy:S.me?.name||"",editedAt:today()}; });
+  if(ok){ const r2=kind==="k"?S.contacts.get(id):S.companies.get(id); const last=[...(r2.log||[])].filter(x=>actType(x)==="checkin").map(x=>x.d).sort().pop()||""; if((r2.lastContact||"")!==last) await dbUpdate((kind==="k"?"contacts/":"companies/")+id,{lastContact:last||null}); }
+  t.disabled=false; if(ok){ closeModal(); toast("Entry updated"); queueRender(); try{ renderSheet(); }catch(_){} } },true);
+/* 3. quick note without logging a check-in */
+function noteModal(kind,id){ const rec=kind==="c"?S.companies.get(id):S.contacts.get(id); if(!rec) return;
+  showModal(`${ovHead("Add a note",`<button class="hbtn" data-act="close-modal">Cancel</button>`)}<div class="ovb"><p style="margin:0 2px 10px"><b>${esc(rec.name)}</b></p>
+   <div class="fields"><div class="fld"><label for="nnD">Date</label><input type="date" id="nnD" value="${today()}"></div>${fldNote("nnT","Note","","e.g. Meeting moved to next week – she's travelling",4)}</div>
+   <button class="btn primary block" data-act="note19-save" data-kind="${kind}" data-id="${esc(id)}" style="margin-top:14px">Save note</button></div>`,true); setTimeout(()=>$("#nnT")?.focus(),60); }
+document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act="note19"],[data-act="note19-save"]'); if(!t) return; e.preventDefault(); e.stopPropagation(); const {kind,id}=t.dataset;
+  if(t.dataset.act==="note19"){ noteModal(kind,id); return; }
+  const txt=$("#nnT").value.trim(); if(!txt){ toast("Write the note"); return; } const by=await myName(); t.disabled=true;
+  const ok=await logWrite(kind,id,L=>L.push({d:$("#nnD").value||today(),by,type:"note",text:txt})); t.disabled=false; if(ok){ closeModal(); toast("Note saved"); try{ renderSheet(); }catch(_){} } },true);
+/* 4. the business follow-up report: last real contact, last activity, next step, and the timeline */
+function timelineHTML(rec,n){ const L=[...(rec.log||[])].map((e,i)=>({e,i})).filter(x=>!NOISE.test(x.e.text||"")).sort((a,b)=>(b.e.d||"").localeCompare(a.e.d||"")||b.i-a.i).map(x=>x.e); if(!L.length) return `<div class="tag">Nothing logged yet.</div>`;
+  const row=e=>{ const ty=actType(e); return `<div class="e tl19 tl-${ty}"${logAttr(rec,e)}><small><span class="tlic">${ACT[ty].ic}</span> ${esc(fmtD(e.d))} · ${esc(ACT[ty].short)}${e.by?` · ${esc(e.by)}`:""}${e.editedBy?` · edited`:""}</small>${esc(actBody(e)||"—")}</div>`; };
+  return `<div class="group log">${L.slice(0,n).map(row).join("")}</div>${L.length>n?`<details class="histd"><summary>Show all ${L.length}</summary><div class="group log" style="margin-top:8px">${L.slice(n).map(row).join("")}</div></details>`:""}`; }
+ciReportHTML=function(c){
+  const L=[...(c.log||[])].map((e,i)=>({e,i})).sort((a,b)=>(b.e.d||"").localeCompare(a.e.d||"")||b.i-a.i).map(x=>x.e); const lastC=L.find(e=>actType(e)==="checkin"); const lastA=L.find(e=>!NOISE.test(e.text||"")); const d=dueInfo(c);
+  return `<div class="fsec">Follow-up</div><div class="card box">
+   <div class="kvline"><span class="lbl">Last spoke / met</span><b>${lastC?`${esc(fmtD(lastC.d))}${lastC.by?` · ${esc(lastC.by.split(" ")[0])}`:""}`:"Not yet"}</b></div>
+   ${lastC&&actBody(lastC)?`<div style="white-space:pre-wrap">${esc(actBody(lastC))}</div>`:""}
+   ${lastA&&lastA!==lastC?`<div class="tag" style="margin-top:4px">Latest: ${esc(fmtD(lastA.d))} · ${esc(ACT[actType(lastA)].short)}${actBody(lastA)?` – ${esc(actBody(lastA))}`:""}</div>`:""}
+   <div class="kvline" style="margin-top:8px"><span class="lbl">Next follow-up</span><b>${c.nextCheckIn?esc(fmtD(c.nextCheckIn)):"Not set"}</b>${d?` <span class="pill ${d.cls}">${esc(d.txt)}</span>`:""}</div>
+   ${c.checkInNote?`<div><b>Plan:</b> ${esc(c.checkInNote)}</div>`:""}
+   <div class="tag">${respLine(c)}</div>
+   ${S.readOnly?"":`<div class="acts" style="grid-template-columns:1fr 1fr 1fr"><button class="act dark" data-act="quick-checkin" data-id="${esc(c.id)}">${ic("check",18)}Log</button><button class="act" data-act="ci-move" data-kind="c" data-id="${esc(c.id)}">${ic("cal",18)}Reschedule</button><button class="act" data-act="note19" data-kind="c" data-id="${esc(c.id)}">${ic("edit",18)}Note</button></div>`}
+  </div>
+  <div class="fsec">Activity</div>${timelineHTML(c,5)}${S.readOnly?"":`<p class="tag" style="margin:6px 4px 0">Tap any entry to correct it – change what it was, the date or the text, or delete it.</p>`}`; };
+
+function oldActivity(c,ro,keepNote){ return `<div class="fsec">Activity & notes</div>
+    ${ro?"":`<div class="fields">${fldNote("noteTxt","Add a note (type or speak)",keepNote,"What happened? Why does this business matter?")}</div><div style="margin:8px 0 12px"><button class="btn block" data-act="add-note" data-id="${esc(c.id)}">Save note</button></div>`}
+    ${(c.log||[]).length?`<div class="group log">${[...c.log].reverse().map(e=>`<div class="e"${logAttr(c,e)}><small>${esc(fmtD(e.d))}${e.by?` · ${esc(e.by)}`:""}</small>${esc(e.text)}</div>`).join("")}</div>`:`<div class="card empty">No activity yet.</div>`}`; }

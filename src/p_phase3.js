@@ -352,9 +352,7 @@ function renderSheet(){
     ${!fin?`<div class="fsec">How we heard</div>
     <div class="card kv"><div class="k">Source</div><div class="v">${esc(CHANNEL[src.channel]?.label||"—")}</div>${sk?`<div class="k">Introduced by</div><div class="v"><a href="#" data-contact="${esc(sk.id)}">${esc(sk.name)}</a></div>`:""}${src.partner?`<div class="k">Partner</div><div class="v">${esc(src.partner)}</div>`:""}${src.detail?`<div class="k">Detail</div><div class="v">${esc(src.detail)}</div>`:""}<div class="k">Captured</div><div class="v">${esc(fmtD((c.createdAt||"").slice(0,10)))}${c.createdByName?` · ${esc(c.createdByName)}`:""}</div></div>`:""}
     ${c.notes?`<div class="fsec">Notes</div><div class="card box" style="white-space:pre-wrap">${esc(c.notes)}</div>`:""}
-    <div class="fsec">Activity & notes</div>
-    ${ro?"":`<div class="fields">${fldNote("noteTxt","Add a note (type or speak)",keepNote,"What happened? Why does this business matter?")}</div><div style="margin:8px 0 12px"><button class="btn block" data-act="add-note" data-id="${esc(c.id)}">Save note</button></div>`}
-    ${(c.log||[]).length?`<div class="group log">${[...c.log].reverse().map(e=>`<div class="e"${logAttr(c,e)}><small>${esc(fmtD(e.d))}${e.by?` · ${esc(e.by)}`:""}</small>${esc(e.text)}</div>`).join("")}</div>`:`<div class="card empty">No activity yet.</div>`}
+    ${c.kind==='other'?oldActivity(c,ro,keepNote):''}
     ${histBlock(c.id, c.updatedAt, c.updatedByName)}
     ${ro?"":(S.me?.is_admin? `<div style="margin-top:26px"><button class="btn block danger" data-act="del-deal" data-id="${esc(c.id)}">${ic("trash",18)} Delete</button></div>` : `<p class="tag" style="text-align:center;margin-top:22px">Only an admin can delete. Ask Rynhardt if this should be removed.</p>`)}
     </div>`;
