@@ -1,5 +1,5 @@
 /* ================= Phase 17: background & context, public profiles, map filters, business check-in report ================= */
-const PROFILES=["Doctor / medical","Sportsperson","Artist","Influencer","Media personality","Academic"];
+const PROFILES=["Politician / public office","Government official","Doctor / medical","Sportsperson","Artist","Influencer","Media personality","Academic"];
 const PROFILE_PL={"Doctor / medical":"Doctors",Sportsperson:"Sports people",Artist:"Artists",Influencer:"Influencers","Media personality":"Media","Academic":"Academics"};
 const CEO_RX=/\b(ceo|chief executive|managing director|md|group ceo|founder)\b/i;
 const CSUITE_RX=/\b(ceo|cfo|coo|cto|cio|cmo|cro|chief|managing director|md|executive director|chair(man|person)?)\b/i;
@@ -36,7 +36,7 @@ S.netf=S.netf||{who:"",team:"",sector:""};
 const NET_WHO=[["","Everyone"],["A","Owners"],["B","Employees"],["C","Potential hires"],["D","Great contacts"],["ceo","CEOs & MDs"],["csuite","C-suite"],["talent","Talent bench"],["hnwi","HNWI"],["pol","Public / political"],["pr:Sportsperson","Sports people"],["pr:Artist","Artists"],["pr:Influencer","Influencers"],["pr:Doctor / medical","Doctors"],["family","People with family links"]];
 function netFilterOn(){ const f=S.netf; return !!(f.who||f.team||f.sector); }
 function netKOK(k){ const f=S.netf;
-  if(f.who){ const w=f.who; const ok= ["A","B","C","D"].includes(w)? hasTag(k,w) : w==="ceo"? isCEO(k) : w==="csuite"? isCSuite(k) : w==="talent"? isTalent(k) : w==="hnwi"? !!k.hnwi : w==="pol"? !!k.publicRole : w==="family"? familyOf(k).length>0 : w.startsWith("pr:")? (k.profiles||[]).includes(w.slice(3)) : true; if(!ok) return false; }
+  if(f.who){ const w=f.who; const ok= ["A","B","C","D"].includes(w)? hasTag(k,w) : w==="ceo"? isCEO(k) : w==="csuite"? isCSuite(k) : w==="talent"? isTalent(k) : w==="hnwi"? !!k.hnwi : w==="pol"? (!!k.publicRole||(k.profiles||[]).some(p=>/Politician|Government/.test(p))) : w==="family"? familyOf(k).length>0 : w.startsWith("pr:")? (k.profiles||[]).includes(w.slice(3)) : true; if(!ok) return false; }
   if(f.team && !knowers(k).some(x=>x.partner===f.team)) return false;
   if(f.sector){ const co=companyOf(k); if(!String(k.industry||"").startsWith(f.sector) && !String(co?.industry||"").startsWith(f.sector)) return false; }
   return true; }

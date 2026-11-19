@@ -942,10 +942,10 @@ ciReportHTML=function(c){
   const L=[...(c.log||[])].map((e,i)=>({e,i})).sort((a,b)=>(b.e.d||"").localeCompare(a.e.d||"")||b.i-a.i).map(x=>x.e); const lastC=L.find(e=>actType(e)==="checkin"); const lastA=L.find(e=>!NOISE.test(e.text||"")); const d=dueInfo(c);
   return `<div class="fsec">Follow-up</div><div class="card box">
    <div class="kvline"><span class="lbl">Last spoke / met</span><b>${lastC?`${esc(fmtD(lastC.d))}${lastC.by?` · ${esc(lastC.by.split(" ")[0])}`:""}`:"Not yet"}</b></div>
-   ${lastC&&actBody(lastC)?`<div style="white-space:pre-wrap">${esc(actBody(lastC))}</div>`:""}
-   ${lastA&&lastA!==lastC?`<div class="tag" style="margin-top:4px">Latest: ${esc(fmtD(lastA.d))} · ${esc(ACT[actType(lastA)].short)}${actBody(lastA)?` – ${esc(actBody(lastA))}`:""}</div>`:""}
+   ${lastC?`<div class="editable19"${logAttr(c,lastC)} style="white-space:pre-wrap">${esc(actBody(lastC)||"No notes – tap to add")}</div>`:""}
+   ${lastA&&lastA!==lastC?`<div class="tag editable19" style="margin-top:4px"${logAttr(c,lastA)}>Latest: ${esc(fmtD(lastA.d))} · ${esc(ACT[actType(lastA)].short)}${actBody(lastA)?` – ${esc(actBody(lastA))}`:""}</div>`:""}
    <div class="kvline" style="margin-top:8px"><span class="lbl">Next follow-up</span><b>${c.nextCheckIn?esc(fmtD(c.nextCheckIn)):"Not set"}</b>${d?` <span class="pill ${d.cls}">${esc(d.txt)}</span>`:""}</div>
-   ${c.checkInNote?`<div><b>Plan:</b> ${esc(c.checkInNote)}</div>`:""}
+   ${S.readOnly? (c.checkInNote?`<div><b>Plan:</b> ${esc(c.checkInNote)}</div>`:"") : `<div class="editable19" role="button" tabindex="0" data-act="plan19" data-id="${esc(c.id)}">${c.checkInNote?`<b>Plan:</b> ${esc(c.checkInNote)}`:`<span class="tag">+ Add a plan for the next follow-up</span>`}</div>`}
    <div class="tag">${respLine(c)}</div>
    ${S.readOnly?"":`<div class="acts" style="grid-template-columns:1fr 1fr 1fr"><button class="act dark" data-act="quick-checkin" data-id="${esc(c.id)}">${ic("check",18)}Log</button><button class="act" data-act="ci-move" data-kind="c" data-id="${esc(c.id)}">${ic("cal",18)}Reschedule</button><button class="act" data-act="note19" data-kind="c" data-id="${esc(c.id)}">${ic("edit",18)}Note</button></div>`}
   </div>
@@ -954,3 +954,17 @@ ciReportHTML=function(c){
 function oldActivity(c,ro,keepNote){ return `<div class="fsec">Activity & notes</div>
     ${ro?"":`<div class="fields">${fldNote("noteTxt","Add a note (type or speak)",keepNote,"What happened? Why does this business matter?")}</div><div style="margin:8px 0 12px"><button class="btn block" data-act="add-note" data-id="${esc(c.id)}">Save note</button></div>`}
     ${(c.log||[]).length?`<div class="group log">${[...c.log].reverse().map(e=>`<div class="e"${logAttr(c,e)}><small>${esc(fmtD(e.d))}${e.by?` · ${esc(e.by)}`:""}</small>${esc(e.text)}</div>`).join("")}</div>`:`<div class="card empty">No activity yet.</div>`}`; }
+
+/* ---------- 35. Follow-up card: tap the plan, last note or latest entry to edit them ---------- */
+function planModal(id){ const c=S.companies.get(id); if(!c) return;
+  showModal(`${ovHead("Plan for the next follow-up",`<button class="hbtn" data-act="close-modal">Cancel</button>`)}<div class="ovb"><p style="margin:0 2px 10px"><b>${esc(c.name)}</b></p>
+   <div class="fields">${fldNote("plT","What's the plan?",c.checkInNote||"","e.g. Get the management accounts; meet the son who runs operations",4)}
+    <div class="fld"><label for="plD">Next follow-up</label><input type="date" id="plD" value="${esc(c.nextCheckIn||"")}"></div></div>
+   <div class="chips" style="margin-top:8px">${CI_WHEN.map(([l,n])=>`<button type="button" class="chip" data-act="plan19-when" data-k="${addDays(n)}">${l}</button>`).join("")}</div>
+   <button class="btn primary block" data-act="plan19-save" data-id="${esc(id)}" style="margin-top:14px">Save</button></div>`,true); setTimeout(()=>$("#plT")?.focus(),60); }
+document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act="plan19"],[data-act="plan19-save"],[data-act="plan19-when"]'); if(!t) return; e.preventDefault(); e.stopPropagation();
+  if(t.dataset.act==="plan19"){ planModal(t.dataset.id); return; }
+  if(t.dataset.act==="plan19-when"){ $("#plD").value=t.dataset.k; t.parentElement.querySelectorAll(".chip").forEach(x=>x.classList.toggle("on",x===t)); return; }
+  const c=S.companies.get(t.dataset.id); const plan=$("#plT").value.trim(), d=$("#plD").value; t.disabled=true;
+  const patch={checkInNote:plan}; if(d!==(c.nextCheckIn||"")){ patch.nextCheckIn=d; const by=await myName(); patch.log=[...(c.log||[]),{d:today(),by,type:"note",text:d?`Follow-up moved to ${fmtD(d)}`:"Follow-up date cleared"}].slice(-200); }
+  const ok=await dbUpdate("companies/"+c.id,patch); t.disabled=false; if(ok){ closeModal(); toast("Plan saved"); try{ renderSheet(); }catch(_){} } },true);

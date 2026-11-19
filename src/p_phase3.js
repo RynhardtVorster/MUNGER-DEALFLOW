@@ -134,7 +134,7 @@ function myWeekText(){
 /* ---------- People ---------- */
 function vPeople(){
   const k=S.k, q=k.q.trim().toLowerCase(); const me=myPartner(); const all=contacts();
-  const special={top:()=>true, talent:isTalent, hnwi:x=>x.hnwi, ceo:isCEO, pol:x=>!!x.publicRole, "pr:Sportsperson":x=>(x.profiles||[]).includes("Sportsperson"), "pr:Artist":x=>(x.profiles||[]).includes("Artist"), "pr:Influencer":x=>(x.profiles||[]).includes("Influencer"), "pr:Doctor / medical":x=>(x.profiles||[]).includes("Doctor / medical")};
+  const special={top:()=>true, talent:isTalent, hnwi:x=>x.hnwi, ceo:isCEO, pol:x=>!!x.publicRole||(x.profiles||[]).some(p=>/Politician|Government/.test(p)), "pr:Sportsperson":x=>(x.profiles||[]).includes("Sportsperson"), "pr:Artist":x=>(x.profiles||[]).includes("Artist"), "pr:Influencer":x=>(x.profiles||[]).includes("Influencer"), "pr:Doctor / medical":x=>(x.profiles||[]).includes("Doctor / medical")};
   const arr=all.filter(c=>{ if(special[k.tier]){ if(!special[k.tier](c)) return false; } else if(k.tier&&!hasTag(c,k.tier)) return false; if(k.mine&&!isMineK(c)) return false; if(q){ const co=companyOf(c); const h=[c.name,c.firm,c.title,c.email,c.cell,c.town,c.province,c.country,c.notes,c.type,c.industry,c.expertise,c.companyRole,co?.name,knowsTxt(c),(c.talent?.roles||[]).join(" "),c.talent?.sectors,c.wealthSource].join(" ").toLowerCase(); if(!h.includes(q)) return false; } return true; })
     .sort((a,b)=> k.tier==="top"? influenceScore(b)-influenceScore(a) : k.tier==="talent"? (Number(b.talent?.rating)||0)-(Number(a.talent?.rating)||0) : (a.name||"").localeCompare(b.name||"",undefined,{sensitivity:"base"}));
   if(k.tier==="top") arr.splice(50);
