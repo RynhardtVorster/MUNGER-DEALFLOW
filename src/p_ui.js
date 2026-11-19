@@ -77,7 +77,7 @@ function ovHead(title, left, right){ return `<div class="ovh">${left||`<button c
 
 /* ---------------- Shell ---------------- */
 const TABS=[["today","Today","home"],["people","People","people"],["+","",""],["partners","Partners","bank"],["businesses","Businesses","biz"]];
-const RAIL=[["today","Today","home"],["ask","Ask the network","spark"],["people","People","people"],["businesses","Businesses","biz"],["meeting","Target meeting","flag"],["partners","Partners","bank"],["talent","Talent bench","star"],["checkins","Check-ins","cal"],["network","Network map","net"],["near","Map","pin"],["lists","Mail lists","send"],["settings","Team & settings","gear"]];
+const RAIL=[["today","Today","home"],["ask","Ask the network","spark"],["people","People","people"],["businesses","Businesses","biz"],["partners","Partners","bank"],["talent","Talent bench","star"],["checkins","Check-ins","cal"],["meeting","Target meetings","flag"],["network","Network map","net"],["near","Map","pin"],["lists","Mail lists","send"],["settings","Team & settings","gear"]];
 const TITLES={near:"MAP",partners:"PARTNERS",funders:"PARTNERS",talent:"TALENT",ask:"ASK",meeting:"MEETING",today:"MUNGER",people:"PEOPLE",businesses:"BUSINESSES",more:"MORE",checkins:"CHECK-INS",network:"NETWORK",import:"IMPORT",lists:"MAIL LISTS",settings:"SETTINGS"};
 const VIEWFN=()=>({others:vOthers,near:vNear,partners:vPartners,funders:vPartners,talent:vTalent,ask:vAsk,meeting:vMeeting,today:vToday,people:vPeople,businesses:vBusinesses,more:vMore,checkins:vCheckins,network:vNetwork,import:vPeople,lists:vLists,settings:vSettings});
 function currentView(){ const v=(location.hash||"").replace("#",""); return TITLES[v]? v : "today"; }
