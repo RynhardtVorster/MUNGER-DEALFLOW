@@ -1062,3 +1062,6 @@ document.addEventListener("keydown",e=>{ if(e.key==="Enter" && e.target.matches?
   const disc=secs.find(x=>x.textContent==="Discussion"); const g1=disc?.nextElementSibling; if(g1) [...g1.children].forEach((row,i)=>{ const it=(m.items||[])[i]; if(!it) return; Object.assign(row.dataset,{act:"it19-edit",m:id,k:it.id}); row.classList.add("edit19"); row.setAttribute("role","button"); row.tabIndex=0; });
   const act=secs.find(x=>/^Actions agreed/.test(x.textContent)); const g2=act?.nextElementSibling; const cm=S.commitments.filter(c=>c.meetingId===m.id); if(g2) [...g2.children].forEach((row,i)=>{ const x=cm[i]; if(!x) return; Object.assign(row.dataset,{act:"cm19-edit",id:x.id,mv:id}); row.classList.add("edit19"); row.setAttribute("role","button"); row.tabIndex=0; });
   if(disc||act) (disc||act).insertAdjacentHTML("beforebegin",`<p class="tag" style="margin:6px 4px 0">Tap any discussion point or action to change or delete it.</p>`); }; }
+
+/* ---------- 40. Team commitments only appear once their meeting is finished; discarded meetings take their actions with them ---------- */
+function cmLive(x){ if(!x.meetingId) return false; const m=meetById(x.meetingId); return !!m && m.status!=="open"; }

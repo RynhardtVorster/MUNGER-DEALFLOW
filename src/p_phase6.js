@@ -15,7 +15,7 @@ function vMeeting(){
 }
 function meetHome(){
   const last=lastDone(); const nextDate=S.meetNext || last?.next_date || (last? plus21(last.held_on) : "");
-  const openC=S.commitments.filter(x=>x.status==="open").sort((a,b)=>(a.due||"9999").localeCompare(b.due||"9999"));
+  const openC=S.commitments.filter(x=>x.status==="open"&&cmLive(x)).sort((a,b)=>(a.due||"9999").localeCompare(b.due||"9999"));
   const byOwner={}; openC.forEach(x=>(byOwner[x.owner||"Unassigned"]=byOwner[x.owner||"Unassigned"]||[]).push(x));
   const past=S.meetings.filter(x=>x.status==="done").sort((a,b)=>b.held_on.localeCompare(a.held_on));
   return `<div class="ph"><div><h1>Target meeting</h1><p>Every three weeks. Review what we promised, decide on targets, agree new actions.</p></div></div>
@@ -34,7 +34,7 @@ function meetHome(){
 function meetRun(m){
   const prev=prevMeeting(m); const since=prev?.held_on || (()=>{ const d=parseD(m.held_on)||new Date(); d.setDate(d.getDate()-21); return ymd(d); })();
   const att=m.attendees||[]; const review=m.review||{};
-  const toReview=S.commitments.filter(x=>x.meetingId!==m.id && (x.status==="open" || review[x.id])).sort((a,b)=>(a.owner||"").localeCompare(b.owner||"")||(a.due||"").localeCompare(b.due||""));
+  const toReview=S.commitments.filter(x=>x.meetingId!==m.id && cmLive(x) && (x.status==="open" || review[x.id])).sort((a,b)=>(a.owner||"").localeCompare(b.owner||"")||(a.due||"").localeCompare(b.due||""));
   const reviewed=toReview.filter(x=>review[x.id]).length;
   const dec=Object.fromEntries((m.decisions||[]).map(d=>[d.companyId,d.decision]));
   const live=companies().filter(c=>isAcq(c) && ["target","active"].includes(grp(c))).sort((a,b)=>(grp(b)==="active")-(grp(a)==="active")||(a.name||"").localeCompare(b.name||""));
@@ -159,7 +159,7 @@ document.addEventListener("click",async e=>{
     case "m6-finish": { if(!m) break; const notes=$("#m6Notes")?.value??m.notes; const nd=$("#m6Next")?.value||m.next_date||null;
       const added=targetsAddedIn(m); const decs=[...(m.decisions||[])]; added.forEach(c=>{ if(!decs.some(d=>d.companyId===c.id)) decs.push({companyId:c.id,decision:"new",at:today()}); });
       if(await meetUpdate(m.id,{status:"done",notes,next_date:nd,decisions:decs},true)){ if(nd) saveNextMeeting(nd,true); await loadMeetings(); toast("Meeting saved"); const mm=meetById(m.id); if(mm) showOut("Minutes", minutesText(mm)); } break; }
-    case "m6-discard": { if(!m) break; confirmBox("Discard this meeting?","Its notes and decisions will be deleted. Actions already added stay on the list.","Discard",async()=>{ const {error}=await sb.from("meetings").delete().eq("id",m.id); if(error) writeErr(error); else { closeModal(); await loadMeetings(); toast("Discarded"); } }); break; }
+    case "m6-discard": { if(!m) break; confirmBox("Discard this meeting?","Its notes, decisions and the actions added in it will be deleted.","Discard",async()=>{ await sb.from("commitments").delete().eq("meeting_id",m.id); await loadCommitments(); const {error}=await sb.from("meetings").delete().eq("id",m.id); if(error) writeErr(error); else { closeModal(); await loadMeetings(); toast("Discarded"); } }); break; }
     case "m6-view": meetViewModal(id); break;
     case "m6-reopen": { if(openMeeting()){ toast("Finish the open meeting first"); break; } if(await meetUpdate(id,{status:"open"},true)){ closeModal(); await loadMeetings(); toast("Reopened"); } break; }
   }

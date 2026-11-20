@@ -73,7 +73,7 @@ function vToday(){
 }
 function cmtRow(x){
   const late=x.due && daysUntil(x.due)<0; const co=x.companyId?S.companies.get(x.companyId):null;
-  return `<div class="rowi" style="cursor:default"><button class="tick" data-act="cmt-done" data-id="${esc(x.id)}" aria-label="Mark done">${ic("check",18)}</button><span class="main"><span class="t1" style="display:block;white-space:normal">${esc(x.action)}</span><span class="t2" style="display:block">${esc([x.owner, co?co.name:"", x.due?`due ${fmtD(x.due)}`:""].filter(Boolean).join(" · "))}</span></span>${late?`<span class="pill late">Late</span>`:""}<button class="btn sm" data-act="cmt-not" data-id="${esc(x.id)}">Not done</button></div>`;
+  return `<div class="rowi" style="cursor:default"><button class="tick" data-act="cmt-done" data-id="${esc(x.id)}" aria-label="Mark done">${ic("check",18)}</button><span class="main"${S.readOnly?"":` role="button" tabindex="0" data-act="cm19-edit" data-id="${esc(x.id)}" style="cursor:pointer"`}><span class="t1" style="display:block;white-space:normal">${esc(x.action)}</span><span class="t2" style="display:block">${esc([x.owner, co?co.name:"", x.due?`due ${fmtD(x.due)}`:""].filter(Boolean).join(" · "))}${S.readOnly?"":" · ✎ edit"}</span></span>${late?`<span class="pill late">Late</span>`:""}<button class="btn sm" data-act="cmt-not" data-id="${esc(x.id)}">Not done</button></div>`;
 }
 
 /* ---------- People list: Mine uses partner connections ---------- */

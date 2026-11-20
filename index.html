@@ -524,7 +524,7 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 <script src="supabase.js"></script>
 <script>
 "use strict";
-const APP_V="v69";
+const APP_V="v70";
 /* ---------------- Reference data ---------------- */
 const STAGES = [
   {id:"network", label:"Prospect – we'd look at it", group:"network"},
@@ -1689,7 +1689,7 @@ function vToday(){
 }
 function cmtRow(x){
   const late=x.due && daysUntil(x.due)<0; const co=x.companyId?S.companies.get(x.companyId):null;
-  return `<div class="rowi" style="cursor:default"><button class="tick" data-act="cmt-done" data-id="${esc(x.id)}" aria-label="Mark done">${ic("check",18)}</button><span class="main"><span class="t1" style="display:block;white-space:normal">${esc(x.action)}</span><span class="t2" style="display:block">${esc([x.owner, co?co.name:"", x.due?`due ${fmtD(x.due)}`:""].filter(Boolean).join(" · "))}</span></span>${late?`<span class="pill late">Late</span>`:""}<button class="btn sm" data-act="cmt-not" data-id="${esc(x.id)}">Not done</button></div>`;
+  return `<div class="rowi" style="cursor:default"><button class="tick" data-act="cmt-done" data-id="${esc(x.id)}" aria-label="Mark done">${ic("check",18)}</button><span class="main"${S.readOnly?"":` role="button" tabindex="0" data-act="cm19-edit" data-id="${esc(x.id)}" style="cursor:pointer"`}><span class="t1" style="display:block;white-space:normal">${esc(x.action)}</span><span class="t2" style="display:block">${esc([x.owner, co?co.name:"", x.due?`due ${fmtD(x.due)}`:""].filter(Boolean).join(" · "))}${S.readOnly?"":" · ✎ edit"}</span></span>${late?`<span class="pill late">Late</span>`:""}<button class="btn sm" data-act="cmt-not" data-id="${esc(x.id)}">Not done</button></div>`;
 }
 
 /* ---------- People list: Mine uses partner connections ---------- */
@@ -2348,7 +2348,7 @@ function vToday(){
   const targets=companies().filter(c=>!isPartnerCo(c)&&["target","active"].includes(grp(c))&&(!mine||isMine(c))).length;
   const ppl=mine? contacts().filter(isMineK) : contacts();
   const newNet=companies().filter(c=>grp(c)==="network" && isAcq(c) && daysSince(c.createdAt)<=21).length;
-  const cm=S.commitments.filter(x=>x.status==="open" && (!mine || x.owner===me)).sort((a,b)=>(a.due||"9999").localeCompare(b.due||"9999"));
+  const cm=S.commitments.filter(x=>x.status==="open" && cmLive(x) && (!mine || x.owner===me)).sort((a,b)=>(a.due||"9999").localeCompare(b.due||"9999"));
   const weak=contacts().filter(k=>isMineK(k)||k.createdBy===S.uid).map(k=>({k,c:completeness(k)})).filter(x=>x.c.pct<60).sort((a,b)=>a.c.pct-b.c.pct).slice(0,4);
   const thx=thanksDue().filter(k=>!mine||isMineK(k)).slice(0,4);
   const recent=[...companies().filter(c=>isAcq(c) && !["Munger setup","Munger"].includes(c.createdByName||"")).map(x=>({k:"company",x})),...contacts().map(x=>({k:"contact",x}))].filter(r=>daysSince(r.x.createdAt)<=14).sort((a,b)=>(b.x.createdAt||"").localeCompare(a.x.createdAt||"")).slice(0,8);
@@ -2376,7 +2376,7 @@ function vToday(){
 function myWeekText(){
   const me=myPartner(); const due=companies().filter(c=>isOpen(c)&&isMine(c)&&daysUntil(c.nextCheckIn)!==null&&daysUntil(c.nextCheckIn)<=7);
   const kd=peopleCheckins(true).filter(k=>daysUntil(k.nextCheckIn)<=7);
-  const cm=S.commitments.filter(x=>x.status==="open"&&x.owner===me); const thx=thanksDue().filter(isMineK);
+  const cm=S.commitments.filter(x=>x.status==="open"&&cmLive(x)&&x.owner===me); const thx=thanksDue().filter(isMineK);
   return `MUNGER · ${me||"My"} week (${fmtD(today())})\n\nCheck-ins\n${due.map(c=>`• ${c.name}${bizContact(c)?.name?` – ${bizContact(c).name}`:""} (${dueInfo(c).txt})`).join("\n")||"• None"}${kd.length?`\n\nPeople to check in with\n${kd.map(k=>`• ${k.name}${k.checkInNote?` – ${k.checkInNote}`:""} (${dueInfo(k).txt})`).join("\n")}`:""}\n\nCommitments\n${cm.map(x=>`• ${x.action}${x.due?` (by ${fmtD(x.due)})`:""}`).join("\n")||"• None"}${thx.length?`\n\nSay thank you\n${thx.map(k=>`• ${k.name}`).join("\n")}`:""}`;
 }
 
@@ -3184,7 +3184,7 @@ function vMeeting(){
 }
 function meetHome(){
   const last=lastDone(); const nextDate=S.meetNext || last?.next_date || (last? plus21(last.held_on) : "");
-  const openC=S.commitments.filter(x=>x.status==="open").sort((a,b)=>(a.due||"9999").localeCompare(b.due||"9999"));
+  const openC=S.commitments.filter(x=>x.status==="open"&&cmLive(x)).sort((a,b)=>(a.due||"9999").localeCompare(b.due||"9999"));
   const byOwner={}; openC.forEach(x=>(byOwner[x.owner||"Unassigned"]=byOwner[x.owner||"Unassigned"]||[]).push(x));
   const past=S.meetings.filter(x=>x.status==="done").sort((a,b)=>b.held_on.localeCompare(a.held_on));
   return `<div class="ph"><div><h1>Target meeting</h1><p>Every three weeks. Review what we promised, decide on targets, agree new actions.</p></div></div>
@@ -3203,7 +3203,7 @@ function meetHome(){
 function meetRun(m){
   const prev=prevMeeting(m); const since=prev?.held_on || (()=>{ const d=parseD(m.held_on)||new Date(); d.setDate(d.getDate()-21); return ymd(d); })();
   const att=m.attendees||[]; const review=m.review||{};
-  const toReview=S.commitments.filter(x=>x.meetingId!==m.id && (x.status==="open" || review[x.id])).sort((a,b)=>(a.owner||"").localeCompare(b.owner||"")||(a.due||"").localeCompare(b.due||""));
+  const toReview=S.commitments.filter(x=>x.meetingId!==m.id && cmLive(x) && (x.status==="open" || review[x.id])).sort((a,b)=>(a.owner||"").localeCompare(b.owner||"")||(a.due||"").localeCompare(b.due||""));
   const reviewed=toReview.filter(x=>review[x.id]).length;
   const dec=Object.fromEntries((m.decisions||[]).map(d=>[d.companyId,d.decision]));
   const live=companies().filter(c=>isAcq(c) && ["target","active"].includes(grp(c))).sort((a,b)=>(grp(b)==="active")-(grp(a)==="active")||(a.name||"").localeCompare(b.name||""));
@@ -3328,7 +3328,7 @@ document.addEventListener("click",async e=>{
     case "m6-finish": { if(!m) break; const notes=$("#m6Notes")?.value??m.notes; const nd=$("#m6Next")?.value||m.next_date||null;
       const added=targetsAddedIn(m); const decs=[...(m.decisions||[])]; added.forEach(c=>{ if(!decs.some(d=>d.companyId===c.id)) decs.push({companyId:c.id,decision:"new",at:today()}); });
       if(await meetUpdate(m.id,{status:"done",notes,next_date:nd,decisions:decs},true)){ if(nd) saveNextMeeting(nd,true); await loadMeetings(); toast("Meeting saved"); const mm=meetById(m.id); if(mm) showOut("Minutes", minutesText(mm)); } break; }
-    case "m6-discard": { if(!m) break; confirmBox("Discard this meeting?","Its notes and decisions will be deleted. Actions already added stay on the list.","Discard",async()=>{ const {error}=await sb.from("meetings").delete().eq("id",m.id); if(error) writeErr(error); else { closeModal(); await loadMeetings(); toast("Discarded"); } }); break; }
+    case "m6-discard": { if(!m) break; confirmBox("Discard this meeting?","Its notes, decisions and the actions added in it will be deleted.","Discard",async()=>{ await sb.from("commitments").delete().eq("meeting_id",m.id); await loadCommitments(); const {error}=await sb.from("meetings").delete().eq("id",m.id); if(error) writeErr(error); else { closeModal(); await loadMeetings(); toast("Discarded"); } }); break; }
     case "m6-view": meetViewModal(id); break;
     case "m6-reopen": { if(openMeeting()){ toast("Finish the open meeting first"); break; } if(await meetUpdate(id,{status:"open"},true)){ closeModal(); await loadMeetings(); toast("Reopened"); } break; }
   }
@@ -5137,6 +5137,9 @@ document.addEventListener("keydown",e=>{ if(e.key==="Enter" && e.target.matches?
   const disc=secs.find(x=>x.textContent==="Discussion"); const g1=disc?.nextElementSibling; if(g1) [...g1.children].forEach((row,i)=>{ const it=(m.items||[])[i]; if(!it) return; Object.assign(row.dataset,{act:"it19-edit",m:id,k:it.id}); row.classList.add("edit19"); row.setAttribute("role","button"); row.tabIndex=0; });
   const act=secs.find(x=>/^Actions agreed/.test(x.textContent)); const g2=act?.nextElementSibling; const cm=S.commitments.filter(c=>c.meetingId===m.id); if(g2) [...g2.children].forEach((row,i)=>{ const x=cm[i]; if(!x) return; Object.assign(row.dataset,{act:"cm19-edit",id:x.id,mv:id}); row.classList.add("edit19"); row.setAttribute("role","button"); row.tabIndex=0; });
   if(disc||act) (disc||act).insertAdjacentHTML("beforebegin",`<p class="tag" style="margin:6px 4px 0">Tap any discussion point or action to change or delete it.</p>`); }; }
+
+/* ---------- 40. Team commitments only appear once their meeting is finished; discarded meetings take their actions with them ---------- */
+function cmLive(x){ if(!x.meetingId) return false; const m=meetById(x.meetingId); return !!m && m.status!=="open"; }
 
 
 function vNetwork(){

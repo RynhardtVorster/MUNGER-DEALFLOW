@@ -99,7 +99,7 @@ function vToday(){
   const targets=companies().filter(c=>!isPartnerCo(c)&&["target","active"].includes(grp(c))&&(!mine||isMine(c))).length;
   const ppl=mine? contacts().filter(isMineK) : contacts();
   const newNet=companies().filter(c=>grp(c)==="network" && isAcq(c) && daysSince(c.createdAt)<=21).length;
-  const cm=S.commitments.filter(x=>x.status==="open" && (!mine || x.owner===me)).sort((a,b)=>(a.due||"9999").localeCompare(b.due||"9999"));
+  const cm=S.commitments.filter(x=>x.status==="open" && cmLive(x) && (!mine || x.owner===me)).sort((a,b)=>(a.due||"9999").localeCompare(b.due||"9999"));
   const weak=contacts().filter(k=>isMineK(k)||k.createdBy===S.uid).map(k=>({k,c:completeness(k)})).filter(x=>x.c.pct<60).sort((a,b)=>a.c.pct-b.c.pct).slice(0,4);
   const thx=thanksDue().filter(k=>!mine||isMineK(k)).slice(0,4);
   const recent=[...companies().filter(c=>isAcq(c) && !["Munger setup","Munger"].includes(c.createdByName||"")).map(x=>({k:"company",x})),...contacts().map(x=>({k:"contact",x}))].filter(r=>daysSince(r.x.createdAt)<=14).sort((a,b)=>(b.x.createdAt||"").localeCompare(a.x.createdAt||"")).slice(0,8);
@@ -127,7 +127,7 @@ function vToday(){
 function myWeekText(){
   const me=myPartner(); const due=companies().filter(c=>isOpen(c)&&isMine(c)&&daysUntil(c.nextCheckIn)!==null&&daysUntil(c.nextCheckIn)<=7);
   const kd=peopleCheckins(true).filter(k=>daysUntil(k.nextCheckIn)<=7);
-  const cm=S.commitments.filter(x=>x.status==="open"&&x.owner===me); const thx=thanksDue().filter(isMineK);
+  const cm=S.commitments.filter(x=>x.status==="open"&&cmLive(x)&&x.owner===me); const thx=thanksDue().filter(isMineK);
   return `MUNGER · ${me||"My"} week (${fmtD(today())})\n\nCheck-ins\n${due.map(c=>`• ${c.name}${bizContact(c)?.name?` – ${bizContact(c).name}`:""} (${dueInfo(c).txt})`).join("\n")||"• None"}${kd.length?`\n\nPeople to check in with\n${kd.map(k=>`• ${k.name}${k.checkInNote?` – ${k.checkInNote}`:""} (${dueInfo(k).txt})`).join("\n")}`:""}\n\nCommitments\n${cm.map(x=>`• ${x.action}${x.due?` (by ${fmtD(x.due)})`:""}`).join("\n")||"• None"}${thx.length?`\n\nSay thank you\n${thx.map(k=>`• ${k.name}`).join("\n")}`:""}`;
 }
 
