@@ -77,7 +77,7 @@ function meetRun(m){
   ${S.readOnly?"":`<button class="btn block" style="margin-top:10px" data-act="m6-newtarget">${ic("plus",18)} Add a new target business</button>`}
 
   ${sec("m-disc",5,"Discussion",items.length?`${items.length} topics`:"")}
-  ${items.length?`<div class="group">${items.map(it=>{ const co=it.companyId?S.companies.get(it.companyId):null; const k=it.contactId?S.contacts.get(it.contactId):null; return `<div class="rowi" style="align-items:flex-start"><span class="main"><span class="t1" style="display:block;white-space:normal">${esc(it.topic)}</span>${it.notes?`<span class="t2" style="display:block;white-space:pre-wrap">${esc(it.notes)}</span>`:""}<span class="t2" style="display:block">${esc([co?.name,k?.name,it.by].filter(Boolean).join(" · "))}</span></span>${S.readOnly?"":`<button class="btn sm" data-act="m6-item-del" data-k="${esc(it.id)}" aria-label="Remove">✕</button>`}</div>`; }).join("")}</div>`:""}
+  ${items.length?`<div class="group">${items.map(it=>{ const co=it.companyId?S.companies.get(it.companyId):null; const k=it.contactId?S.contacts.get(it.contactId):null; return `<div class="rowi edit19" style="align-items:flex-start"${S.readOnly?"":` role="button" tabindex="0" data-act="it19-edit" data-m="${esc(m.id)}" data-k="${esc(it.id)}"`}><span class="main"><span class="t1" style="display:block;white-space:normal">${esc(it.topic)}</span>${it.notes?`<span class="t2" style="display:block;white-space:pre-wrap">${esc(it.notes)}</span>`:""}<span class="t2" style="display:block">${esc([co?.name,k?.name,it.by].filter(Boolean).join(" · "))}</span></span>${S.readOnly?"":`<button class="btn sm" data-act="m6-item-del" data-k="${esc(it.id)}" aria-label="Remove">✕</button>`}</div>`; }).join("")}</div>`:""}
   ${S.readOnly?"":`<div class="fields" style="margin-top:10px">
     <div class="fld"><label for="m6Topic">Topic</label><input id="m6Topic" placeholder="e.g. Funding for Paarl Engineering"></div>
     ${fldNote("m6ItemNotes","What was said / agreed","","Type or speak…",3)}
@@ -86,7 +86,7 @@ function meetRun(m){
   </div><button class="btn block" style="margin-top:10px" data-act="m6-item-add">+ Add to discussion</button>`}
 
   ${sec("m-next",6,"New actions",thisC.length?`${thisC.length}`:"")}
-  ${thisC.length?`<div class="group" style="margin-bottom:10px">${thisC.map(x=>`<div class="rowi"><span class="main"><span class="t1" style="display:block;white-space:normal">${esc(x.action)}</span><span class="t2" style="display:block">${esc(cmtLine(x))}</span></span>${cmtStatusPill(x)}</div>`).join("")}</div>`:""}
+  ${thisC.length?`<div class="group" style="margin-bottom:10px">${thisC.map(x=>`<div class="rowi edit19"${S.readOnly?"":` role="button" tabindex="0" data-act="cm19-edit" data-id="${esc(x.id)}"`}><span class="main"><span class="t1" style="display:block;white-space:normal">${esc(x.action)}</span><span class="t2" style="display:block">${esc(cmtLine(x))}</span></span>${cmtStatusPill(x)}</div>`).join("")}</div>`:""}
   ${S.readOnly?"":`<div class="fields">
    <div class="fld"><label for="cmOwner">Who</label><select id="cmOwner">${opts(S.partners,defaultPartner())}</select></div>
    <div class="fld"><label for="cmAction">Action</label><input id="cmAction" placeholder="One clear action, e.g. Call 5 Hatstone clients"></div>

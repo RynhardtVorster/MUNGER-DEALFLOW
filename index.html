@@ -349,6 +349,8 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 .editable19[data-act=log-edit]::after,.editable19[data-act=plan19]::after{content:" ✎";opacity:.45;font-size:13px}
 .fld.need19{box-shadow:0 0 0 2px #b5651d;border-radius:12px}
 .fld.need19 label::after{content:" – please choose";color:#b5651d;font-weight:600}
+.edit19[data-act]{cursor:pointer;position:relative}
+.edit19[data-act] .main::after{content:"✎ tap to edit";display:block;font-size:12px;color:var(--muted,#888);margin-top:2px}
 .mdot-wrap{background:none;border:0}
 .mdot{border-radius:50%;background:var(--tierA,#b5651d);color:#fff;display:grid;place-items:center;font:700 12.5px/1 "Source Sans 3",system-ui,sans-serif;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);opacity:.93}
 .mdot.sel{background:var(--ink,#1d2b36);transform:scale(1.12)}
@@ -522,7 +524,7 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 <script src="supabase.js"></script>
 <script>
 "use strict";
-const APP_V="v68";
+const APP_V="v69";
 /* ---------------- Reference data ---------------- */
 const STAGES = [
   {id:"network", label:"Prospect – we'd look at it", group:"network"},
@@ -3244,7 +3246,7 @@ function meetRun(m){
   ${S.readOnly?"":`<button class="btn block" style="margin-top:10px" data-act="m6-newtarget">${ic("plus",18)} Add a new target business</button>`}
 
   ${sec("m-disc",5,"Discussion",items.length?`${items.length} topics`:"")}
-  ${items.length?`<div class="group">${items.map(it=>{ const co=it.companyId?S.companies.get(it.companyId):null; const k=it.contactId?S.contacts.get(it.contactId):null; return `<div class="rowi" style="align-items:flex-start"><span class="main"><span class="t1" style="display:block;white-space:normal">${esc(it.topic)}</span>${it.notes?`<span class="t2" style="display:block;white-space:pre-wrap">${esc(it.notes)}</span>`:""}<span class="t2" style="display:block">${esc([co?.name,k?.name,it.by].filter(Boolean).join(" · "))}</span></span>${S.readOnly?"":`<button class="btn sm" data-act="m6-item-del" data-k="${esc(it.id)}" aria-label="Remove">✕</button>`}</div>`; }).join("")}</div>`:""}
+  ${items.length?`<div class="group">${items.map(it=>{ const co=it.companyId?S.companies.get(it.companyId):null; const k=it.contactId?S.contacts.get(it.contactId):null; return `<div class="rowi edit19" style="align-items:flex-start"${S.readOnly?"":` role="button" tabindex="0" data-act="it19-edit" data-m="${esc(m.id)}" data-k="${esc(it.id)}"`}><span class="main"><span class="t1" style="display:block;white-space:normal">${esc(it.topic)}</span>${it.notes?`<span class="t2" style="display:block;white-space:pre-wrap">${esc(it.notes)}</span>`:""}<span class="t2" style="display:block">${esc([co?.name,k?.name,it.by].filter(Boolean).join(" · "))}</span></span>${S.readOnly?"":`<button class="btn sm" data-act="m6-item-del" data-k="${esc(it.id)}" aria-label="Remove">✕</button>`}</div>`; }).join("")}</div>`:""}
   ${S.readOnly?"":`<div class="fields" style="margin-top:10px">
     <div class="fld"><label for="m6Topic">Topic</label><input id="m6Topic" placeholder="e.g. Funding for Paarl Engineering"></div>
     ${fldNote("m6ItemNotes","What was said / agreed","","Type or speak…",3)}
@@ -3253,7 +3255,7 @@ function meetRun(m){
   </div><button class="btn block" style="margin-top:10px" data-act="m6-item-add">+ Add to discussion</button>`}
 
   ${sec("m-next",6,"New actions",thisC.length?`${thisC.length}`:"")}
-  ${thisC.length?`<div class="group" style="margin-bottom:10px">${thisC.map(x=>`<div class="rowi"><span class="main"><span class="t1" style="display:block;white-space:normal">${esc(x.action)}</span><span class="t2" style="display:block">${esc(cmtLine(x))}</span></span>${cmtStatusPill(x)}</div>`).join("")}</div>`:""}
+  ${thisC.length?`<div class="group" style="margin-bottom:10px">${thisC.map(x=>`<div class="rowi edit19"${S.readOnly?"":` role="button" tabindex="0" data-act="cm19-edit" data-id="${esc(x.id)}"`}><span class="main"><span class="t1" style="display:block;white-space:normal">${esc(x.action)}</span><span class="t2" style="display:block">${esc(cmtLine(x))}</span></span>${cmtStatusPill(x)}</div>`).join("")}</div>`:""}
   ${S.readOnly?"":`<div class="fields">
    <div class="fld"><label for="cmOwner">Who</label><select id="cmOwner">${opts(S.partners,defaultPartner())}</select></div>
    <div class="fld"><label for="cmAction">Action</label><input id="cmAction" placeholder="One clear action, e.g. Call 5 Hatstone clients"></div>
@@ -5096,6 +5098,45 @@ S._xrChan=S._xrChan||{};
 document.addEventListener("change",e=>{ if(e.target.id==="xrChan"){ const nm=($("#xrName")?.value||"").trim(); if(nm) S._xrChan[normName(nm)]=e.target.value; } });
 document.addEventListener("input",e=>{ if(e.target.id==="xrName"){ const v=$("#xrChan")?.value; if(v) S._xrChan[normName(e.target.value.trim())]=v; } });
 { const base=dbSet; dbSet=async function(path,data){ if(String(path).startsWith("companies/") && data && "name" in data && !("source" in data) && data.kind==="target"){ const ch=S._xrChan[normName(data.name)]; if(ch) data={...data,source:{channel:ch}}; } return base(path,data); }; }
+
+/* ---------- 39. Target meetings: edit or delete any discussion point or action, during or after the meeting ---------- */
+function cmEditModal(id){ const x=S.commitments.find(c=>c.id===id); if(!x) return;
+  showModal(`${ovHead("Edit action",`<button class="hbtn" data-act="close-modal">Cancel</button>`)}<div class="ovb"><div class="fields">
+   <div class="fld"><label for="ceA">Action</label><textarea id="ceA" rows="2">${esc(x.action||"")}</textarea></div>
+   <div class="fld"><label for="ceO">Who</label><select id="ceO">${opts([...new Set([...S.partners,x.owner].filter(Boolean))],x.owner||"")}</select></div>
+   <div class="fld"><label for="ceD">By when</label><input id="ceD" type="date" value="${esc(x.due||"")}"></div>
+   <div class="fld"><label for="ceS">Status</label><select id="ceS">${opts([{v:"open",l:"Open"},{v:"done",l:"Done"},{v:"carried",l:"Carried to next meeting"},{v:"notdone",l:"Not done"}].filter(o=>o.v!=="carried"||x.status==="carried").filter(o=>o.v!=="notdone"||x.status==="notdone"),x.status||"open")}</select></div>
+   <div class="fld"><label for="ceB">Business or partner</label><select id="ceB">${opts(companies().sort((a,b)=>a.name.localeCompare(b.name)).map(c=>({v:c.id,l:c.name})),x.companyId||"","None")}</select></div>
+   <div class="fld"><label for="ceP">Person</label><select id="ceP">${opts(contacts().sort((a,b)=>a.name.localeCompare(b.name)).map(k=>({v:k.id,l:k.name})),x.contactId||"","None")}</select></div></div>
+   <div style="margin-top:14px;display:grid;gap:10px"><button class="btn primary block" data-act="cm19-save" data-id="${esc(id)}">Save</button><button class="linkbtn" style="color:var(--bad,#b3261e)" data-act="cm19-del" data-id="${esc(id)}">Delete this action</button></div></div>`,true); }
+function itEditModal(mid,k){ const m=meetById(mid); const it=(m?.items||[]).find(x=>x.id===k); if(!it) return;
+  showModal(`${ovHead("Edit discussion point",`<button class="hbtn" data-act="close-modal">Cancel</button>`)}<div class="ovb"><div class="fields">
+   <div class="fld"><label for="ieT">Topic</label><input id="ieT" value="${esc(it.topic||"")}"></div>
+   ${fldNote("ieN","What was discussed or agreed",it.notes||"","",6)}
+   <div class="fld"><label for="ieB">Business or partner</label><select id="ieB">${opts(companies().sort((a,b)=>a.name.localeCompare(b.name)).map(c=>({v:c.id,l:c.name})),it.companyId||"","None")}</select></div>
+   <div class="fld"><label for="ieP">Person</label><select id="ieP">${opts(contacts().sort((a,b)=>a.name.localeCompare(b.name)).map(x=>({v:x.id,l:x.name})),it.contactId||"","None")}</select></div></div>
+   <div style="margin-top:14px;display:grid;gap:10px"><button class="btn primary block" data-act="it19-save" data-m="${esc(mid)}" data-k="${esc(k)}">Save</button><button class="linkbtn" style="color:var(--bad,#b3261e)" data-act="it19-del" data-m="${esc(mid)}" data-k="${esc(k)}">Delete this point</button></div></div>`,true); }
+let MV19=null; // reopen the past-meeting view after editing from it
+document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act^="cm19-"],[data-act^="it19-"]'); if(!t || e.target.closest("[data-act]")!==t) return; e.preventDefault(); e.stopPropagation(); const a=t.dataset.act;
+  const back=()=>{ if(MV19){ const id=MV19; MV19=null; setTimeout(()=>meetViewModal(id),60); } else closeModal(); };
+  if(a==="cm19-edit"){ MV19=t.closest("#modal")?t.dataset.mv||null:null; cmEditModal(t.dataset.id); return; }
+  if(a==="it19-edit"){ MV19=t.closest("#modal")?t.dataset.m:null; itEditModal(t.dataset.m,t.dataset.k); return; }
+  if(a==="cm19-save"){ const action=$("#ceA").value.trim(); if(!action){ toast("Write the action"); return; } t.disabled=true;
+    const {error}=await sb.from("commitments").update({action, owner:$("#ceO").value, due:$("#ceD").value||null, status:$("#ceS").value, company_id:$("#ceB").value||null, contact_id:$("#ceP").value||null}).eq("id",t.dataset.id); t.disabled=false;
+    if(error){ writeErr(error); return; } await loadCommitments(); toast("Action updated"); back(); return; }
+  if(a==="cm19-del"){ confirmBox("Delete this action?","It is removed from the meeting and everyone's lists.","Delete",async()=>{ const {error}=await sb.from("commitments").delete().eq("id",t.dataset.id); if(error){ writeErr(error); return; } await loadCommitments(); toast("Action deleted"); back(); }); return; }
+  if(a==="it19-save"){ const m=meetById(t.dataset.m); const topic=$("#ieT").value.trim(); if(!topic){ toast("Give it a topic"); return; } t.disabled=true;
+    const items=(m.items||[]).map(x=>x.id===t.dataset.k? {...x, topic, notes:$("#ieN").value.trim(), companyId:$("#ieB").value||"", contactId:$("#ieP").value||""} : x);
+    const ok=await meetUpdate(m.id,{items}); t.disabled=false; if(ok){ toast("Discussion point updated"); back(); } return; }
+  if(a==="it19-del"){ const m=meetById(t.dataset.m); confirmBox("Delete this discussion point?","","Delete",async()=>{ if(await meetUpdate(m.id,{items:(m.items||[]).filter(x=>x.id!==t.dataset.k)})){ toast("Deleted"); back(); } }); return; }
+},true);
+document.addEventListener("keydown",e=>{ if(e.key==="Enter" && e.target.matches?.('.edit19[data-act]')) e.target.click(); });
+/* past meetings: the same editing from the meeting view */
+{ const base=meetViewModal; meetViewModal=function(id){ base(id); const m=meetById(id); const ov=document.querySelector("#modal .ovb"); if(!m||!ov||S.readOnly) return;
+  const secs=[...ov.querySelectorAll(".fsec")];
+  const disc=secs.find(x=>x.textContent==="Discussion"); const g1=disc?.nextElementSibling; if(g1) [...g1.children].forEach((row,i)=>{ const it=(m.items||[])[i]; if(!it) return; Object.assign(row.dataset,{act:"it19-edit",m:id,k:it.id}); row.classList.add("edit19"); row.setAttribute("role","button"); row.tabIndex=0; });
+  const act=secs.find(x=>/^Actions agreed/.test(x.textContent)); const g2=act?.nextElementSibling; const cm=S.commitments.filter(c=>c.meetingId===m.id); if(g2) [...g2.children].forEach((row,i)=>{ const x=cm[i]; if(!x) return; Object.assign(row.dataset,{act:"cm19-edit",id:x.id,mv:id}); row.classList.add("edit19"); row.setAttribute("role","button"); row.tabIndex=0; });
+  if(disc||act) (disc||act).insertAdjacentHTML("beforebegin",`<p class="tag" style="margin:6px 4px 0">Tap any discussion point or action to change or delete it.</p>`); }; }
 
 
 function vNetwork(){

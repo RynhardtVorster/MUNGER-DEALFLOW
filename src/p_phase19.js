@@ -1023,3 +1023,42 @@ S._xrChan=S._xrChan||{};
 document.addEventListener("change",e=>{ if(e.target.id==="xrChan"){ const nm=($("#xrName")?.value||"").trim(); if(nm) S._xrChan[normName(nm)]=e.target.value; } });
 document.addEventListener("input",e=>{ if(e.target.id==="xrName"){ const v=$("#xrChan")?.value; if(v) S._xrChan[normName(e.target.value.trim())]=v; } });
 { const base=dbSet; dbSet=async function(path,data){ if(String(path).startsWith("companies/") && data && "name" in data && !("source" in data) && data.kind==="target"){ const ch=S._xrChan[normName(data.name)]; if(ch) data={...data,source:{channel:ch}}; } return base(path,data); }; }
+
+/* ---------- 39. Target meetings: edit or delete any discussion point or action, during or after the meeting ---------- */
+function cmEditModal(id){ const x=S.commitments.find(c=>c.id===id); if(!x) return;
+  showModal(`${ovHead("Edit action",`<button class="hbtn" data-act="close-modal">Cancel</button>`)}<div class="ovb"><div class="fields">
+   <div class="fld"><label for="ceA">Action</label><textarea id="ceA" rows="2">${esc(x.action||"")}</textarea></div>
+   <div class="fld"><label for="ceO">Who</label><select id="ceO">${opts([...new Set([...S.partners,x.owner].filter(Boolean))],x.owner||"")}</select></div>
+   <div class="fld"><label for="ceD">By when</label><input id="ceD" type="date" value="${esc(x.due||"")}"></div>
+   <div class="fld"><label for="ceS">Status</label><select id="ceS">${opts([{v:"open",l:"Open"},{v:"done",l:"Done"},{v:"carried",l:"Carried to next meeting"},{v:"notdone",l:"Not done"}].filter(o=>o.v!=="carried"||x.status==="carried").filter(o=>o.v!=="notdone"||x.status==="notdone"),x.status||"open")}</select></div>
+   <div class="fld"><label for="ceB">Business or partner</label><select id="ceB">${opts(companies().sort((a,b)=>a.name.localeCompare(b.name)).map(c=>({v:c.id,l:c.name})),x.companyId||"","None")}</select></div>
+   <div class="fld"><label for="ceP">Person</label><select id="ceP">${opts(contacts().sort((a,b)=>a.name.localeCompare(b.name)).map(k=>({v:k.id,l:k.name})),x.contactId||"","None")}</select></div></div>
+   <div style="margin-top:14px;display:grid;gap:10px"><button class="btn primary block" data-act="cm19-save" data-id="${esc(id)}">Save</button><button class="linkbtn" style="color:var(--bad,#b3261e)" data-act="cm19-del" data-id="${esc(id)}">Delete this action</button></div></div>`,true); }
+function itEditModal(mid,k){ const m=meetById(mid); const it=(m?.items||[]).find(x=>x.id===k); if(!it) return;
+  showModal(`${ovHead("Edit discussion point",`<button class="hbtn" data-act="close-modal">Cancel</button>`)}<div class="ovb"><div class="fields">
+   <div class="fld"><label for="ieT">Topic</label><input id="ieT" value="${esc(it.topic||"")}"></div>
+   ${fldNote("ieN","What was discussed or agreed",it.notes||"","",6)}
+   <div class="fld"><label for="ieB">Business or partner</label><select id="ieB">${opts(companies().sort((a,b)=>a.name.localeCompare(b.name)).map(c=>({v:c.id,l:c.name})),it.companyId||"","None")}</select></div>
+   <div class="fld"><label for="ieP">Person</label><select id="ieP">${opts(contacts().sort((a,b)=>a.name.localeCompare(b.name)).map(x=>({v:x.id,l:x.name})),it.contactId||"","None")}</select></div></div>
+   <div style="margin-top:14px;display:grid;gap:10px"><button class="btn primary block" data-act="it19-save" data-m="${esc(mid)}" data-k="${esc(k)}">Save</button><button class="linkbtn" style="color:var(--bad,#b3261e)" data-act="it19-del" data-m="${esc(mid)}" data-k="${esc(k)}">Delete this point</button></div></div>`,true); }
+let MV19=null; // reopen the past-meeting view after editing from it
+document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act^="cm19-"],[data-act^="it19-"]'); if(!t || e.target.closest("[data-act]")!==t) return; e.preventDefault(); e.stopPropagation(); const a=t.dataset.act;
+  const back=()=>{ if(MV19){ const id=MV19; MV19=null; setTimeout(()=>meetViewModal(id),60); } else closeModal(); };
+  if(a==="cm19-edit"){ MV19=t.closest("#modal")?t.dataset.mv||null:null; cmEditModal(t.dataset.id); return; }
+  if(a==="it19-edit"){ MV19=t.closest("#modal")?t.dataset.m:null; itEditModal(t.dataset.m,t.dataset.k); return; }
+  if(a==="cm19-save"){ const action=$("#ceA").value.trim(); if(!action){ toast("Write the action"); return; } t.disabled=true;
+    const {error}=await sb.from("commitments").update({action, owner:$("#ceO").value, due:$("#ceD").value||null, status:$("#ceS").value, company_id:$("#ceB").value||null, contact_id:$("#ceP").value||null}).eq("id",t.dataset.id); t.disabled=false;
+    if(error){ writeErr(error); return; } await loadCommitments(); toast("Action updated"); back(); return; }
+  if(a==="cm19-del"){ confirmBox("Delete this action?","It is removed from the meeting and everyone's lists.","Delete",async()=>{ const {error}=await sb.from("commitments").delete().eq("id",t.dataset.id); if(error){ writeErr(error); return; } await loadCommitments(); toast("Action deleted"); back(); }); return; }
+  if(a==="it19-save"){ const m=meetById(t.dataset.m); const topic=$("#ieT").value.trim(); if(!topic){ toast("Give it a topic"); return; } t.disabled=true;
+    const items=(m.items||[]).map(x=>x.id===t.dataset.k? {...x, topic, notes:$("#ieN").value.trim(), companyId:$("#ieB").value||"", contactId:$("#ieP").value||""} : x);
+    const ok=await meetUpdate(m.id,{items}); t.disabled=false; if(ok){ toast("Discussion point updated"); back(); } return; }
+  if(a==="it19-del"){ const m=meetById(t.dataset.m); confirmBox("Delete this discussion point?","","Delete",async()=>{ if(await meetUpdate(m.id,{items:(m.items||[]).filter(x=>x.id!==t.dataset.k)})){ toast("Deleted"); back(); } }); return; }
+},true);
+document.addEventListener("keydown",e=>{ if(e.key==="Enter" && e.target.matches?.('.edit19[data-act]')) e.target.click(); });
+/* past meetings: the same editing from the meeting view */
+{ const base=meetViewModal; meetViewModal=function(id){ base(id); const m=meetById(id); const ov=document.querySelector("#modal .ovb"); if(!m||!ov||S.readOnly) return;
+  const secs=[...ov.querySelectorAll(".fsec")];
+  const disc=secs.find(x=>x.textContent==="Discussion"); const g1=disc?.nextElementSibling; if(g1) [...g1.children].forEach((row,i)=>{ const it=(m.items||[])[i]; if(!it) return; Object.assign(row.dataset,{act:"it19-edit",m:id,k:it.id}); row.classList.add("edit19"); row.setAttribute("role","button"); row.tabIndex=0; });
+  const act=secs.find(x=>/^Actions agreed/.test(x.textContent)); const g2=act?.nextElementSibling; const cm=S.commitments.filter(c=>c.meetingId===m.id); if(g2) [...g2.children].forEach((row,i)=>{ const x=cm[i]; if(!x) return; Object.assign(row.dataset,{act:"cm19-edit",id:x.id,mv:id}); row.classList.add("edit19"); row.setAttribute("role","button"); row.tabIndex=0; });
+  if(disc||act) (disc||act).insertAdjacentHTML("beforebegin",`<p class="tag" style="margin:6px 4px 0">Tap any discussion point or action to change or delete it.</p>`); }; }
