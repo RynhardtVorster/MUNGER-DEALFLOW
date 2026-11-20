@@ -237,9 +237,9 @@ function plMarkers(map){
   if(map._munLayer){ map.removeLayer(map._munLayer); } const grpL=L.layerGroup().addTo(map); map._munLayer=grpL;
   const pts=townGroups();
   pts.forEach(p=>{ const sel=S.pl.mode==="town" && lc(S.pl.val)===lc(p.g.name); const s=Math.round(24+Math.min(22,p.n*2.5));
-    const icon=L.divIcon({className:"mdot-wrap",html:`<div class="mdot${sel?" sel":""}" style="width:${s}px;height:${s}px">${p.n}</div>`,iconSize:[s,s],iconAnchor:[s/2,s/2]});
+    const icon=L.divIcon({className:"mdot-wrap",html:`<div class="mdot${sel?" sel":""}${p.g.abroad?" abroad":""}" style="width:${s}px;height:${s}px">${p.n}</div>`,iconSize:[s,s],iconAnchor:[s/2,s/2]});
     const mk=L.marker([p.g.lat,p.g.lng],{icon,title:`${p.g.name}: ${p.n}`,riseOnHover:true}).addTo(grpL);
-    mk.bindPopup(()=>townPopup(p),{maxWidth:260,minWidth:200,autoPanPadding:[20,20]}); });
+    mk.bindTooltip(`${p.g.name} · ${p.n}`,{direction:"top",offset:[0,-s/2]}); mk.on("click",()=>plSelect(p)); });
   return pts;
 }
 initPlacesMap=function(){
@@ -781,7 +781,7 @@ function inSel(p){ const P=S.pl; if(!P.val) return true; if(P.mode==="town") ret
   if(P.mode==="province") return lc(p.g.region)===lc(P.val) || (p.g.abroad && lc(p.g.country)===lc(P.val));
   if(P.mode==="country") return lc(p.g.country||"")===lc(ctryCanon(P.val)); return true; }
 { const base=plMarkers; plMarkers=function(map){ const pts=base(map); const P=S.pl;
-  if(P.val && P.mode!=="town") map._munLayer.eachLayer(mk=>{ const ll=mk.getLatLng(); const p=pts.find(x=>x.g.lat===ll.lat&&x.g.lng===ll.lng); const el=mk.getElement()?.querySelector(".mdot"); if(el && p) el.classList.toggle("dim",!inSel(p)); if(el && p && inSel(p)) el.classList.add("sel"); });
+  if(P.val) map._munLayer.eachLayer(mk=>{ const ll=mk.getLatLng(); const p=pts.find(x=>x.g.lat===ll.lat&&x.g.lng===ll.lng); const el=mk.getElement()?.querySelector(".mdot"); if(el && p) el.classList.toggle("dim",!inSel(p)); if(el && p && inSel(p)) el.classList.add("sel"); });
   if(P.fly && P.val){ P.fly=false; const sel=pts.filter(inSel); setTimeout(()=>{ try{ if(sel.length>1) map.fitBounds(L.latLngBounds(sel.map(p=>[p.g.lat,p.g.lng])).pad(.4),{maxZoom:9}); else { const c= P.mode==="province"? PROV_LL[P.val] : P.mode==="country"? CTRY_LL[ctryCanon(P.val)] : sel[0]&&[sel[0].g.lat,sel[0].g.lng]; const z= P.mode==="country"? (ctryCanon(P.val)==="South Africa"?5:6) : P.mode==="province"? 7 : 10; if(c) map.setView(c,z); } }catch(_){} },80); }
   return pts; }; }
 document.addEventListener("change",e=>{ if(e.target.name==="plMode"){ setTimeout(()=>{ S.pl.fly=false; },0); } if(e.target.id==="plVal" && e.target.tagName==="SELECT"){ S.pl.fly=true; } },true);
@@ -969,3 +969,16 @@ document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act
   const patch={checkInNote:plan}; if(d!==(c.nextCheckIn||"")){ patch.nextCheckIn=d; const by=await myName(); patch.log=[...(c.log||[]),{d:today(),by,type:"note",text:d?`Follow-up moved to ${fmtD(d)}`:"Follow-up date cleared"}].slice(-200); }
   const ok=await dbUpdate("companies/"+c.id,patch); t.disabled=false; if(ok){ closeModal(); toast("Plan saved"); try{ renderSheet(); }catch(_){} } },true);
 
+
+/* ---------- 36. Map: tap a dot to select it and see who is there; clear colours; quick-pick buttons in every mode ---------- */
+function plSelect(p){ const mode=p.g.abroad?"country":"town"; const same=S.pl.mode===mode && lc(S.pl.val)===lc(p.g.name);
+  S.pl={...S.pl, mode, val: same? "" : p.g.name, fly:false}; render(); if(!same) setTimeout(()=>{ const r=document.getElementById("plRes19")||document.querySelector(".plpick"); r?.scrollIntoView({behavior:"smooth",block:"start"}); },120); }
+{ const base=vNear; vNear=function(){ let h=base(); const P=S.pl; const pts=townGroups();
+  if(P.mode==="town"){ const top=[...pts].sort((a,b)=>b.n-a.n).slice(0,14);
+    if(top.length) h=h.replace('<form id="plForm" class="plpick">',`<div class="chips" style="margin:8px 0 4px">${top.map(p=>`<button class="chip ${lc(P.val)===lc(p.g.name)?"on":""}" data-act="pl-pick" data-mode="${p.g.abroad?"country":"town"}" data-k="${esc(p.g.name)}">${p.g.abroad?"🌍 ":""}${esc(p.g.name)} <span class="n">${p.n}</span></button>`).join("")}</div><form id="plForm" class="plpick">`); }
+  const legend=`<div class="maplegend"><span><i class="lg town"></i>South African town</span><span><i class="lg abroad"></i>Abroad</span><span><i class="lg sel"></i>Selected</span></div>`;
+  h=h.replace(/(<div id="plMap"[^>]*><\/div>)/,`$1${legend}`);
+  if(P.val){ const n=h.indexOf('<form id="plForm" class="plpick">'); const end=h.indexOf("</form>",n); if(n>=0&&end>=0) h=h.slice(0,end+7)+`<div id="plRes19"></div>`+h.slice(end+7); }
+  h=h.replace(/>1 people</g,">1 person<").replace(/\b1 people\b/g,"1 person");
+  return h; }; }
+document.addEventListener("click",e=>{ const t=e.target.closest('[data-act="pl-clear"]'); if(!t) return; e.preventDefault(); S.pl={...S.pl,val:""}; render(); });
