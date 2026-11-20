@@ -351,6 +351,8 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 .fld.need19 label::after{content:" – please choose";color:#b5651d;font-weight:600}
 .edit19[data-act]{cursor:pointer;position:relative}
 .edit19[data-act] .main::after{content:"✎ tap to edit";display:block;font-size:12px;color:var(--muted,#888);margin-top:2px}
+.tlic19{flex:none;display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;font-size:14px;font-weight:700;color:#fff}
+.tlic19.ok{background:#2e7d32}.tlic19.no{background:#b3261e}
 .mdot-wrap{background:none;border:0}
 .mdot{border-radius:50%;background:var(--tierA,#b5651d);color:#fff;display:grid;place-items:center;font:700 12.5px/1 "Source Sans 3",system-ui,sans-serif;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);opacity:.93}
 .mdot.sel{background:var(--ink,#1d2b36);transform:scale(1.12)}
@@ -524,7 +526,7 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 <script src="supabase.js"></script>
 <script>
 "use strict";
-const APP_V="v70";
+const APP_V="v71";
 /* ---------------- Reference data ---------------- */
 const STAGES = [
   {id:"network", label:"Prospect – we'd look at it", group:"network"},
@@ -722,7 +724,7 @@ async function loadContacts(){ const {data,error}=await sb.from("contacts").sele
 async function loadSettings(){ const {data}=await sb.from("settings").select("*"); const rows=data||[]; const team=rows.find(r=>r.key==="team"); const p=team?.value?.partners; S.partners=Array.isArray(p)?p.filter(Boolean):[]; const ch=rows.find(r=>r.key==="channels"); if(ch && Array.isArray(ch.value?.list)) applyChannels(ch.value.list); const mt=rows.find(r=>r.key==="meeting"); S.meetNext=mt?.value?.next||""; S.loaded.settings=true; queueRender(); }
 async function loadMembers(){ const {data}=await sb.from("members").select("user_id,email,name,is_admin").order("created_at"); S.members=data||[]; S.me=S.members.find(m=>m.user_id===S.uid)||null; S.readOnly=!S.me; queueRender(); }
 async function loadConnections(){ const {data,error}=await sb.from("connections").select("contact_id,partner,relation"); if(error){ console.warn(error); return; } const m=new Map(); (data||[]).forEach(r=>{ if(!m.has(r.contact_id)) m.set(r.contact_id,[]); m.get(r.contact_id).push({partner:r.partner, relation:r.relation||""}); }); S.conns=m; queueRender(); }
-async function loadCommitments(){ const {data,error}=await sb.from("commitments").select("*").order("created_at"); if(error){ console.warn(error); return; } S.commitments=(data||[]).map(r=>({id:r.id, meetingId:r.meeting_id, owner:r.owner, action:r.action, due:r.due||"", status:r.status, why:r.why, companyId:r.company_id||"", contactId:r.contact_id||"", createdAt:r.created_at})); queueRender(); }
+async function loadCommitments(){ const {data,error}=await sb.from("commitments").select("*").order("created_at"); if(error){ console.warn(error); return; } S.commitments=(data||[]).map(r=>({id:r.id, meetingId:r.meeting_id, owner:r.owner, action:r.action, due:r.due||"", status:r.status, why:r.why, companyId:r.company_id||"", contactId:r.contact_id||"", createdAt:r.created_at, updatedAt:r.updated_at||r.created_at})); queueRender(); }
 async function loadMeetings(){ const {data,error}=await sb.from("meetings").select("*").order("held_on",{ascending:false}); if(error){ console.warn(error); return; } S.meetings=data||[]; queueRender(); }
 let reloadT={}; function reloadSoon(table){ clearTimeout(reloadT[table]); reloadT[table]=setTimeout(()=>{ ({companies:loadCompanies,contacts:loadContacts,settings:loadSettings,connections:loadConnections,commitments:loadCommitments,meetings:loadMeetings,person_links:loadLinks})[table](); },300); }
 let channel=null;
@@ -1689,7 +1691,7 @@ function vToday(){
 }
 function cmtRow(x){
   const late=x.due && daysUntil(x.due)<0; const co=x.companyId?S.companies.get(x.companyId):null;
-  return `<div class="rowi" style="cursor:default"><button class="tick" data-act="cmt-done" data-id="${esc(x.id)}" aria-label="Mark done">${ic("check",18)}</button><span class="main"${S.readOnly?"":` role="button" tabindex="0" data-act="cm19-edit" data-id="${esc(x.id)}" style="cursor:pointer"`}><span class="t1" style="display:block;white-space:normal">${esc(x.action)}</span><span class="t2" style="display:block">${esc([x.owner, co?co.name:"", x.due?`due ${fmtD(x.due)}`:""].filter(Boolean).join(" · "))}${S.readOnly?"":" · ✎ edit"}</span></span>${late?`<span class="pill late">Late</span>`:""}<button class="btn sm" data-act="cmt-not" data-id="${esc(x.id)}">Not done</button></div>`;
+  return `<div class="rowi" style="cursor:default"><button class="tick" data-act="cmt-done" data-id="${esc(x.id)}" aria-label="Mark done">${ic("check",18)}</button><span class="main"${S.readOnly?"":` role="button" tabindex="0" data-act="cm19-edit" data-id="${esc(x.id)}" style="cursor:pointer"`}><span class="t1" style="display:block;white-space:normal">${esc(x.action)}</span><span class="t2" style="display:block">${esc([x.owner, co?co.name:"", x.due?`due ${fmtD(x.due)}`:""].filter(Boolean).join(" · "))}${S.readOnly?"":" · ✎ edit"}</span></span>${late?`<span class="pill late">Late</span>`:""}${S.readOnly?"":`<button class="btn sm notdone19" data-act="cmt-not" data-id="${esc(x.id)}">✕ Not done</button>`}</div>`;
 }
 
 /* ---------- People list: Mine uses partner connections ---------- */
@@ -2238,8 +2240,8 @@ document.addEventListener("click", async e=>{
     case "cmt-add": { const action=$("#cmAction").value.trim(); if(!action){ toast("Write the action first"); break; } const m=openMeeting();
       const {error}=await sb.from("commitments").insert({owner:$("#cmOwner").value, action, due:$("#cmDue").value||null, company_id:$("#cmBiz").value||null, meeting_id:m?.id||null}); if(error) writeErr(error); else { await loadCommitments(); toast("Commitment added"); } break; }
     case "cmt-done": { const {error}=await sb.from("commitments").update({status:"done"}).eq("id",id); if(error) writeErr(error); else { await loadCommitments(); toast("Done. Nice."); } break; }
-    case "cmt-not": showModal(`${ovHead("Not done",`<button class="hbtn" data-act="close-modal">Cancel</button>`)}<div class="ovb"><div class="fields"><div class="fld"><label for="cmWhy">Why not? (honest report)</label><textarea id="cmWhy" rows="3"></textarea></div></div><div style="margin-top:12px"><button class="btn primary block" data-act="cmt-not-save" data-id="${esc(id)}">Save</button></div></div>`, true); break;
-    case "cmt-not-save": { const {error}=await sb.from("commitments").update({status:"not_done", why:$("#cmWhy").value.trim()}).eq("id",id); if(error) writeErr(error); else { closeModal(); await loadCommitments(); toast("Recorded"); } break; }
+    case "cmt-not": showModal(`${ovHead("Not done",`<button class="hbtn" data-act="close-modal">Cancel</button>`)}<div class="ovb"><div class="fields"><div class="fld"><label for="cmWhy">Why wasn't it done? ${esc((S.commitments.find(c=>c.id===id)?.owner||"").split(" ")[0])}'s reason</label><textarea id="cmWhy" rows="3" placeholder="e.g. Owner was away – rescheduled to next week"></textarea></div></div><div style="margin-top:12px"><button class="btn primary block" data-act="cmt-not-save" data-id="${esc(id)}">Save</button></div></div>`, true); break;
+    case "cmt-not-save": { if(!$("#cmWhy").value.trim()){ toast("Add a short reason"); $("#cmWhy").focus(); break; } const {error}=await sb.from("commitments").update({status:"not_done", why:$("#cmWhy").value.trim()}).eq("id",id); if(error) writeErr(error); else { closeModal(); await loadCommitments(); toast("Recorded"); } break; }
   }
 });
 document.addEventListener("submit",e=>{ if(e.target.id==="askForm"){ e.preventDefault(); runAsk($("#askQ").value); } });
@@ -2365,7 +2367,7 @@ function vToday(){
   ${targetsBlock(mine)}
   <div class="sec"><h2>To call this week</h2>${due.length?`<a href="#checkins">All</a>`:""}</div>
   ${due.length? due.slice(0,5).map(anyDueCard).join("")+(due.length>5?`<a class="btn block" href="#checkins" style="margin-top:4px">See all ${due.length} check-ins</a>`:"") : `<div class="card empty"><b>You're up to date</b>${soon.length?`Next up: ${esc(soon[0].name)} on ${esc(fmtD(soon[0].nextCheckIn))}.`:"Set check-ins on targets you like and on people you want to stay close to."}</div>`}
-  ${cm.length?`<div class="sec"><h2>${mine?"My commitments":"Team commitments"}</h2><a href="#meeting">Meeting</a></div><div class="group">${cm.slice(0,5).map(cmtRow).join("")}</div>`:""}
+  ${cm.length||closedCm(mine).length?`<div class="sec"><h2>${mine?"My commitments":"Team commitments"}</h2><a href="#meeting">Meeting</a></div>${cm.length?`<div class="group">${cm.slice(0,5).map(cmtRow).join("")}</div>${cm.length>5?`<a class="btn block" href="#meeting" style="margin-top:4px">See all ${cm.length}</a>`:""}`:`<div class="card box tag">All commitments are closed.</div>`}${closedCmHTML(mine)}`:""}
   ${thx.length?`<div class="sec"><h2>Say thank you</h2></div><div class="group">${thx.slice(0,4).map(k=>`<button class="rowi" data-contact="${esc(k.id)}">${avatarP(k)}<span class="main"><span class="t1" style="display:block">${esc(k.name)}</span><span class="t2" style="display:block">Introduced ${dealsFrom(k.id).length} lead${dealsFrom(k.id).length>1?"s":""} · ${(k.thanks||[]).length?"last thanked "+fmtD((k.thanks||[]).map(t=>t.d).sort().pop()):"not thanked yet"}</span></span>${ic("chev",18).replace('class="ic"','class="ic chev"')}</button>`).join("")}</div>`:""}
   ${newNet?`<div class="sec"><h2>New prospects</h2><a href="#businesses" data-act="biz-network">Review</a></div><div class="card box tag">${newNet} prospect${newNet>1?"s":""} added in the last three weeks. Open one and tap <b>Make it a target</b> if we want to go for it.</div>`:""}
   ${weak.length?`<div class="sec"><h2>Make these profiles stronger</h2></div><div class="group">${weak.slice(0,3).map(({k,c})=>`<button class="rowi" data-act="complete-profile" data-id="${esc(k.id)}">${avatarP(k)}<span class="main"><span class="t1" style="display:block">${esc(k.name)}</span><span class="t2" style="display:block">Add ${esc(c.missing.slice(0,3).join(", "))}</span></span><span class="trail"><span class="pill soon">${c.pct}%</span></span></button>`).join("")}</div>`:""}
@@ -3750,7 +3752,7 @@ function lastNoteHTML(rec){ const e=histEntries(rec,1)[0]; return e? `<div class
 function ciMoreHTML(c){ if(!c.nextCheckIn && !c.checkInNote) return lastNoteHTML(c); return `${c.checkInNote?`<div><b>To do:</b> ${esc(c.checkInNote)}</div>`:""}${lastNoteHTML(c)}${S.readOnly?"":`<div class="acts" style="grid-template-columns:2fr 1fr"><button class="act dark" data-act="quick-checkin" data-id="${esc(c.id)}">${ic("check",18)}Log check-in</button><button class="act" data-act="ci-move" data-kind="c" data-id="${esc(c.id)}">Move / edit</button></div>`}`; }
 dueCard=function(c){
   const d=dueInfo(c); const o=bizContact(c); const last=histEntries(c,1)[0];
-  return `<div class="card due"><div class="top" data-open="${esc(c.id)}">${avatarB(c)}<div class="main" style="flex:1;min-width:0"><div class="t1" style="font-weight:600">${esc(c.name)}</div><div class="t2" style="color:var(--muted);font-size:14px">${esc([o?.name||"No owner captured", c.partner].filter(Boolean).join(" · "))}</div></div><span class="pill ${d.cls}">${esc(d.txt)}</span></div>
+  return `<div class="card due"><div class="top" data-open="${esc(c.id)}">${avatarB(c)}<div class="main" style="flex:1;min-width:0"><div class="t1" style="font-weight:600">${esc(c.name)}</div><div class="t2" style="color:var(--muted);font-size:14px">${esc([o?.name||"No owner captured", respOf(c).length?`Call: ${respOf(c).join(" & ")}`:""].filter(Boolean).join(" · "))}</div></div><span class="pill ${d.cls}">${esc(d.txt)}</span></div>
   ${c.checkInNote?`<div class="due-note"><b>To do:</b> ${esc(c.checkInNote)}</div>`:""}${last?`<div class="due-note muted"><b>Last:</b> ${esc(fmtD(last.d))} · ${esc(last.text.length>110?last.text.slice(0,110)+"…":last.text)}</div>`:""}
   <div class="acts four"><a class="act" ${o?.cell?`href="${esc(telHref(o.cell))}"`:'aria-disabled="true"'}>${ic("phone",18)}Call</a><a class="act" ${o?.cell?`href="${esc(waHref(o.cell))}" target="_blank" rel="noopener"`:'aria-disabled="true"'}>${ic("wa",18)}WhatsApp</a><button class="act" data-act="ci-move" data-kind="c" data-id="${esc(c.id)}">${ic("cal",18)}Move</button><button class="act dark" data-act="quick-checkin" data-id="${esc(c.id)}">${ic("check",18)}Done</button></div></div>`;
 };
@@ -5105,7 +5107,8 @@ function cmEditModal(id){ const x=S.commitments.find(c=>c.id===id); if(!x) retur
    <div class="fld"><label for="ceA">Action</label><textarea id="ceA" rows="2">${esc(x.action||"")}</textarea></div>
    <div class="fld"><label for="ceO">Who</label><select id="ceO">${opts([...new Set([...S.partners,x.owner].filter(Boolean))],x.owner||"")}</select></div>
    <div class="fld"><label for="ceD">By when</label><input id="ceD" type="date" value="${esc(x.due||"")}"></div>
-   <div class="fld"><label for="ceS">Status</label><select id="ceS">${opts([{v:"open",l:"Open"},{v:"done",l:"Done"},{v:"carried",l:"Carried to next meeting"},{v:"notdone",l:"Not done"}].filter(o=>o.v!=="carried"||x.status==="carried").filter(o=>o.v!=="notdone"||x.status==="notdone"),x.status||"open")}</select></div>
+   <div class="fld"><label for="ceS">Status</label><select id="ceS">${opts([{v:"open",l:"Open"},{v:"done",l:"Done"},{v:"not_done",l:"Not done"},{v:"carried",l:"Carried to next meeting"}].filter(o=>o.v!=="carried"||x.status==="carried"),x.status||"open")}</select></div>
+   <div class="fld" id="ceWhyW" ${x.status==="not_done"?"":"hidden"}><label for="ceW">Why wasn't it done?</label><textarea id="ceW" rows="2">${esc(x.why||"")}</textarea></div>
    <div class="fld"><label for="ceB">Business or partner</label><select id="ceB">${opts(companies().sort((a,b)=>a.name.localeCompare(b.name)).map(c=>({v:c.id,l:c.name})),x.companyId||"","None")}</select></div>
    <div class="fld"><label for="ceP">Person</label><select id="ceP">${opts(contacts().sort((a,b)=>a.name.localeCompare(b.name)).map(k=>({v:k.id,l:k.name})),x.contactId||"","None")}</select></div></div>
    <div style="margin-top:14px;display:grid;gap:10px"><button class="btn primary block" data-act="cm19-save" data-id="${esc(id)}">Save</button><button class="linkbtn" style="color:var(--bad,#b3261e)" data-act="cm19-del" data-id="${esc(id)}">Delete this action</button></div></div>`,true); }
@@ -5122,7 +5125,8 @@ document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act
   if(a==="cm19-edit"){ MV19=t.closest("#modal")?t.dataset.mv||null:null; cmEditModal(t.dataset.id); return; }
   if(a==="it19-edit"){ MV19=t.closest("#modal")?t.dataset.m:null; itEditModal(t.dataset.m,t.dataset.k); return; }
   if(a==="cm19-save"){ const action=$("#ceA").value.trim(); if(!action){ toast("Write the action"); return; } t.disabled=true;
-    const {error}=await sb.from("commitments").update({action, owner:$("#ceO").value, due:$("#ceD").value||null, status:$("#ceS").value, company_id:$("#ceB").value||null, contact_id:$("#ceP").value||null}).eq("id",t.dataset.id); t.disabled=false;
+    if($("#ceS").value==="not_done" && !$("#ceW").value.trim()){ toast("Add a short reason"); $("#ceW").focus(); t.disabled=false; return; }
+    const {error}=await sb.from("commitments").update({action, owner:$("#ceO").value, due:$("#ceD").value||null, status:$("#ceS").value, why:$("#ceS").value==="not_done"?$("#ceW").value.trim():null, company_id:$("#ceB").value||null, contact_id:$("#ceP").value||null}).eq("id",t.dataset.id); t.disabled=false;
     if(error){ writeErr(error); return; } await loadCommitments(); toast("Action updated"); back(); return; }
   if(a==="cm19-del"){ confirmBox("Delete this action?","It is removed from the meeting and everyone's lists.","Delete",async()=>{ const {error}=await sb.from("commitments").delete().eq("id",t.dataset.id); if(error){ writeErr(error); return; } await loadCommitments(); toast("Action deleted"); back(); }); return; }
   if(a==="it19-save"){ const m=meetById(t.dataset.m); const topic=$("#ieT").value.trim(); if(!topic){ toast("Give it a topic"); return; } t.disabled=true;
@@ -5140,6 +5144,12 @@ document.addEventListener("keydown",e=>{ if(e.key==="Enter" && e.target.matches?
 
 /* ---------- 40. Team commitments only appear once their meeting is finished; discarded meetings take their actions with them ---------- */
 function cmLive(x){ if(!x.meetingId) return false; const m=meetById(x.meetingId); return !!m && m.status!=="open"; }
+
+document.addEventListener("change",e=>{ if(e.target.id==="ceS"){ const w=$("#ceWhyW"); if(w) w.hidden=e.target.value!=="not_done"; } });
+/* ---------- 41. Commitments closed in the last 7 days stay visible on Today: ✓ done, or ✕ not done with the reason ---------- */
+function closedCm(mine){ const me=myPartner(); return S.commitments.filter(x=>cmLive(x) && ["done","not_done"].includes(x.status) && (!mine||x.owner===me) && daysSince((x.updatedAt||"").slice(0,10))<=7).sort((a,b)=>(b.updatedAt||"").localeCompare(a.updatedAt||"")); }
+function closedCmHTML(mine){ const L=closedCm(mine); if(!L.length) return "";
+  return `<details class="histd" style="margin-top:6px"><summary>Closed this week (${L.filter(x=>x.status==="done").length} done · ${L.filter(x=>x.status==="not_done").length} not done)</summary><div class="group" style="margin-top:8px">${L.map(x=>`<div class="rowi"><span class="tlic19 ${x.status==="done"?"ok":"no"}">${x.status==="done"?"✓":"✕"}</span><span class="main"${S.readOnly?"":` role="button" tabindex="0" data-act="cm19-edit" data-id="${esc(x.id)}" style="cursor:pointer"`}><span class="t1" style="display:block;white-space:normal">${esc(x.action)}</span><span class="t2" style="display:block">${esc([x.owner, x.status==="done"?"Done":`Not done${x.why?`: ${x.why}`:""}`].filter(Boolean).join(" · "))}</span></span></div>`).join("")}</div></details>`; }
 
 
 function vNetwork(){

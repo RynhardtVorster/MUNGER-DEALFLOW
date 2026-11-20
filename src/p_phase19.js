@@ -1030,7 +1030,8 @@ function cmEditModal(id){ const x=S.commitments.find(c=>c.id===id); if(!x) retur
    <div class="fld"><label for="ceA">Action</label><textarea id="ceA" rows="2">${esc(x.action||"")}</textarea></div>
    <div class="fld"><label for="ceO">Who</label><select id="ceO">${opts([...new Set([...S.partners,x.owner].filter(Boolean))],x.owner||"")}</select></div>
    <div class="fld"><label for="ceD">By when</label><input id="ceD" type="date" value="${esc(x.due||"")}"></div>
-   <div class="fld"><label for="ceS">Status</label><select id="ceS">${opts([{v:"open",l:"Open"},{v:"done",l:"Done"},{v:"carried",l:"Carried to next meeting"},{v:"notdone",l:"Not done"}].filter(o=>o.v!=="carried"||x.status==="carried").filter(o=>o.v!=="notdone"||x.status==="notdone"),x.status||"open")}</select></div>
+   <div class="fld"><label for="ceS">Status</label><select id="ceS">${opts([{v:"open",l:"Open"},{v:"done",l:"Done"},{v:"not_done",l:"Not done"},{v:"carried",l:"Carried to next meeting"}].filter(o=>o.v!=="carried"||x.status==="carried"),x.status||"open")}</select></div>
+   <div class="fld" id="ceWhyW" ${x.status==="not_done"?"":"hidden"}><label for="ceW">Why wasn't it done?</label><textarea id="ceW" rows="2">${esc(x.why||"")}</textarea></div>
    <div class="fld"><label for="ceB">Business or partner</label><select id="ceB">${opts(companies().sort((a,b)=>a.name.localeCompare(b.name)).map(c=>({v:c.id,l:c.name})),x.companyId||"","None")}</select></div>
    <div class="fld"><label for="ceP">Person</label><select id="ceP">${opts(contacts().sort((a,b)=>a.name.localeCompare(b.name)).map(k=>({v:k.id,l:k.name})),x.contactId||"","None")}</select></div></div>
    <div style="margin-top:14px;display:grid;gap:10px"><button class="btn primary block" data-act="cm19-save" data-id="${esc(id)}">Save</button><button class="linkbtn" style="color:var(--bad,#b3261e)" data-act="cm19-del" data-id="${esc(id)}">Delete this action</button></div></div>`,true); }
@@ -1047,7 +1048,8 @@ document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act
   if(a==="cm19-edit"){ MV19=t.closest("#modal")?t.dataset.mv||null:null; cmEditModal(t.dataset.id); return; }
   if(a==="it19-edit"){ MV19=t.closest("#modal")?t.dataset.m:null; itEditModal(t.dataset.m,t.dataset.k); return; }
   if(a==="cm19-save"){ const action=$("#ceA").value.trim(); if(!action){ toast("Write the action"); return; } t.disabled=true;
-    const {error}=await sb.from("commitments").update({action, owner:$("#ceO").value, due:$("#ceD").value||null, status:$("#ceS").value, company_id:$("#ceB").value||null, contact_id:$("#ceP").value||null}).eq("id",t.dataset.id); t.disabled=false;
+    if($("#ceS").value==="not_done" && !$("#ceW").value.trim()){ toast("Add a short reason"); $("#ceW").focus(); t.disabled=false; return; }
+    const {error}=await sb.from("commitments").update({action, owner:$("#ceO").value, due:$("#ceD").value||null, status:$("#ceS").value, why:$("#ceS").value==="not_done"?$("#ceW").value.trim():null, company_id:$("#ceB").value||null, contact_id:$("#ceP").value||null}).eq("id",t.dataset.id); t.disabled=false;
     if(error){ writeErr(error); return; } await loadCommitments(); toast("Action updated"); back(); return; }
   if(a==="cm19-del"){ confirmBox("Delete this action?","It is removed from the meeting and everyone's lists.","Delete",async()=>{ const {error}=await sb.from("commitments").delete().eq("id",t.dataset.id); if(error){ writeErr(error); return; } await loadCommitments(); toast("Action deleted"); back(); }); return; }
   if(a==="it19-save"){ const m=meetById(t.dataset.m); const topic=$("#ieT").value.trim(); if(!topic){ toast("Give it a topic"); return; } t.disabled=true;
@@ -1065,3 +1067,9 @@ document.addEventListener("keydown",e=>{ if(e.key==="Enter" && e.target.matches?
 
 /* ---------- 40. Team commitments only appear once their meeting is finished; discarded meetings take their actions with them ---------- */
 function cmLive(x){ if(!x.meetingId) return false; const m=meetById(x.meetingId); return !!m && m.status!=="open"; }
+
+document.addEventListener("change",e=>{ if(e.target.id==="ceS"){ const w=$("#ceWhyW"); if(w) w.hidden=e.target.value!=="not_done"; } });
+/* ---------- 41. Commitments closed in the last 7 days stay visible on Today: ✓ done, or ✕ not done with the reason ---------- */
+function closedCm(mine){ const me=myPartner(); return S.commitments.filter(x=>cmLive(x) && ["done","not_done"].includes(x.status) && (!mine||x.owner===me) && daysSince((x.updatedAt||"").slice(0,10))<=7).sort((a,b)=>(b.updatedAt||"").localeCompare(a.updatedAt||"")); }
+function closedCmHTML(mine){ const L=closedCm(mine); if(!L.length) return "";
+  return `<details class="histd" style="margin-top:6px"><summary>Closed this week (${L.filter(x=>x.status==="done").length} done · ${L.filter(x=>x.status==="not_done").length} not done)</summary><div class="group" style="margin-top:8px">${L.map(x=>`<div class="rowi"><span class="tlic19 ${x.status==="done"?"ok":"no"}">${x.status==="done"?"✓":"✕"}</span><span class="main"${S.readOnly?"":` role="button" tabindex="0" data-act="cm19-edit" data-id="${esc(x.id)}" style="cursor:pointer"`}><span class="t1" style="display:block;white-space:normal">${esc(x.action)}</span><span class="t2" style="display:block">${esc([x.owner, x.status==="done"?"Done":`Not done${x.why?`: ${x.why}`:""}`].filter(Boolean).join(" · "))}</span></span></div>`).join("")}</div></details>`; }
