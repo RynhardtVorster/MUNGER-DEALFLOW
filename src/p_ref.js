@@ -26,13 +26,14 @@ let CHANNELS = [
   {id:"connector", label:"Connector / intermediary", contact:true},
   {id:"bank", label:"Bank / financier", contact:true},
   {id:"broker", label:"Business broker", contact:true},
+  {id:"estate", label:"Estate agent", contact:true},
   {id:"inbound", label:"Inbound – owner approached us"},
   {id:"other", label:"Other"}
 ];
 let CHANNEL = Object.fromEntries(CHANNELS.map(c=>[c.id,c]));
 const TIERS = {
   A:{label:"Owner", desc:"Owns or runs a business that could fit the mandate", action:"Personal call or coffee", types:["Business owner","Managing director / CEO","Family shareholder"]},
-  B:{label:"Employee", desc:"Works at a business or partner firm we know: a 2IC, manager, banker, accountant or attorney", action:"Stay in touch: they see what happens inside first", types:["2IC / right hand","Senior manager","Banker / financier","Accountant / auditor","Attorney","Tax advisor","Business broker","Consultant","Wealth / financial adviser","Employee"]},
+  B:{label:"Employee", desc:"Works at a business or partner firm we know: a 2IC, manager, banker, accountant or attorney", action:"Stay in touch: they see what happens inside first", types:["2IC / right hand","Senior manager","Banker / financier","Accountant / auditor","Attorney","Estate agent","Tax advisor","Business broker","Consultant","Wealth / financial adviser","Employee"]},
   C:{label:"Potential hire", desc:"Potential employee: a CEO, CFO, C-suite or hit-squad person we'd love to work with", action:"Keep warm and know when they're open to a move", types:["CEO / MD","CFO / Finance","COO / Operations","Sales & marketing lead","CTO / Tech","Turnaround / hit squad","Board / NED","Specialist / technical expert"]},
   D:{label:"Great contact", desc:"Not an owner, employee or hire, but someone we want in our network: influential, well connected, or great to know", action:"Ask for introductions", types:["Well-connected friend","Sector insider","Community / town figure","Industry body / association","Investor","Creative / media","Service provider","Other"]}
 };

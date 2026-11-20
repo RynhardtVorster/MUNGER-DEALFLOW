@@ -277,7 +277,7 @@ async function submitContact(){
 }
 function ownerDealForm(contactId){
   const kk=S.contacts.get(contactId); const t=tierOf(kk); const owner=t==="A"||OWNER_ROLES.includes(kk.companyRole);
-  const map={"Accountant / auditor":"accounting","Attorney":"law","Tax advisor":"tax","Banker / financier":"bank","Business broker":"broker","Well-connected friend":"friend"};
+  const map={"Accountant / auditor":"accounting","Attorney":"law","Tax advisor":"tax","Banker / financier":"bank","Business broker":"broker","Estate agent":"estate","Well-connected friend":"friend"};
   const preset={source:{channel:owner?"whatsapp":(map[kk?.type]||"connector"),contactId}, partner:kk?.partner||defaultPartner()};
   preset.name=kk.firm||""; if(owner){ preset.province=kk.province||""; preset.town=kk.town||""; preset.industry=kk.industry||""; preset.owners=[{name:kk.name,cell:kk.cell||"",email:kk.email||"",language:kk.language||"af",role:kk.companyRole||"Owner"}]; }
   dealForm(null,preset); FORM.fromOwner = owner? contactId : null; FORM.fromRole = kk.companyRole||"Owner";

@@ -443,7 +443,7 @@ document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act
 
 /* ---------- 12. "Add lead" on a person always means a business they introduced (owners can still add their own) ---------- */
 function leadFrom(contactId){ const kk=S.contacts.get(contactId); if(!kk) return;
-  const map={"Accountant / auditor":"accounting","Attorney":"law","Tax advisor":"tax","Banker / financier":"bank","Business broker":"broker","Well-connected friend":"friend"};
+  const map={"Accountant / auditor":"accounting","Attorney":"law","Tax advisor":"tax","Banker / financier":"bank","Business broker":"broker","Estate agent":"estate","Well-connected friend":"friend"};
   const ch=map[kk.type] || (activeChannels("").some(x=>x.id==="friend")?"friend":"connector");
   dealForm(null,{source:{channel:ch, contactId}, partner:kk.partner||defaultPartner(), name:""}); FORM.fromOwner=null; }
 function ownBizMissing(k){ return (tierOf(k)==="A"||OWNER_ROLES.includes(k.companyRole)) && !(k.companyId && S.companies.get(k.companyId)) && !companies().some(c=>(c.owners||[]).some(o=>normName(o.name)===normName(k.name))); }
@@ -968,3 +968,4 @@ document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act
   const c=S.companies.get(t.dataset.id); const plan=$("#plT").value.trim(), d=$("#plD").value; t.disabled=true;
   const patch={checkInNote:plan}; if(d!==(c.nextCheckIn||"")){ patch.nextCheckIn=d; const by=await myName(); patch.log=[...(c.log||[]),{d:today(),by,type:"note",text:d?`Follow-up moved to ${fmtD(d)}`:"Follow-up date cleared"}].slice(-200); }
   const ok=await dbUpdate("companies/"+c.id,patch); t.disabled=false; if(ok){ closeModal(); toast("Plan saved"); try{ renderSheet(); }catch(_){} } },true);
+

@@ -3,7 +3,7 @@ function ownsOrWorks(k,c){ return !!k && !!c && (k.companyId===c.id || k.ownsCom
 dealsFrom=function(contactId){ const k=S.contacts.get(contactId); return companies().filter(c=>c.source?.contactId===contactId && !ownsOrWorks(k,c)); };
 ownerDealForm=function(contactId, ownPlace){
   const kk=S.contacts.get(contactId); if(!kk) return; const t=tierOf(kk); const owner=t==="A"||OWNER_ROLES.includes(kk.companyRole);
-  const map={"Accountant / auditor":"accounting","Attorney":"law","Tax advisor":"tax","Banker / financier":"bank","Business broker":"broker","Well-connected friend":"friend"};
+  const map={"Accountant / auditor":"accounting","Attorney":"law","Tax advisor":"tax","Banker / financier":"bank","Business broker":"broker","Estate agent":"estate","Well-connected friend":"friend"};
   const theirs=owner||ownPlace;
   const preset={source: theirs? {} : {channel:map[kk?.type]||"connector", contactId}, partner:kk?.partner||defaultPartner()};
   preset.name= theirs? (kk.firm||"") : "";
