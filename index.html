@@ -347,6 +347,8 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 .editable19{cursor:pointer;border-radius:8px;padding:4px 6px;margin:2px -6px}
 .editable19:hover,.editable19:active{background:rgba(0,0,0,.05)}
 .editable19[data-act=log-edit]::after,.editable19[data-act=plan19]::after{content:" ✎";opacity:.45;font-size:13px}
+.fld.need19{box-shadow:0 0 0 2px #b5651d;border-radius:12px}
+.fld.need19 label::after{content:" – please choose";color:#b5651d;font-weight:600}
 .mdot-wrap{background:none;border:0}
 .mdot{border-radius:50%;background:var(--tierA,#b5651d);color:#fff;display:grid;place-items:center;font:700 12.5px/1 "Source Sans 3",system-ui,sans-serif;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);opacity:.93}
 .mdot.sel{background:var(--ink,#1d2b36);transform:scale(1.12)}
@@ -520,7 +522,7 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 <script src="supabase.js"></script>
 <script>
 "use strict";
-const APP_V="v67";
+const APP_V="v68";
 /* ---------------- Reference data ---------------- */
 const STAGES = [
   {id:"network", label:"Prospect – we'd look at it", group:"network"},
@@ -5053,6 +5055,47 @@ function plSelect(p){ const mode=p.g.abroad?"country":"town"; const same=S.pl.mo
   h=h.replace(/>1 people</g,">1 person<").replace(/\b1 people\b/g,"1 person");
   return h; }; }
 document.addEventListener("click",e=>{ const t=e.target.closest('[data-act="pl-clear"]'); if(!t) return; e.preventDefault(); S.pl={...S.pl,val:""}; render(); });
+
+/* ---------- 37. Target meetings: meeting notes are just saved (no AI step) and stay editable on every meeting, open or past ---------- */
+function notesCard(m,past){ return `<div class="card box importcard" id="m-import">
+   ${past?"":`<div class="lbl">Meeting notes</div>`}
+   <div class="tag" style="margin-bottom:6px">Paste or type the notes – from Granola, Wispr Flow, or your own. They're saved with this meeting exactly as written, and you can come back and change them any time${past?"":", also after you finish the meeting"}.</div>
+   <div class="fields"><div class="fld"><label for="m19Notes">Notes${m.transcript?` · saved`:""}</label><textarea id="m19Notes" data-id="${esc(m.id)}" rows="8" placeholder="Paste the meeting notes or transcript here…">${esc(m.transcript||"")}</textarea></div></div>
+   <button class="btn primary block" data-act="m19-notes-save" data-id="${esc(m.id)}" style="margin-top:8px">${ic("check",18)} Save notes</button></div>`; }
+importCard=function(m){ return notesCard(m,false); };
+async function saveMeetNotes(id,quiet){ const ta=document.querySelector(`#m19Notes[data-id="${id}"]`); if(!ta) return; const m=meetById(id); const v=ta.value; if(m && (m.transcript||"")===v){ if(!quiet) toast("Notes saved"); return; }
+  if(await meetUpdate(id,{transcript:v},true)){ ta.dataset.saved=v; if(!quiet) toast("Meeting notes saved"); } }
+document.addEventListener("click",e=>{ const t=e.target.closest('[data-act="m19-notes-save"]'); if(!t) return; e.preventDefault(); saveMeetNotes(t.dataset.id); });
+document.addEventListener("focusout",e=>{ if(e.target.id==="m19Notes") saveMeetNotes(e.target.dataset.id,true); });
+{ const base=meetViewModal; meetViewModal=function(id){ base(id); const m=meetById(id); const ov=document.querySelector("#modal .ovb"); if(!m||!ov) return;
+  const at=[...ov.querySelectorAll(".fsec")].find(x=>x.textContent==="Notes"); const html= S.readOnly? (m.transcript?`<div class="fsec">Meeting notes</div><div class="card box" style="white-space:pre-wrap">${esc(m.transcript)}</div>`:"") : `<div class="fsec">Meeting notes</div>${notesCard(m,true)}`;
+  if(at){ at.insertAdjacentHTML("beforebegin",html); at.textContent="Wrap-up notes"; } else { const btns=ov.querySelector('[data-act="m6-copy"]')?.parentElement; (btns||ov.lastElementChild).insertAdjacentHTML("beforebegin",html); } }; }
+{ const base=minutesText; minutesText=function(m){ const t=base(m); return m.transcript? `${t}\n\nMEETING NOTES\n${m.transcript}` : t; }; }
+
+/* ---------- 38. Where did the business come from? Asked wherever a new business is created ---------- */
+function chanSelect(id,val){ return `<select id="${id}">${opts(activeChannels(val||"").map(x=>({v:x.id,l:x.label})),val||"","Choose…")}</select>`; }
+/* a) person form: new business we'd buy */
+{ const base=contactForm; contactForm=function(id,preset){ base(id,preset); const w=$("#kBuyW"); if(!w||$("#kChanW")) return;
+  w.insertAdjacentHTML("afterend",`<div class="fld" id="kChanW" hidden><label for="kChan">Where did this business come from?</label>${chanSelect("kChan","")}</div>`); kChanVis(); }; }
+function kChanVis(){ const w=$("#kChanW"); if(!w) return; w.hidden= !!$("#kBuyW")?.hidden || $("#kBuy")?.value==="no"; }
+document.addEventListener("change",e=>{ if(["kBuy","kCoPick"].includes(e.target.id)||e.target.name==="kWhere") setTimeout(kChanVis,0); });
+document.addEventListener("input",e=>{ if(e.target.id==="kCoNew") setTimeout(kChanVis,0); });
+{ const base=newCoUpdate; newCoUpdate=function(d){ base(d); kChanVis(); }; }
+{ const base=ownerDealForm; ownerDealForm=function(cid,own){ const ch=$("#kChan")?.value||""; base(cid,own); if(ch) setTimeout(()=>{ const s=$("#sChannel"); if(s){ s.value=ch; s.dispatchEvent(new Event("change",{bubbles:true})); } },80); }; }
+/* b) the business form: make the source question stand out until it's answered */
+{ const base=dealForm; dealForm=function(id,preset){ base(id,preset); const s=$("#sChannel"); if(!s) return; const f=s.closest(".fld"); const lab=f?.querySelector("label"); if(lab) lab.textContent="Where did it come from? (channel)";
+  const mark=()=>{ f?.classList.toggle("need19", !s.value && $("#cKind")?.value!=="other"); }; s.addEventListener("change",mark); mark(); }; }
+/* c) "+ Link to another company" and "+ Add another company": a new prospect or target asks the channel too */
+{ const base=linkModal; linkModal=function(mode,id){ base(mode,id); const k=$("#lnKind"); if(!k) return;
+  k.closest(".fld").insertAdjacentHTML("afterend",`<div class="fld" id="lnChanW"><label for="lnChan">Where did it come from?</label>${chanSelect("lnChan","")}</div>`);
+  const vis=()=>{ $("#lnChanW").hidden= !["network","target"].includes(k.value); }; k.addEventListener("change",vis); vis(); }; }
+{ const base=dbSet; dbSet=async function(path,data){ if(String(path).startsWith("companies/") && data && "name" in data && !("source" in data) && data.kind==="target"){ const ch=$("#lnChan")?.value||$("#xrChan")?.value||""; if(ch) data={...data,source:{channel:ch}}; } return base(path,data); }; }
+{ const base=xrPanel; xrPanel=function(){ base(); const k=$("#xrKind"); if(!k) return; k.closest(".fld").insertAdjacentHTML("afterend",`<div class="fld" id="xrChanW"><label for="xrChan">Where did it come from?</label>${chanSelect("xrChan","")}</div>`);
+  const vis=()=>{ $("#xrChanW").hidden= !["network","target"].includes(k.value); }; k.addEventListener("change",vis); vis(); }; }
+S._xrChan=S._xrChan||{};
+document.addEventListener("change",e=>{ if(e.target.id==="xrChan"){ const nm=($("#xrName")?.value||"").trim(); if(nm) S._xrChan[normName(nm)]=e.target.value; } });
+document.addEventListener("input",e=>{ if(e.target.id==="xrName"){ const v=$("#xrChan")?.value; if(v) S._xrChan[normName(e.target.value.trim())]=v; } });
+{ const base=dbSet; dbSet=async function(path,data){ if(String(path).startsWith("companies/") && data && "name" in data && !("source" in data) && data.kind==="target"){ const ch=S._xrChan[normName(data.name)]; if(ch) data={...data,source:{channel:ch}}; } return base(path,data); }; }
 
 
 function vNetwork(){
