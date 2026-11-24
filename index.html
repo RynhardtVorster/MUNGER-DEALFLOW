@@ -353,6 +353,28 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 .edit19[data-act] .main::after{content:"✎ tap to edit";display:block;font-size:12px;color:var(--muted,#888);margin-top:2px}
 .tlic19{flex:none;display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;font-size:14px;font-weight:700;color:#fff}
 .tlic19.ok{background:#2e7d32}.tlic19.no{background:#b3261e}
+.scsum{display:flex;gap:14px;align-items:center}
+.scnum{font:700 34px/1 "Source Sans 3",system-ui,sans-serif;min-width:84px}
+.scnum small{font-size:14px;font-weight:500;opacity:.6;margin-left:2px}
+.scverd{font-weight:700;font-size:17px}
+.v-go{color:#2e7d32}.v-deb{color:#a86b00}.v-kill{color:#b3261e}
+.pill.scpill.v-go{background:#e5f4e4;color:#2e7d32}.pill.scpill.v-deb{background:#f9eeda;color:#a86b00}.pill.scpill.v-kill{background:#fbebeb;color:#b3261e}
+.scflag{color:#b3261e;font-weight:600;font-size:14px;margin-top:4px}
+.scbar{position:relative;height:8px;border-radius:99px;background:linear-gradient(90deg,#fbebeb 0 50%,#f9eeda 50% 60%,#e5f4e4 60%);margin:12px 0 10px}
+.scbar span{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:#1d2b36;opacity:.85}
+.scbar i{position:absolute;top:-3px;bottom:-3px;width:2px;background:#fff}
+.sclines{display:grid;gap:6px}
+.scl{display:grid;grid-template-columns:1fr auto;gap:0 10px;font-size:14px;border-top:1px solid var(--line);padding-top:6px}
+.scl b{font-size:15px}.scl small{grid-column:1/-1;color:var(--muted,#777)}
+.red{color:#b3261e;font-style:normal;font-weight:600}
+.sc20card{cursor:pointer}
+.scsticky{position:sticky;top:-1px;z-index:3;background:var(--paper,#fff);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:10px;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.scq{margin-bottom:8px}.scq .lbl{margin-bottom:6px}
+.scin{display:flex;align-items:center;gap:8px}
+.scin input{flex:1;min-width:0;font:inherit;font-size:18px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper,#fff)}
+.scin b{min-width:64px;text-align:right}
+.scbands{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12px;color:var(--muted,#777);margin-top:6px}
+.screason{display:block;width:100%;margin-top:8px;font:inherit;font-size:15px;padding:7px 10px;border:1px dashed var(--line);border-radius:10px;background:transparent}
 .mdot-wrap{background:none;border:0}
 .mdot{border-radius:50%;background:var(--tierA,#b5651d);color:#fff;display:grid;place-items:center;font:700 12.5px/1 "Source Sans 3",system-ui,sans-serif;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);opacity:.93}
 .mdot.sel{background:var(--ink,#1d2b36);transform:scale(1.12)}
@@ -526,7 +548,7 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 <script src="supabase.js"></script>
 <script>
 "use strict";
-const APP_V="v71";
+const APP_V="v72";
 /* ---------------- Reference data ---------------- */
 const STAGES = [
   {id:"network", label:"Prospect – we'd look at it", group:"network"},
@@ -676,9 +698,9 @@ let renderQueued=false;
 function queueRender(){ if(renderQueued) return; renderQueued=true; requestAnimationFrame(()=>{ renderQueued=false; render(); }); }
 
 const nz = v => (v===undefined||v===null||v==="") ? null : v;
-function companyFromRow(r){ return {id:r.id, name:r.name, tradingAs:r.trading_as, industry:r.industry, province:r.province, town:r.town, website:r.website, ebit:r.ebit, turnover:r.turnover, employees:r.employees, owners:r.owners||[], language:r.language, source:{channel:r.source_channel, contactId:r.source_contact_id||"", partner:r.source_partner, detail:r.source_detail}, partner:r.partner, status:r.status, followUpMonths:r.follow_up_months, nextCheckIn:r.next_check_in||"", lastContact:r.last_contact||"", notes:r.notes, log:r.log||[], example:r.example, hqCountry:r.hq_country, footprint:r.footprint, countries:r.countries, regNo:r.reg_no, ebitConfirmed:r.ebit_confirmed, turnoverConfirmed:r.turnover_confirmed, financialsYear:r.financials_year, fit:r.fit||{}, kind:r.kind||"target", mainContactId:r.main_contact_id||"", responsible:Array.isArray(r.responsible)?r.responsible:[], kindNote:r.kind_note||"", ownership:r.ownership||"", listing:r.listing||"", parentId:r.parent_id||"", checkInNote:r.check_in_note||"", signals:r.signals||{}, updatedByName:r.updated_by_name||"", createdBy:r.created_by, createdByName:r.created_by_name, createdAt:r.created_at, updatedAt:r.updated_at}; }
+function companyFromRow(r){ return {id:r.id, name:r.name, tradingAs:r.trading_as, industry:r.industry, province:r.province, town:r.town, website:r.website, ebit:r.ebit, turnover:r.turnover, employees:r.employees, owners:r.owners||[], language:r.language, source:{channel:r.source_channel, contactId:r.source_contact_id||"", partner:r.source_partner, detail:r.source_detail}, partner:r.partner, status:r.status, followUpMonths:r.follow_up_months, nextCheckIn:r.next_check_in||"", lastContact:r.last_contact||"", notes:r.notes, log:r.log||[], example:r.example, hqCountry:r.hq_country, footprint:r.footprint, countries:r.countries, regNo:r.reg_no, ebitConfirmed:r.ebit_confirmed, turnoverConfirmed:r.turnover_confirmed, financialsYear:r.financials_year, fit:r.fit||{}, kind:r.kind||"target", scorecard:(r.scorecard&&typeof r.scorecard==="object")?r.scorecard:{}, mainContactId:r.main_contact_id||"", responsible:Array.isArray(r.responsible)?r.responsible:[], kindNote:r.kind_note||"", ownership:r.ownership||"", listing:r.listing||"", parentId:r.parent_id||"", checkInNote:r.check_in_note||"", signals:r.signals||{}, updatedByName:r.updated_by_name||"", createdBy:r.created_by, createdByName:r.created_by_name, createdAt:r.created_at, updatedAt:r.updated_at}; }
 function contactFromRow(r){ return {seniority:r.seniority||"", otherRoles:Array.isArray(r.other_roles)?r.other_roles:[], education:r.education||"", background:r.background||"", publicRole:r.public_role||"", profiles:Array.isArray(r.profiles)?r.profiles:[], tags:Array.isArray(r.tags)?r.tags:[], cells:Array.isArray(r.cells)?r.cells:[], emails:Array.isArray(r.emails)?r.emails:[], nextCheckIn:r.next_check_in||"", checkInWeeks:r.check_in_weeks||0, checkInRepeat:!!r.check_in_repeat, checkInNote:r.check_in_note||"", checkInOwner:r.check_in_owner||"", lastContact:r.last_contact||"", id:r.id, name:r.name, tier:r.tier, type:r.type, firm:r.firm, partner:r.partner, ownsCompanyId:r.owns_company_id||"", companyId:r.company_id||r.owns_company_id||"", companyRole:r.company_role||(r.owns_company_id?"Owner":""), title:r.title||"", country:r.country||"", industry:r.industry||"", expertise:r.expertise||"", linkedin:r.linkedin||"", influence:r.influence||0, talent:r.talent||{}, hnwi:!!r.hnwi, wealthSource:r.wealth_source||"", doNotContact:!!r.do_not_contact, thanks:r.thanks||[], log:r.log||[], pastRoles:r.past_roles||[], updatedByName:r.updated_by_name||"", cell:r.cell, email:r.email, language:r.language, province:r.province, town:r.town, notes:r.notes, example:r.example, createdBy:r.created_by, createdAt:r.created_at, updatedAt:r.updated_at}; }
-const CMAP={name:"name",tradingAs:"trading_as",industry:"industry",province:"province",town:"town",website:"website",ebit:"ebit",turnover:"turnover",employees:"employees",owners:"owners",language:"language",partner:"partner",status:"status",followUpMonths:"follow_up_months",nextCheckIn:"next_check_in",lastContact:"last_contact",notes:"notes",log:"log",example:"example",createdByName:"created_by_name",hqCountry:"hq_country",footprint:"footprint",countries:"countries",regNo:"reg_no",ebitConfirmed:"ebit_confirmed",turnoverConfirmed:"turnover_confirmed",financialsYear:"financials_year",fit:"fit",kind:"kind",responsible:"responsible",mainContactId:"main_contact_id",kindNote:"kind_note",ownership:"ownership",listing:"listing",parentId:"parent_id",checkInNote:"check_in_note",signals:"signals"};
+const CMAP={name:"name",tradingAs:"trading_as",industry:"industry",province:"province",town:"town",website:"website",ebit:"ebit",turnover:"turnover",employees:"employees",owners:"owners",language:"language",partner:"partner",status:"status",followUpMonths:"follow_up_months",nextCheckIn:"next_check_in",lastContact:"last_contact",notes:"notes",log:"log",example:"example",createdByName:"created_by_name",hqCountry:"hq_country",footprint:"footprint",countries:"countries",regNo:"reg_no",ebitConfirmed:"ebit_confirmed",turnoverConfirmed:"turnover_confirmed",financialsYear:"financials_year",fit:"fit",kind:"kind",responsible:"responsible",mainContactId:"main_contact_id",scorecard:"scorecard",kindNote:"kind_note",ownership:"ownership",listing:"listing",parentId:"parent_id",checkInNote:"check_in_note",signals:"signals"};
 const KMAP={seniority:"seniority",otherRoles:"other_roles",education:"education",background:"background",publicRole:"public_role",profiles:"profiles",tags:"tags",cells:"cells",emails:"emails",nextCheckIn:"next_check_in",checkInWeeks:"check_in_weeks",checkInRepeat:"check_in_repeat",checkInNote:"check_in_note",checkInOwner:"check_in_owner",lastContact:"last_contact",name:"name",tier:"tier",type:"type",firm:"firm",partner:"partner",ownsCompanyId:"owns_company_id",cell:"cell",email:"email",language:"language",province:"province",town:"town",notes:"notes",example:"example",companyId:"company_id",companyRole:"company_role",title:"title",country:"country",industry:"industry",expertise:"expertise",linkedin:"linkedin",influence:"influence",talent:"talent",hnwi:"hnwi",wealthSource:"wealth_source",doNotContact:"do_not_contact",thanks:"thanks",log:"log",pastRoles:"past_roles"};
 const NULLABLE=new Set(["main_contact_id","parent_id","next_check_in","last_contact","owns_company_id","source_contact_id","company_id","ebit_confirmed","turnover_confirmed"]);
 function toRow(table, d){
@@ -2587,7 +2609,7 @@ function renderSheet(){
       ${fin&&!ro?`<button class="btn sm" data-act="like" data-id="${esc(c.id)}">${c.nextCheckIn?"Change check-ins":"Set check-ins"}</button>`:""}
     </div>`:""}
     ${!fin&&!ro&&c.kind!=="other"?`<div class="fields" style="margin-top:12px"><div class="fld"><label for="dStage">Stage</label><select id="dStage">${opts(STAGES.map(s=>({v:s.id,l:s.label})),stageOf(c.status).id)}</select></div></div>`:""}
-    ${fin?ciReportHTML(c):c.kind!=="other"?teamCardHTML(c,ro)+ciReportHTML(c):`<div class="card box" style="margin-top:12px"><div class="lbl">Network company – not to buy</div><div class="tag">We know people here, so Ask the network can find a contact. No stages or check-ins.${ro?"":` <button class="linkbtn" data-act="net2prospect" data-id="${esc(c.id)}">Change to a prospect</button>`}</div></div>`}
+    ${fin?ciReportHTML(c):c.kind!=="other"?teamCardHTML(c,ro)+scoreCardHTML(c,ro)+ciReportHTML(c):`<div class="card box" style="margin-top:12px"><div class="lbl">Network company – not to buy</div><div class="tag">We know people here, so Ask the network can find a contact. No stages or check-ins.${ro?"":` <button class="linkbtn" data-act="net2prospect" data-id="${esc(c.id)}">Change to a prospect</button>`}</div></div>`}
     ${!fin&&g!=="network"?`<div class="fsec">Our way in</div>${wayInHTML(c)}`:""}
     <div class="fsec">People we know here</div>
     ${(c.owners||[]).length||ppl.length? `<div class="group">${(c.owners||[]).filter(w=>!ppl.some(k=>k.name.toLowerCase()===String(w.name||"").toLowerCase())).map(w=>`<div class="rowi"><span class="avatar biz">${esc(initials(w.name))}</span><span class="main"><span class="t1" style="display:block">${esc(w.name||"Unnamed")} ${langTag(w.language)}</span><span class="t2" style="display:block">${esc([w.role||"Owner",w.cell,w.email].filter(Boolean).join(" · "))}</span></span>${w.cell?`<a class="btn sm" href="${esc(telHref(w.cell))}" aria-label="Call ${esc(w.name)}">${ic("phone",18)}</a>`:""}</div>`).join("")}${ppl.map(k=>`<button class="rowi" data-contact="${esc(k.id)}">${avatarP(k)}<span class="main"><span class="t1" style="display:block">${esc(k.name)}${senPill(k)}</span><span class="t2" style="display:block">${esc([k.companyRole||k.title||"Works here", knowers(k).length?"known by "+knowers(k).map(x=>x.partner.split(" ")[0]).join(", "):""].filter(Boolean).join(" · "))}</span></span>${ic("chev",18).replace('class="ic"','class="ic chev"')}</button>`).join("")}</div>` : `<div class="card empty">${fin?"Nobody we know here yet. Add the bankers, partners or advisors we deal with.":"Nobody linked yet."}</div>`}
@@ -5150,6 +5172,63 @@ document.addEventListener("change",e=>{ if(e.target.id==="ceS"){ const w=$("#ceW
 function closedCm(mine){ const me=myPartner(); return S.commitments.filter(x=>cmLive(x) && ["done","not_done"].includes(x.status) && (!mine||x.owner===me) && daysSince((x.updatedAt||"").slice(0,10))<=7).sort((a,b)=>(b.updatedAt||"").localeCompare(a.updatedAt||"")); }
 function closedCmHTML(mine){ const L=closedCm(mine); if(!L.length) return "";
   return `<details class="histd" style="margin-top:6px"><summary>Closed this week (${L.filter(x=>x.status==="done").length} done · ${L.filter(x=>x.status==="not_done").length} not done)</summary><div class="group" style="margin-top:8px">${L.map(x=>`<div class="rowi"><span class="tlic19 ${x.status==="done"?"ok":"no"}">${x.status==="done"?"✓":"✕"}</span><span class="main"${S.readOnly?"":` role="button" tabindex="0" data-act="cm19-edit" data-id="${esc(x.id)}" style="cursor:pointer"`}><span class="t1" style="display:block;white-space:normal">${esc(x.action)}</span><span class="t2" style="display:block">${esc([x.owner, x.status==="done"?"Done":`Not done${x.why?`: ${x.why}`:""}`].filter(Boolean).join(" · "))}</span></span></div>`).join("")}</div></details>`; }
+
+/* ================= Phase 20: Investment scorecard on every business we'd buy ================= */
+/* 10 criteria scored automatically from the numbers you enter; Proceed (>60) / Debate (50–60) / Kill (<50); EBIT below 10% kills; largest client over 30% is a red flag */
+const SC=[
+ {k:"rev",  n:"Revenue growth – 3 yr CAGR", unit:"%", type:"num", hint:"e.g. 8", bands:[[x=>x<0,0,"<0%"],[x=>x<5,5,"0–5%"],[x=>x<10,7,"5–10%"],[x=>x<=15,9,"10–15%"],[x=>true,10,">15%"]]},
+ {k:"ebitdag",n:"EBITDA growth – 3 yr CAGR", unit:"%", type:"num", hint:"e.g. 12", bands:[[x=>x<0,0,"<0%"],[x=>x<5,5,"0–5%"],[x=>x<10,7,"5–10%"],[x=>x<=15,9,"10–15%"],[x=>true,10,">15%"]]},
+ {k:"gp",   n:"GP% – material", unit:"%", type:"num", hint:"e.g. 45", bands:[[x=>x<30,0,"<30%"],[x=>x<40,5,"30–40%"],[x=>x<50,7,"40–50%"],[x=>x<=60,9,"50–60%"],[x=>true,10,">60%"]]},
+ {k:"ebit", n:"EBIT% (min 10%) – adjusted", unit:"%", type:"num", hint:"e.g. 14", bands:[[x=>x<10,0,"<10%",{kill:true}],[x=>x<13,6,"10–13%"],[x=>x<16,7,"13–16%"],[x=>x<=20,9,"16–20%"],[x=>true,10,">20%"]]},
+ {k:"rona", n:"RONA – EBIT / (NWC + FA)", unit:"%", type:"num", hint:"e.g. 25", bands:[[x=>x<15,0,"<15%"],[x=>x<20,4,"15–20%"],[x=>x<30,6,"20–30%"],[x=>x<=40,8,"30–40%"],[x=>true,10,">40%"]]},
+ {k:"fit",  n:"Platform fit", type:"pick", opts:[["no",0,"No fit"],["medium",5,"Medium fit"],["good",8,"Good fit"],["excellent",10,"Excellent fit"]]},
+ {k:"cash", n:"Day-one cash equity (× EBIT)", unit:"×", type:"num", hint:"e.g. 1.6", bands:[[x=>x>2.8,0,">2.8×"],[x=>x>=2.4,4,"2.4–2.8×"],[x=>x>=1.75,7,"1.75–2.4×"],[x=>x>=1.25,8,"1.25–1.75×"],[x=>true,10,"<1.25×"]]},
+ {k:"def",  n:"Defensibility", type:"pick", opts:[["poor",0,"Poor"],["low",3,"Low"],["medium",5,"Medium"],["high",7,"High"],["vhigh",10,"Very high"]]},
+ {k:"conc", n:"Customer concentration – largest client % of sales", unit:"%", type:"num", hint:"e.g. 18", bands:[[x=>x>30,0,">30%",{flag:true}],[x=>x>=20,3,"20–30%"],[x=>x>=10,6,"10–20%"],[x=>true,10,"<10%"]]},
+ {k:"price",n:"Price (PV PBIAT multiple)", unit:"×", type:"num", hint:"e.g. 9.5", bands:[[x=>x>13,2,">13×"],[x=>x>=11,6,"11–13×"],[x=>x>=10,8,"10–11×"],[x=>x>=8,9,"8–10×"],[x=>true,10,"<8×"]]}];
+const VERD={proceed:{l:"Proceed",cls:"v-go",t:"Score above 60 – pursue it heavily."},debate:{l:"Debate",cls:"v-deb",t:"Score 50–60 – discuss at the target meeting before spending more time."},kill:{l:"Kill",cls:"v-kill",t:"Score below 50 – spend the time on something else."}};
+function scLine(def,inp){ if(!inp||inp.v===""||inp.v==null) return null; if(def.type==="pick"){ const o=def.opts.find(o=>o[0]===inp.v); return o?{pts:o[1],band:o[2]}:null; }
+  const x=parseFloat(String(inp.v).replace(",",".").replace(/[%x×\s]/gi,"")); if(!isFinite(x)) return null; const b=def.bands.find(b=>b[0](x)); return {pts:b[1],band:b[2],kill:!!b[3]?.kill,flag:!!b[3]?.flag}; }
+function scoreOf(c){ const I=c?.scorecard?.inputs||{}; let total=0,done=0,kill=false; const flags=[];
+  const lines=SC.map(d=>{ const r=scLine(d,I[d.k]); if(r){ total+=r.pts; done++; if(r.kill) kill=true; if(r.flag) flags.push(d.n); } return {d,r,inp:I[d.k]}; });
+  return {total,done,kill,flags,lines,verdict: kill? "kill" : total>60? "proceed" : total>=50? "debate" : "kill"}; }
+function scoreCardHTML(c,ro){ const s=scoreOf(c); const v=VERD[s.verdict];
+  if(!s.done) return `<div class="fsec">Investment scorecard</div><div class="card box"><div class="tag">Not scored yet. Score it on the 10 criteria – growth, margins, RONA, platform fit, day-one cash equity, defensibility, customer concentration and price – to see whether to proceed, debate or kill.</div>${ro?"":`<button class="btn primary block" data-act="sc20" data-id="${esc(c.id)}" style="margin-top:10px">Score this business</button>`}</div>`;
+  return `<div class="fsec">Investment scorecard</div><div class="card box sc20card" ${ro?"":`role="button" tabindex="0" data-act="sc20" data-id="${esc(c.id)}"`}>
+   <div class="scsum"><div class="scnum ${v.cls}">${s.total}<small>/100</small></div><div><div class="scverd ${v.cls}">${v.l}${s.kill?" – EBIT below 10%":""}</div><div class="tag">${esc(v.t)}${s.done<10?` Provisional – ${s.done} of 10 scored.`:""}</div>${s.flags.length?`<div class="scflag">⚑ Red flag: largest client is over 30% of sales</div>`:""}</div></div>
+   <div class="scbar"><span style="width:${s.total}%"></span><i style="left:50%"></i><i style="left:60%"></i></div>
+   <div class="sclines">${s.lines.map(({d,r,inp})=>`<div class="scl"><span>${esc(d.n)}</span><b>${r?r.pts:"–"}</b><small>${r?`${esc(d.type==="pick"?r.band:`${inp.v}${d.unit} · ${r.band}`)}${inp?.reason?` – ${esc(inp.reason)}`:""}`:"not scored"}${r?.kill?` <em class="red">kill</em>`:""}${r?.flag?` <em class="red">red flag</em>`:""}</small></div>`).join("")}</div>
+   <div class="tag" style="margin-top:8px">${c.scorecard?.by?`Scored by ${esc(c.scorecard.by)} · ${esc(fmtD(c.scorecard.d||""))}`:""}${ro?"":" · tap to update"}</div></div>`; }
+function scModal(id){ const c=S.companies.get(id); if(!c) return; const I=c.scorecard?.inputs||{};
+  showModal(`${ovHead("Investment scorecard",`<button class="hbtn" data-act="close-modal">Cancel</button>`)}<div class="ovb">
+   <p style="margin:0 2px 8px"><b>${esc(c.name)}</b> – enter the numbers; the points and the total work themselves out.</p>
+   <div class="scsticky" id="scLive"></div>
+   ${SC.map((d,i)=>`<div class="card box scq"><div class="lbl">${i+1}. ${esc(d.n)}</div>
+     ${d.type==="pick"? `<div class="chips">${d.opts.map(o=>`<button type="button" class="chip ${I[d.k]?.v===o[0]?"on":""}" data-act="sc20-pick" data-k="${d.k}" data-v="${o[0]}">${esc(o[2])} <span class="n">${o[1]}</span></button>`).join("")}</div>`
+       : `<div class="scin"><input type="text" inputmode="decimal" id="sc_${d.k}" value="${esc(I[d.k]?.v??"")}" placeholder="${esc(d.hint)}" aria-label="${esc(d.n)}"><span>${d.unit}</span><b id="scp_${d.k}"></b></div><div class="scbands">${d.bands.map(b=>`<span>${esc(b[2])} → ${b[3]?.kill?"kill":b[3]?.flag?"red flag":b[1]}</span>`).join("")}</div>`}
+     <input type="text" class="screason" id="scr_${d.k}" value="${esc(I[d.k]?.reason||"")}" placeholder="Reason (optional)"></div>`).join("")}
+   <button class="btn primary block" data-act="sc20-save" data-id="${esc(id)}" style="margin-top:12px">Save scorecard</button>
+   ${Object.keys(I).length?`<button class="linkbtn" data-act="sc20-clear" data-id="${esc(id)}" style="margin-top:8px;color:var(--bad,#b3261e)">Clear the scorecard</button>`:""}</div>`,true);
+  scLiveUpdate(); }
+function scRead(){ const inputs={}; SC.forEach(d=>{ const reason=($(`#scr_${d.k}`)?.value||"").trim(); let v="";
+  if(d.type==="pick") v=document.querySelector(`[data-act="sc20-pick"][data-k="${d.k}"].on`)?.dataset.v||""; else v=($(`#sc_${d.k}`)?.value||"").trim().replace(",",".");
+  if(v!==""||reason) inputs[d.k]={v,reason}; }); return inputs; }
+function scLiveUpdate(){ const box=$("#scLive"); if(!box) return; const s=scoreOf({scorecard:{inputs:scRead()}}); const v=VERD[s.verdict];
+  SC.forEach(d=>{ if(d.type!=="num") return; const r=scLine(d,{v:$(`#sc_${d.k}`)?.value}); const el=$(`#scp_${d.k}`); if(el){ el.textContent= r? (r.kill?"kill":r.flag?"red flag":`${r.pts} pts`) : ""; el.className= r&&(r.kill||r.flag)?"red":""; } });
+  box.innerHTML=`<div class="scsum"><div class="scnum ${v.cls}">${s.total}<small>/100</small></div><div><div class="scverd ${v.cls}">${v.l}${s.kill?" – EBIT below 10%":""}</div><div class="tag">${s.done} of 10 scored${s.flags.length?" · ⚑ customer concentration red flag":""}</div></div></div>`; }
+document.addEventListener("input",e=>{ if(e.target.id && e.target.id.startsWith("sc_")) scLiveUpdate(); });
+document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act^="sc20"]'); if(!t) return; e.preventDefault(); e.stopPropagation(); const a=t.dataset.act;
+  if(a==="sc20"){ if(!S.readOnly) scModal(t.dataset.id); return; }
+  if(a==="sc20-pick"){ const on=t.classList.contains("on"); t.parentElement.querySelectorAll(".chip").forEach(x=>x.classList.remove("on")); if(!on) t.classList.add("on"); scLiveUpdate(); return; }
+  const c=S.companies.get(t.dataset.id); if(!c) return; const by=await myName();
+  if(a==="sc20-clear"){ confirmBox("Clear the scorecard?","All scores and reasons for this business are removed.","Clear",async()=>{ if(await dbUpdate("companies/"+c.id,{scorecard:{}})){ closeModal(); toast("Scorecard cleared"); try{ renderSheet(); }catch(_){} } }); return; }
+  const inputs=scRead(); const s=scoreOf({scorecard:{inputs}}); t.disabled=true;
+  const ok=await dbUpdate("companies/"+c.id,{scorecard:{inputs,total:s.total,verdict:s.verdict,by,d:today()}, log:[...(c.log||[]),{d:today(),by,type:"note",text:`Scorecard: ${s.total}/100 – ${VERD[s.verdict].l}${s.kill?" (EBIT below 10%)":""}${s.done<10?` · ${s.done} of 10 scored`:""}`}].slice(-200)});
+  t.disabled=false; if(ok){ closeModal(); toast(`Scored ${s.total}/100 – ${VERD[s.verdict].l}`); try{ renderSheet(); }catch(_){} } },true);
+document.addEventListener("keydown",e=>{ if(e.key==="Enter" && e.target.matches && e.target.matches(".sc20card")) e.target.click(); });
+/* the score shows next to the business in lists and in the target meeting pipeline */
+function scPill(c){ const s=c&&c.scorecard; if(!s||s.total==null||!s.inputs||!Object.keys(s.inputs).length) return ""; const v=VERD[s.verdict]||VERD.kill; return `<span class="pill scpill ${v.cls}">${s.total} · ${v.l}</span>`; }
+{ const base=bizRow; bizRow=function(c){ const h=base(c); const p=scPill(c); if(!p) return h; const i=h.lastIndexOf("</span></span>"); return i<0? h : h.slice(0,i+14)+p+h.slice(i+14); }; }
 
 
 function vNetwork(){
