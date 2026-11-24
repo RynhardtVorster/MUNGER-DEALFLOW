@@ -369,7 +369,7 @@ function logEditModal(kind,id,i){ const rec=kind==="c"?S.companies.get(id):S.con
 }
 async function logWrite(kind,id,fn){ const rec=kind==="c"?S.companies.get(id):S.contacts.get(id); if(!rec) return false; const log=[...(rec.log||[])].map(x=>({...x})); fn(log);
   log.sort((a,b)=>(a.d||"").localeCompare(b.d||"")); return dbUpdate(`${kind==="c"?"companies":"contacts"}/${id}`,{log}); }
-document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act="log-edit"],[data-act="log-save"],[data-act="log-del"]'); if(!t) return; e.preventDefault(); e.stopPropagation();
+document.addEventListener("click",async e=>{ const t=e.target.closest('[data-act="log-edit"],[data-act="log-save"],[data-act="log-del"]'); if(!t||e.target.closest('[data-act^="mn21-"]')) return; e.preventDefault(); e.stopPropagation();
   const {kind,id}=t.dataset, i=Number(t.dataset.i), a=t.dataset.act;
   if(a==="log-edit"){ if(t.closest("details") && e.target.closest("summary")) return; logEditModal(kind,id,i); return; }
   const rec=kind==="c"?S.companies.get(id):S.contacts.get(id); const orig=rec?.log?.[i]; if(!orig) return;
