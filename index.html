@@ -547,6 +547,8 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 .netroute{font-size:13.5px;line-height:1.5;padding:4px 0;border-top:1px solid var(--line)}
 .netroute:first-of-type{border-top:0}
 html.netdark .netsearch{position:relative;z-index:5}
+.fu26h{font-size:13px;font-weight:600;color:var(--muted);margin:12px 4px 6px;text-transform:uppercase;letter-spacing:.05em}
+.fu26d{display:block;font-weight:600;font-size:14px;color:var(--ink);text-align:right;margin-bottom:2px;white-space:nowrap}
 </style>
 <link rel="stylesheet" href="leaflet.css">
 </head>
@@ -580,7 +582,7 @@ html.netdark .netsearch{position:relative;z-index:5}
 <script src="supabase.js"></script>
 <script>
 "use strict";
-const APP_V="v80";
+const APP_V="v81";
 /* ---------------- Reference data ---------------- */
 const STAGES = [
   {id:"network", label:"Prospect – we'd look at it", group:"network"},
@@ -5564,6 +5566,19 @@ personCheckinCard=function(k){ const ro=S.readOnly; const d=dueInfo(k); const fi
   const P=peopleAt(c); if(!P.length) return; const due=P.filter(k=>k.nextCheckIn).sort((a,b)=>a.nextCheckIn.localeCompare(b.nextCheckIn)); const none=P.filter(k=>!k.nextCheckIn);
   const html=`<div class="fsec" id="fu25p">Follow-ups with people here</div><div class="group">${due.map(personCiRow).join("")}${none.map(k=>`<button class="rowi" data-contact="${esc(k.id)}">${avatarP(k)}<span class="main"><span class="t1" style="display:block">${esc(k.name)}</span><span class="t2" style="display:block">${esc(k.lastContact?`Last spoke ${fmtD(k.lastContact)}`:"Not spoken to yet")} · no follow-up set</span></span><span class="trail"><span class="pill">Set</span></span></button>`).join("")}</div>`;
   const at=[...sh.querySelectorAll(".fsec")].find(f=>/People we know here/i.test(f.textContent)); if(at) at.insertAdjacentHTML("beforebegin",html); }catch(err){ console.warn(err); } }; }
+/* ================= Phase 26: Today shows every planned follow-up (people, partners, businesses) – this week first, then what's next ================= */
+peopleCheckins=function(mine){ const me=myPartner(); return contacts().filter(k=>k.nextCheckIn && (!mine || (partnerFor(k.checkInOwner||k.partner||"")||k.checkInOwner||k.partner)===me || (!k.checkInOwner && !k.partner && k.createdBy===S.uid))); };
+function fuPlanned(mine){ const open=companies().filter(isOpen); const pool=mine? open.filter(isMine) : open; return [...pool,...peopleCheckins(mine)].filter(x=>x.nextCheckIn).sort((a,b)=>a.nextCheckIn.localeCompare(b.nextCheckIn)); }
+function fuRow(x){ const d=dueInfo(x); const isK=isPersonRec(x); const who=isK? (x.checkInOwner||x.partner||"") : respOf(x).join(" & ");
+  const sub=[isK? workLine(x) : (isPartnerCo(x)? `Partner · ${PKINDS[x.kind]||""}` : STAGE[x.status]?.label||""), x.checkInNote, who&&`· ${who.split(" ")[0]}`].filter(Boolean).join(" · ").replace(" · ·"," ·");
+  return `<button class="rowi" ${isK?`data-contact="${esc(x.id)}"`:`data-open="${esc(x.id)}"`}>${isK?avatarP(x):(isPartnerCo(x)?`<span class="avatar biz">${ic(pkIcon(x),20)}</span>`:avatarB(x))}<span class="main"><span class="t1" style="display:block">${esc(x.name)}</span><span class="t2" style="display:block">${esc(sub)}</span></span><span class="trail"><span class="fu26d">${esc(fmtD(x.nextCheckIn).replace(/ \d{4}$/,""))}</span>${d&&daysUntil(x.nextCheckIn)<=30?`<span class="pill ${d.cls}">${esc(d.txt)}</span>`:""}</span></button>`; }
+{ const base=vToday; vToday=function(){ let h=base(); try{ const mine=S.scope==="mine";
+  h=h.replace(/<div class="sec"><h2>Coming up<\/h2><\/div><div class="group">[\s\S]*?<\/button><\/div>(?=\s*(<div class="sec">|<div style="text-align:center))/, "");
+  const L=fuPlanned(mine).filter(x=>daysUntil(x.nextCheckIn)>7); if(!L.length) return h;
+  const B=[["Next week",x=>daysUntil(x.nextCheckIn)<=14],["Later this month and next",x=>{const n=daysUntil(x.nextCheckIn); return n>14&&n<=60;}],["Further ahead",x=>daysUntil(x.nextCheckIn)>60]];
+  const sec=`<div class="sec"><h2>Follow-ups planned</h2><a href="#checkins">All ${L.length}</a></div>${B.map(([l,f])=>{ const it=L.filter(f); return it.length?`<div class="fu26h">${l} <span class="tag">${it.length}</span></div><div class="group">${it.slice(0,l==="Next week"?8:5).map(fuRow).join("")}</div>${it.length>(l==="Next week"?8:5)?`<a class="btn block sm" href="#checkins" style="margin-top:4px">See all ${it.length}</a>`:""}`:""; }).join("")}`;
+  const i=h.indexOf("<h2>To call this week</h2>"); const j=i<0?-1:h.indexOf('<div class="sec">',i+30); if(j>0) return h.slice(0,j)+sec+h.slice(j);
+  const k=h.indexOf('<div style="text-align:center;margin-top:18px">'); return k>0? h.slice(0,k)+sec+h.slice(k) : h+sec; }catch(err){ console.warn(err); return h; } }; }
 
 init();
 if("serviceWorker" in navigator){ window.addEventListener("load",()=>{ navigator.serviceWorker.register("sw.js").then(reg=>{ document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") reg.update().catch(()=>{}); }); setInterval(()=>reg.update().catch(()=>{}),30*60*1000); }).catch(()=>{}); });
