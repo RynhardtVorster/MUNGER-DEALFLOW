@@ -74,15 +74,15 @@ function kn(c){ const d=c.deal||{}; const ebit=num22(c.ebitConfirmed); const est
   return {ebit,est,turn,price,mult,multCalc,priceCalc,margin: ebit&&turn? ebit/turn*100 : null, d}; }
 function knShort(c){ const k=kn(c); const p=[]; if(k.ebit!=null) p.push(`EBIT ${rm(k.ebit)}`); else if(k.est) p.push(`EBIT ~${k.est}`); if(k.mult!=null) p.push(`${(Math.round(k.mult*10)/10)}× EBIT`); if(k.price!=null) p.push(`Price ${rm(k.price)}`); return p.join(" · "); }
 function knHTML(c){ const k=kn(c); const ro=S.readOnly;
-  const tile=(l,v,sub)=>`<div class="kn22t ${v?"":"miss"}"><small>${l}</small><b>${v||"Add"}</b>${sub?`<span>${esc(sub)}</span>`:""}</div>`;
+  const row=(l,v,sub)=>`<div class="k">${l}</div><div class="v">${v?`<b>${esc(v)}</b>`:`<span class="kn22add">${ro?"–":"Add"}</span>`}${sub?`<small>${esc(sub)}</small>`:""}</div>`;
   const s=c.scorecard; const v=s&&s.total!=null&&s.inputs&&Object.keys(s.inputs).length? (VERD[s.verdict]||VERD.kill) : null;
-  return `<div class="fsec" id="kn22">Key numbers</div><div class="card box kn22" ${ro?"":`data-act="kn22-edit" data-id="${esc(c.id)}" role="button" tabindex="0"`}>
-   <div class="kn22g">${tile("EBIT",k.ebit!=null?rm(k.ebit):k.est?`~${k.est}`:"",k.ebit!=null?`confirmed${c.financialsYear?` · ${c.financialsYear}`:""}`:k.est?"our estimate":"")}
-   ${tile("Turnover",k.turn!=null?rm(k.turn):c.turnover?`~${c.turnover}`:"",k.margin!=null?`EBIT margin ${Math.round(k.margin*10)/10}%`:k.turn!=null?"confirmed":c.turnover?"estimate":"")}
-   ${tile("Price discussed",k.price!=null?rm(k.price):"",k.priceCalc?"from the multiple":"")}
-   ${tile("Multiple",k.mult!=null?`${Math.round(k.mult*10)/10}× EBIT`:"",k.multCalc?"price ÷ EBIT":"")}</div>
-   ${k.d.note?`<div style="margin-top:8px;white-space:pre-wrap">${esc(k.d.note)}</div>`:""}
-   <div class="tag" style="margin-top:8px;display:flex;justify-content:space-between;gap:8px;align-items:center"><span>${k.d.at?`Updated by ${esc(k.d.by||"")} · ${esc(fmtD(k.d.at.slice(0,10)))}`:ro?"":"Tap to fill in the numbers"}</span>${v?`<span class="pill scpill ${v.cls}">Score ${s.total} · ${v.l}</span>`:""}</div></div>`; }
+  return `<div class="fsec" id="kn22">Key numbers</div><div class="card kn22" ${ro?"":`data-act="kn22-edit" data-id="${esc(c.id)}" role="button" tabindex="0"`}><div class="kv">
+   ${row("EBIT",k.ebit!=null?rm(k.ebit):k.est?`~${k.est}`:"",k.ebit!=null?`confirmed${c.financialsYear?` · ${c.financialsYear}`:""}`:k.est?"our estimate":"")}
+   ${row("Turnover",k.turn!=null?rm(k.turn):c.turnover?`~${c.turnover}`:"",k.margin!=null?`EBIT margin ${Math.round(k.margin*10)/10}%`:k.turn!=null?"":c.turnover?"estimate":"")}
+   ${row("Price discussed",k.price!=null?rm(k.price):"",k.priceCalc?"from the multiple":"")}
+   ${row("Multiple",k.mult!=null?`${Math.round(k.mult*10)/10}× EBIT`:"",k.multCalc?"price ÷ EBIT":"")}</div>
+   ${k.d.note?`<div class="kn22note">${esc(k.d.note)}</div>`:""}
+   <div class="kn22foot"><span>${k.d.at?`Updated by ${esc(k.d.by||"")} · ${esc(fmtD(k.d.at.slice(0,10)))}`:ro?"":"Tap to fill in the numbers"}</span>${v?`<span class="pill scpill ${v.cls}">Score ${s.total} · ${v.l}</span>`:ro?"":`<span class="kn22edit">${ic("edit",16)} Edit</span>`}</div></div>`; }
 { const base=renderSheet; renderSheet=function(){ base(); try{ if(S.sheet?.kind!=="company") return; const c=S.companies.get(S.sheet.id); const sh=document.getElementById("sheet"); if(!c||!sh||!isAcq(c)||sh.querySelector("#kn22")) return;
   const first=sh.querySelector(".ovb .fsec"); const w=document.createElement("div"); w.innerHTML=knHTML(c); if(first) first.before(...w.childNodes); else (sh.querySelector(".ovb")||sh).append(...w.childNodes); }catch(err){ console.warn(err); } }; }
 function knModal(id){ const c=S.companies.get(id); if(!c) return; const d=c.deal||{};

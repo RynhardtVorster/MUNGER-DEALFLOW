@@ -518,16 +518,19 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 #mtg21{scroll-margin-top:72px}
 .mtgadd{margin-top:6px}
 .mtg21{align-items:flex-start}
-.mtgdate{flex:0 0 44px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--accent-soft,#fdf0e6);color:var(--accent,#c2410c);border-radius:12px;padding:6px 0;margin-right:10px;line-height:1.05}
+.mtgdate{flex:0 0 44px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--soft);color:var(--ink);border-radius:12px;padding:6px 0;margin-right:10px;line-height:1.05}
 .mtgdate b{font-size:19px}.mtgdate small{font-size:11px;text-transform:uppercase;letter-spacing:.04em}
 .mtgprev{display:-webkit-box!important;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:3px;opacity:.85}
-.mtgnotes{width:100%;min-height:220px;font-size:15px;line-height:1.45;border-radius:12px;padding:12px;border:1px solid var(--line,#ddd);background:var(--card,#fff);color:inherit;font-family:inherit;box-sizing:border-box}
+.mtgnotes{width:100%;min-height:220px;font-size:15px;line-height:1.45;border-radius:12px;padding:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-family:inherit;box-sizing:border-box}
 .mtgfull{white-space:pre-wrap;line-height:1.5;font-size:15px;max-height:55vh;overflow:auto;padding:14px}
-.mnchip{display:flex;width:fit-content;align-items:center;gap:6px;margin-top:8px;padding:6px 10px;border-radius:999px;border:1px solid var(--accent,#c2410c);background:var(--accent-soft,#fdf0e6);color:var(--accent,#c2410c);font:inherit;font-size:13.5px;font-weight:600;cursor:pointer}
-.kn22{cursor:pointer}.kn22g{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.kn22t{background:var(--bg,#f4f1ea);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
-.kn22t small{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;opacity:.7}.kn22t b{font-size:19px}.kn22t span{font-size:12.5px;opacity:.75}
-.kn22t.miss b{color:var(--accent,#c2410c);font-size:16px}
+.mnchip{display:flex;width:fit-content;align-items:center;gap:6px;margin-top:8px;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:var(--soft);color:var(--ink);font:inherit;font-size:13.5px;font-weight:600;cursor:pointer}
+.kn22{cursor:pointer}
+.kn22 .kv .v b{font-size:16px;color:var(--ink)}
+.kn22 .kv .v small{display:block;font-size:12.5px;color:var(--muted);margin-top:1px}
+.kn22add{color:var(--faint);font-weight:600}
+.kn22note{padding:10px 14px;border-top:1px solid var(--line);font-size:14.5px;white-space:pre-wrap;color:var(--ink)}
+.kn22foot{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.kn22edit{display:inline-flex;align-items:center;gap:4px;color:var(--ink);font-weight:600}
 .kn22l{font-weight:600;font-size:13.5px;margin-top:2px;white-space:normal!important;overflow:visible!important;text-overflow:clip!important}.kn22none{font-weight:400;opacity:.55}
 .sort22{margin:2px 0 10px}
 </style>
@@ -563,7 +566,7 @@ table.mini th:first-child,table.mini td:first-child{text-align:left}
 <script src="supabase.js"></script>
 <script>
 "use strict";
-const APP_V="v74";
+const APP_V="v75";
 /* ---------------- Reference data ---------------- */
 const STAGES = [
   {id:"network", label:"Prospect – we'd look at it", group:"network"},
@@ -5321,15 +5324,15 @@ function kn(c){ const d=c.deal||{}; const ebit=num22(c.ebitConfirmed); const est
   return {ebit,est,turn,price,mult,multCalc,priceCalc,margin: ebit&&turn? ebit/turn*100 : null, d}; }
 function knShort(c){ const k=kn(c); const p=[]; if(k.ebit!=null) p.push(`EBIT ${rm(k.ebit)}`); else if(k.est) p.push(`EBIT ~${k.est}`); if(k.mult!=null) p.push(`${(Math.round(k.mult*10)/10)}× EBIT`); if(k.price!=null) p.push(`Price ${rm(k.price)}`); return p.join(" · "); }
 function knHTML(c){ const k=kn(c); const ro=S.readOnly;
-  const tile=(l,v,sub)=>`<div class="kn22t ${v?"":"miss"}"><small>${l}</small><b>${v||"Add"}</b>${sub?`<span>${esc(sub)}</span>`:""}</div>`;
+  const row=(l,v,sub)=>`<div class="k">${l}</div><div class="v">${v?`<b>${esc(v)}</b>`:`<span class="kn22add">${ro?"–":"Add"}</span>`}${sub?`<small>${esc(sub)}</small>`:""}</div>`;
   const s=c.scorecard; const v=s&&s.total!=null&&s.inputs&&Object.keys(s.inputs).length? (VERD[s.verdict]||VERD.kill) : null;
-  return `<div class="fsec" id="kn22">Key numbers</div><div class="card box kn22" ${ro?"":`data-act="kn22-edit" data-id="${esc(c.id)}" role="button" tabindex="0"`}>
-   <div class="kn22g">${tile("EBIT",k.ebit!=null?rm(k.ebit):k.est?`~${k.est}`:"",k.ebit!=null?`confirmed${c.financialsYear?` · ${c.financialsYear}`:""}`:k.est?"our estimate":"")}
-   ${tile("Turnover",k.turn!=null?rm(k.turn):c.turnover?`~${c.turnover}`:"",k.margin!=null?`EBIT margin ${Math.round(k.margin*10)/10}%`:k.turn!=null?"confirmed":c.turnover?"estimate":"")}
-   ${tile("Price discussed",k.price!=null?rm(k.price):"",k.priceCalc?"from the multiple":"")}
-   ${tile("Multiple",k.mult!=null?`${Math.round(k.mult*10)/10}× EBIT`:"",k.multCalc?"price ÷ EBIT":"")}</div>
-   ${k.d.note?`<div style="margin-top:8px;white-space:pre-wrap">${esc(k.d.note)}</div>`:""}
-   <div class="tag" style="margin-top:8px;display:flex;justify-content:space-between;gap:8px;align-items:center"><span>${k.d.at?`Updated by ${esc(k.d.by||"")} · ${esc(fmtD(k.d.at.slice(0,10)))}`:ro?"":"Tap to fill in the numbers"}</span>${v?`<span class="pill scpill ${v.cls}">Score ${s.total} · ${v.l}</span>`:""}</div></div>`; }
+  return `<div class="fsec" id="kn22">Key numbers</div><div class="card kn22" ${ro?"":`data-act="kn22-edit" data-id="${esc(c.id)}" role="button" tabindex="0"`}><div class="kv">
+   ${row("EBIT",k.ebit!=null?rm(k.ebit):k.est?`~${k.est}`:"",k.ebit!=null?`confirmed${c.financialsYear?` · ${c.financialsYear}`:""}`:k.est?"our estimate":"")}
+   ${row("Turnover",k.turn!=null?rm(k.turn):c.turnover?`~${c.turnover}`:"",k.margin!=null?`EBIT margin ${Math.round(k.margin*10)/10}%`:k.turn!=null?"":c.turnover?"estimate":"")}
+   ${row("Price discussed",k.price!=null?rm(k.price):"",k.priceCalc?"from the multiple":"")}
+   ${row("Multiple",k.mult!=null?`${Math.round(k.mult*10)/10}× EBIT`:"",k.multCalc?"price ÷ EBIT":"")}</div>
+   ${k.d.note?`<div class="kn22note">${esc(k.d.note)}</div>`:""}
+   <div class="kn22foot"><span>${k.d.at?`Updated by ${esc(k.d.by||"")} · ${esc(fmtD(k.d.at.slice(0,10)))}`:ro?"":"Tap to fill in the numbers"}</span>${v?`<span class="pill scpill ${v.cls}">Score ${s.total} · ${v.l}</span>`:ro?"":`<span class="kn22edit">${ic("edit",16)} Edit</span>`}</div></div>`; }
 { const base=renderSheet; renderSheet=function(){ base(); try{ if(S.sheet?.kind!=="company") return; const c=S.companies.get(S.sheet.id); const sh=document.getElementById("sheet"); if(!c||!sh||!isAcq(c)||sh.querySelector("#kn22")) return;
   const first=sh.querySelector(".ovb .fsec"); const w=document.createElement("div"); w.innerHTML=knHTML(c); if(first) first.before(...w.childNodes); else (sh.querySelector(".ovb")||sh).append(...w.childNodes); }catch(err){ console.warn(err); } }; }
 function knModal(id){ const c=S.companies.get(id); if(!c) return; const d=c.deal||{};
