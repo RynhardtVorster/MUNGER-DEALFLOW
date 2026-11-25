@@ -5,7 +5,7 @@
   try{ netCount(); }catch(_){} if(G.q) netSearchApply(false); }catch(err){ console.warn(err); } }; }
 { const base=vNetwork; vNetwork=function(){ const h=base(); const box=`<div class="netsearch"><div class="netsbox">${ic("search",18)}<input id="netQ" type="search" placeholder="Search a person, company or partner…" autocomplete="off" autocapitalize="words" value="${esc(G.q||"")}"><button class="netsx" data-act="nets-clear" aria-label="Clear search" ${G.q?"":"hidden"}>✕</button></div><div class="netsres" id="netRes"></div></div>`;
   const i=h.indexOf('<div class="netwrap"'); return i<0? h+box : h.slice(0,i)+box+h.slice(i); }; }
-const NET_KIND={friend:"friend of",network:"knows",works:"works at",referred:"introduced",lead:"brought in by",captured:"captured by",family:"family",colleague:"colleague",group:"same group"};
+const NET_KIND={friend:"friend of",network:"knows",works:"works at",referred:"via",lead:"brought in by",captured:"captured by",family:"family",colleague:"colleague",group:"same group"};
 function netMatches(q){ q=normName(q); if(q.length<2) return []; const words=q.split(" ");
   return G.nodes.filter(n=>{ const L=normName(n.label+" "+(n.sub||"")); return words.every(w=>L.includes(w)); })
     .sort((a,b)=>{ const as=normName(a.label).startsWith(q)?0:1, bs=normName(b.label).startsWith(q)?0:1; return as-bs || (b.deg||0)-(a.deg||0); }); }
