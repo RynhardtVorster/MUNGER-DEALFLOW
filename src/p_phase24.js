@@ -38,3 +38,31 @@ document.addEventListener("change",e=>{ if(e.target.id==="sChannel") e.target.cl
 document.addEventListener("click",e=>{ const t=e.target.closest('[data-act="like-save"]'); const sel=document.getElementById("lkCh"); if(!t||!sel) return;
   if(!sel.value){ e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); sel.classList.add("need"); sel.focus(); toast("Choose the channel it came through"); return; }
   const c=S.companies.get(t.dataset.id); if(c) dbUpdate("companies/"+c.id,{source:{...(c.source||{}),channel:sel.value}}); },true);
+/* ================= Phase 28: everything added since the last target meeting – review so nothing is missed ================= */
+function lastMeetDate(){ const done=(S.meetings||[]).filter(m=>m.status==="done"&&m.held_on).map(m=>m.held_on).sort(); return done.length? done[done.length-1] : null; }
+function newSinceDate(){ const k=S.newP||"meet"; if(k==="30") return addDays(-30); if(k==="90") return addDays(-90); if(k==="date"&&S.newD) return S.newD; return lastMeetDate()||addDays(-30); }
+function newItems(since){ const ok=x=>(x.createdAt||"").slice(0,10)>=since; const setup=c=>["Munger setup","Munger"].includes(c.createdByName||"");
+  const by=(a,b)=>(b.x.createdAt||"").localeCompare(a.x.createdAt||"");
+  return { biz:companies().filter(c=>isAcq(c)&&c.kind==="target"&&ok(c)&&!setup(c)).map(x=>({k:"company",x})).sort(by),
+    ppl:contacts().filter(ok).map(x=>({k:"contact",x})).sort(by),
+    firms:companies().filter(c=>(isPartnerCo(c)||c.kind==="other")&&ok(c)&&!setup(c)).map(x=>({k:"company",x})).sort(by) }; }
+TITLES.new="NEW";
+function vNew(){ const since=newSinceDate(); const lm=lastMeetDate(); const {biz,ppl,firms}=newItems(since); const k=S.newP||"meet";
+  const tg=biz.filter(r=>["target","active","won"].includes(grp(r.x))).length;
+  return `<div class="ph"><div><div class="eyebrow">Don't miss anything</div><h1>New since ${esc(fmtD(since))}</h1></div></div>
+   <div class="chips" style="margin-bottom:12px">${lm?`<button class="chip ${k==="meet"?"on":""}" data-act="new28-p" data-k="meet">Since last target meeting</button>`:""}<button class="chip ${k==="30"?"on":""}" data-act="new28-p" data-k="30">Last 30 days</button><button class="chip ${k==="90"?"on":""}" data-act="new28-p" data-k="90">Last 90 days</button></div>
+   <div class="stats"><div class="stat"><span class="n">${biz.length}</span><span class="l">Businesses${tg?` (${tg} in action)`:""}</span></div><div class="stat"><span class="n">${ppl.length}</span><span class="l">People</span></div><div class="stat"><span class="n">${firms.length}</span><span class="l">Partners & network cos.</span></div></div>
+   <div class="sec"><h2>Businesses to buy</h2><span class="tag">${biz.length}</span></div>${biz.length?`<div class="group">${biz.map(newRow).join("")}</div>`:`<div class="card empty">No new prospects or targets.</div>`}
+   <div class="sec"><h2>People</h2><span class="tag">${ppl.length}</span></div>${ppl.length?`<div class="group">${ppl.map(newRow).join("")}</div>`:`<div class="card empty">No new people.</div>`}
+   ${firms.length?`<div class="sec"><h2>Partner firms & network companies</h2><span class="tag">${firms.length}</span></div><div class="group">${firms.map(r=>{ const x=r.x; return `<button class="rowi" data-open="${esc(x.id)}"><span class="avatar biz">${ic(isPartnerCo(x)?pkIcon(x):"biz",20)}</span><span class="main"><span class="t1" style="display:block">${esc(x.name)}</span><span class="t2" style="display:block">${esc([isPartnerCo(x)?(PKINDS[x.kind]||"Partner"):"Network company", x.createdByName?`added by ${x.createdByName.split(" ")[0]}`:"", fmtD((x.createdAt||"").slice(0,10))].filter(Boolean).join(" · "))}</span></span></button>`; }).join("")}</div>`:""}`; }
+document.addEventListener("click",e=>{ const t=e.target.closest('[data-act="new28-p"]'); if(!t) return; e.preventDefault(); e.stopPropagation(); S.newP=t.dataset.k; render(); },true);
+document.addEventListener("click",e=>{ const t=e.target.closest('[data-act="new28-since"]'); if(!t) return; S.newP="meet"; },true);
+/* Today: the "New in the network" list becomes "New since the last target meeting" with a Review all link */
+{ const base=vToday; vToday=function(){ let h=base(); try{ const lm=lastMeetDate(); const since=lm||addDays(-30); const {biz,ppl}=newItems(since);
+  const re=/<div class="sec"><h2>New in the network<\/h2>[\s\S]*?<\/div><div class="group">[\s\S]*?<\/div>(?=\s*(<div class="sec">|<div style="text-align:center|$))/;
+  const rows=[...biz,...ppl].sort((a,b)=>(b.x.createdAt||"").localeCompare(a.x.createdAt||"")).slice(0,6);
+  const sec=(biz.length||ppl.length)? `<div class="sec"><h2>New since ${lm?"the last target meeting":"the last 30 days"}</h2><a href="#new" data-act="new28-since">Review all</a></div><div class="card box new28"><b>${biz.length}</b> business${biz.length===1?"":"es"} · <b>${ppl.length}</b> ${ppl.length===1?"person":"people"} added since ${esc(fmtD(since))}. Go through them before the next meeting so nothing slips.</div><div class="group">${rows.map(newRow).join("")}</div>` : "";
+  if(re.test(h)) h=h.replace(re,sec); else if(sec){ const k=h.indexOf('<div style="text-align:center;margin-top:18px">'); h= k>0? h.slice(0,k)+sec+h.slice(k) : h+sec; }
+  return h; }catch(err){ console.warn(err); return h; } }; }
+{ const base=vMore; vMore=function(){ const h=base(); const it=`<a class="rowi" href="#new"><span class="avatar biz">${ic("plus",20)}</span><span class="main"><span class="t1" style="display:block">New since the last meeting</span><span class="t2" style="display:block">Every business and person added – review so nothing is missed</span></span>${ic("chev",18).replace('class="ic"','class="ic chev"')}</a>`; const i=h.indexOf('<a class="rowi" href="#channels"'); return i<0? h : h.slice(0,i)+it+h.slice(i); }; }
+{ const i=RAIL.findIndex(r=>r[0]==="channels"); RAIL.splice(i+1,0,["new","New since last meeting","plus"]); }
