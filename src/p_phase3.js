@@ -580,6 +580,7 @@ async function submitDeal(){
   const name=$("#cName").value.trim(); if(!name){ toast("Add the name"); $("#cName").focus(); return; }
   const kind=kindFromSel($("#cKind").value); const fin=isPartnerKind(kind);
   const channel=fin? "" : $("#sChannel").value; const ch=CHANNEL[channel]; const source={channel, detail:$("#sDetail")?.value.trim()||""};
+  if(!fin && kind==="target" && !channel){ toast("Choose the channel it came through"); const sc=$("#sChannel"); sc?.scrollIntoView({block:"center"}); sc?.focus(); sc?.classList.add("need"); return; }
   let newContact=null;
   if(ch&&ch.contact){
     const sel=$("#sContact").value;

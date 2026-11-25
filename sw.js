@@ -1,5 +1,5 @@
 // Munger app shell: network first, cached copy when offline. Data is cached on the phone by the app itself.
-const CACHE = "munger-v81";
+const CACHE = "munger-v82";
 const TILES = "munger-tiles-v1";
 const SHELL = ["./", "index.html", "supabase.js", "leaflet.js", "leaflet.css", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 const TILE_HOSTS = /(^|\.)tile\.openstreetmap\.org$|basemaps\.cartocdn\.com$|server\.arcgisonline\.com$|fonts\.(googleapis|gstatic)\.com$/;
