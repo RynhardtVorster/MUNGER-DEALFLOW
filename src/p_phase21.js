@@ -68,11 +68,11 @@ document.addEventListener("click",async ev=>{ const t=ev.target.closest('[data-a
 const EBIT_MID={"< R10m":5,"R10–30m":20,"R30–50m":40,"R50m+":60};
 const num22=v=>{ if(v==null||v==="") return null; const x=parseFloat(String(v).replace(/\s/g,"").replace(",",".").replace(/[^\d.\-]/g,"")); return isFinite(x)?x:null; };
 const rm=x=>`R${(Math.round(x*10)/10).toLocaleString("en-ZA")}m`;
-function kn(c){ const d=c.deal||{}; const ebit=num22(c.ebitConfirmed); const est=c.ebit&&c.ebit!=="Unknown"?c.ebit:""; const turn=num22(c.turnoverConfirmed);
+function kn(c){ const d=c.deal||{}; const ebit=num22(c.ebitConfirmed); const est=ebitEstTxt(c); const estN=ebitEstNum(c); const turn=num22(c.turnoverConfirmed);
   let price=num22(d.price), mult=num22(d.multiple), multCalc=false, priceCalc=false;
   if(mult==null && price!=null && ebit) { mult=price/ebit; multCalc=true; }
   if(price==null && mult!=null && ebit) { price=mult*ebit; priceCalc=true; }
-  return {ebit,est,turn,price,mult,multCalc,priceCalc,margin: ebit&&turn? ebit/turn*100 : null, d}; }
+  return {ebit,est,estN,turn,price,mult,multCalc,priceCalc,margin: ebit&&turn? ebit/turn*100 : null, d}; }
 function knShort(c){ const k=kn(c); const p=[]; if(k.ebit!=null) p.push(`EBIT ${rm(k.ebit)}`); else if(k.est) p.push(`EBIT ~${k.est}`); if(k.mult!=null) p.push(`${(Math.round(k.mult*10)/10)}× EBIT`); if(k.price!=null) p.push(`Price ${rm(k.price)}`); return p.join(" · "); }
 function knAge(at){ const d=Math.floor((Date.now()-new Date(at))/864e5); if(d<1) return "today"; if(d===1) return "yesterday"; if(d<31) return `${d} days ago`; const m=Math.round(d/30.4); if(m<12) return `${m} month${m>1?"s":""} ago`; const y=Math.round(d/365*10)/10; return `${y} year${y>1?"s":""} ago`; }
 function knStamp(ts){ if(!ts?.at) return ""; const old=(Date.now()-new Date(ts.at))/864e5>90; return `<span class="kn22ts ${old?"old":""}">${ic("clock",13)} ${esc(fmtD(ts.at.slice(0,10)))}${ts.by?` · ${esc(ts.by.split(" ")[0])}`:""} · ${knAge(ts.at)}${old?" – time to update":""}</span>`; }
@@ -93,7 +93,7 @@ function knModal(id){ const c=S.companies.get(id); if(!c) return; const d=c.deal
   showModal(`${ovHead("Key numbers",`<button class="hbtn" data-act="close-modal">Cancel</button>`)}<div class="ovb"><p style="margin:0 2px 10px"><b>${esc(c.name)}</b></p>
    <div class="fields">
     <div class="fld" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><label for="knE">EBIT (R million)${knLbl(d,"ebit")}</label><input id="knE" inputmode="decimal" value="${esc(c.ebitConfirmed??"")}" placeholder="e.g. 12"></div><div><label for="knFy">Financial year</label><input id="knFy" value="${esc(c.financialsYear||"")}" placeholder="e.g. FY2025"></div></div>
-    <div class="fld"><label for="knEst">Not confirmed yet? Our EBIT estimate</label><select id="knEst">${opts(EBIT,c.ebit||"Unknown")}</select></div>
+    ${ebitEstInput("knEst",c,"Not confirmed yet? Our EBIT estimate (R million)")}
     <div class="fld"><label for="knT">Turnover (R million)${knLbl(d,"turn")}</label><input id="knT" inputmode="decimal" value="${esc(c.turnoverConfirmed??"")}" placeholder="e.g. 85"></div>
     <div class="fld" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><label for="knP">Price discussed (R million)${knLbl(d,"price")}</label><input id="knP" inputmode="decimal" value="${esc(d.price??"")}" placeholder="e.g. 66"></div><div><label for="knM">Multiple (× EBIT)${knLbl(d,"mult")}</label><input id="knM" inputmode="decimal" value="${esc(d.multiple??"")}" placeholder="e.g. 5.5"></div></div>
     <div class="tag" id="knCalc" style="margin:-2px 4px 4px"></div>
@@ -109,7 +109,7 @@ document.addEventListener("click",async ev=>{ const t=ev.target.closest('[data-a
   const c=S.companies.get(id); if(!c) return; const by=await myName();
   const now=new Date().toISOString(); const od=c.deal||{}; const ts={...(od.ts||{})};
   const deal={price:num22($("#knP").value), multiple:num22($("#knM").value), note:$("#knN").value.trim(), by, at:now};
-  const nE=num22($("#knE").value), nT=num22($("#knT").value), nEst=$("#knEst").value, nFy=$("#knFy").value.trim();
+  const nE=num22($("#knE").value), nT=num22($("#knT").value), nEst=ebitEstVal("knEst"), nFy=$("#knFy").value.trim();
   const chg=(f,was,is)=>{ if(String(was??"")!==String(is??"")) ts[f]= is==null||is===""||is==="Unknown" ? undefined : {at:now,by}; };
   chg("ebit", `${num22(c.ebitConfirmed)??""}|${c.ebit||""}|${c.financialsYear||""}`, (nE==null&&(!nEst||nEst==="Unknown"))?null:`${nE??""}|${nEst||""}|${nFy}`);
   chg("turn", num22(c.turnoverConfirmed), nT); chg("price", num22(od.price), deal.price); chg("mult", num22(od.multiple), deal.multiple);
@@ -119,7 +119,7 @@ document.addEventListener("click",async ev=>{ const t=ev.target.closest('[data-a
   t.disabled=true; const ok=await dbUpdate("companies/"+id,patch); t.disabled=false; if(ok){ closeModal(); toast("Numbers saved"); queueRender(); try{ renderSheet(); }catch(_){} } },true);
 /* lists: the numbers under every business, and sort by them */
 { const base=bizRow; bizRow=function(c){ const h=base(c); if(!isAcq(c)) return h; const s=knShort(c); const line=`<span class="t2 kn22l" style="display:block">${s?esc(s):`<span class="kn22none">No numbers yet</span>`}</span>`; const i=h.indexOf('</span><span class="trail">'); return i<0? h : h.slice(0,i)+line+h.slice(i); }; }
-const knSortVal={ebit:c=>{ const k=kn(c); return k.ebit!=null?k.ebit:EBIT_MID[k.est]??null; }, mult:c=>kn(c).mult, score:c=>{ const s=c.scorecard; return s&&s.inputs&&Object.keys(s.inputs).length? s.total : null; }};
+const knSortVal={ebit:c=>{ const k=kn(c); return k.ebit!=null?k.ebit:k.estN!=null?k.estN:EBIT_MID[c.ebit]??null; }, mult:c=>kn(c).mult, score:c=>{ const s=c.scorecard; return s&&s.inputs&&Object.keys(s.inputs).length? s.total : null; }};
 { const base=filteredDeals; filteredDeals=function(){ const arr=base(); const k=S.f?.sort; const f=knSortVal[k]; if(!f) return arr; const dir=k==="mult"?1:-1;
   return [...arr].sort((a,b)=>{ const x=f(a), y=f(b); if(x==null&&y==null) return 0; if(x==null) return 1; if(y==null) return -1; return (x-y)*dir; }); }; }
 { const base=vBusinesses; vBusinesses=function(){ const h=base(); if(S.view==="funders") return h; const k=S.f?.sort||"";

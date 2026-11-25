@@ -68,6 +68,11 @@ const INDUSTRIES = {
 const SECTORS = Object.keys(INDUSTRIES);
 const PROVINCES = ["Western Cape","Eastern Cape","Northern Cape","Free State","KwaZulu-Natal","North West","Gauteng","Mpumalanga","Limpopo","Namibia","Eswatini","Botswana","Other"];
 const EBIT = ["Unknown","< R10m","R10–30m","R30–50m","R50m+"];
+/* EBIT estimate is now typed as a figure in R million (stored as text, e.g. "28"); old bands still show */
+function ebitEstNum(c){ const v=String(c?.ebit??"").trim(); return /^-?\d+([.,]\d+)?$/.test(v)? parseFloat(v.replace(",",".")) : null; }
+function ebitEstTxt(c){ const v=String(c?.ebit??"").trim(); if(!v||v==="Unknown") return ""; const n=ebitEstNum(c); return n!=null? `R${Math.round(n*10)/10}m` : v; }
+function ebitEstInput(id,c,label){ const n=ebitEstNum(c); const old=n==null&&c?.ebit&&c.ebit!=="Unknown"? c.ebit : ""; return `<div class="fld"><label for="${id}">${label||"EBIT – our estimate (R million)"}</label><input id="${id}" inputmode="decimal" value="${n!=null?n:""}" placeholder="${old?`Was ${old} – type our best guess, e.g. 28`:"Our best guess, e.g. 28"}" data-old="${old}"></div>`; }
+function ebitEstVal(id){ const el=document.getElementById(id); if(!el) return undefined; const v=el.value.trim().replace(/\s/g,"").replace(/^R/i,"").replace(/m$/i,"").replace(",","."); if(!v) return el.dataset.old||"Unknown"; const n=parseFloat(v); return isFinite(n)? String(n) : (el.dataset.old||"Unknown"); }
 const LANGS = {af:"Afrikaans", en:"English", both:"Both"};
 const CADENCE = [{m:0,l:"No scheduled check-in"},{m:1,l:"Every month"},{m:3,l:"Every 3 months"},{m:6,l:"Every 6 months"},{m:12,l:"Every 12 months"}];
 

@@ -549,7 +549,7 @@ function dealForm(id, preset){
    <p class="tag" style="margin:0 2px 8px">Tick what you know. Two or more puts it on the Likely sellers list.</p><div class="checklist">${SIGNALS.map(([s,l])=>`<label><input type="checkbox" name="cSig" value="${s}" ${sig[s]?"checked":""}><span class="box" aria-hidden="true"></span><span class="txt">${esc(l)}</span></label>`).join("")}</div>
    <div class="fsec">How big is it?</div>
    <div class="fields">
-    <div class="fld"><label for="cEbit">EBIT – our estimate</label><select id="cEbit">${opts(EBIT,c.ebit)}</select></div>
+    ${ebitEstInput("cEbit",c)}
     <div class="fld"><label for="cTurnover">Turnover – our estimate</label><input id="cTurnover" value="${esc(c.turnover)}" placeholder="e.g. R180m"></div>
     <div class="fld"><label for="cEbitC">EBIT – confirmed (R million)</label><input id="cEbitC" inputmode="decimal" value="${esc(c.ebitConfirmed??"")}" placeholder="Once we've seen the numbers"></div>
     <div class="fld"><label for="cTurnC">Turnover – confirmed (R million)</label><input id="cTurnC" inputmode="decimal" value="${esc(c.turnoverConfirmed??"")}"></div>
@@ -595,7 +595,7 @@ async function submitDeal(){
   const town=$("#cTown").value.trim(); const g=gazFind(town); const cad=fin||["target","active"].includes(stageOf(status).group);
   const data={
     name, kind, kindNote:kind==="other"?($("#cKindNote")?.value.trim()||""):"", tradingAs:$("#cTrading").value.trim(), industry:fin? (PIND[kind]||"") : $("#cIndustry").value, province:autoProvince(town,$("#cProvince").value), town:g?g.name:town,
-    website:$("#cWeb").value.trim(), ebit:$("#cEbit").value, turnover:$("#cTurnover").value.trim(), employees:$("#cEmp").value.trim(),
+    website:$("#cWeb").value.trim(), ebit:ebitEstVal("cEbit"), turnover:$("#cTurnover").value.trim(), employees:$("#cEmp").value.trim(),
     hqCountry:$("#cHq").value, footprint:fin?"":$("#cFoot").value, countries:$("#cCountries").value.trim(), regNo:$("#cReg").value.trim(), ...groupRead(),
     ebitConfirmed:numOrNull($("#cEbitC").value), turnoverConfirmed:numOrNull($("#cTurnC").value), financialsYear:$("#cFy").value.trim(), fit, signals,
     owners, language: owners.length? (new Set(owners.map(o=>o.language)).size>1?"both":owners[0].language) : "",

@@ -285,7 +285,7 @@ function renderSheet(){
     const ownerK=contacts().find(k=>k.ownsCompanyId===c.id);
     const ro=S.readOnly;
     el.innerHTML=`${ovHead(c.name,null,ro?"":`<button class="hbtn" data-act="edit-deal" data-id="${esc(c.id)}">Edit</button>`)}<div class="ovb">
-    <div class="hero">${avatarB(c,true)}<h2>${esc(c.name)}</h2><div class="sub">${esc([industryShort(c)!=="—"?industryShort(c):"",[c.town,c.province].filter(Boolean).join(", ")].filter(Boolean).join(" · ")||"No details yet")}</div><div class="pills">${stagePill(c.status)}${c.partner?`<span class="pill">${esc(c.partner)}</span>`:""}${c.ebit&&c.ebit!=="Unknown"?`<span class="pill">EBIT ${esc(c.ebit)}</span>`:""}</div></div>
+    <div class="hero">${avatarB(c,true)}<h2>${esc(c.name)}</h2><div class="sub">${esc([industryShort(c)!=="—"?industryShort(c):"",[c.town,c.province].filter(Boolean).join(", ")].filter(Boolean).join(" · ")||"No details yet")}</div><div class="pills">${stagePill(c.status)}${c.partner?`<span class="pill">${esc(c.partner)}</span>`:""}${ebitEstTxt(c)?`<span class="pill">EBIT ${esc(ebitEstTxt(c))}</span>`:""}</div></div>
     <div class="bigacts">
       <a class="bigact" ${o?.cell?`href="${esc(telHref(o.cell))}"`:'aria-disabled="true"'}>${ic("phone",22)}Call</a>
       <a class="bigact" ${o?.cell?`href="${esc(waHref(o.cell))}" target="_blank" rel="noopener"`:'aria-disabled="true"'}>${ic("wa",22)}WhatsApp</a>
@@ -372,7 +372,7 @@ function dealForm(id, preset){
    <div class="fields">
     <div class="fld"><label for="cTrading">Trading as</label><input id="cTrading" value="${esc(c.tradingAs)}"></div>
     <div class="fld"><label for="cProvince">Province</label><select id="cProvince">${opts(PROVINCES,c.province,"Choose…")}</select></div>
-    <div class="fld"><label for="cEbit">EBIT estimate</label><select id="cEbit">${opts(EBIT,c.ebit)}</select></div>
+    ${ebitEstInput("cEbit",c)}
     <div class="fld"><label for="cTurnover">Turnover estimate</label><input id="cTurnover" value="${esc(c.turnover)}" placeholder="e.g. R180m"></div>
     <div class="fld"><label for="cEmp">Employees</label><input id="cEmp" inputmode="numeric" value="${esc(c.employees)}"></div>
     <div class="fld"><label for="cWeb">Website</label><input id="cWeb" inputmode="url" autocapitalize="off" value="${esc(c.website)}"></div>
@@ -438,7 +438,7 @@ async function submitDeal(){
   const status=$("#cStage").value;
   const data={
     name, tradingAs:$("#cTrading").value.trim(), industry:$("#cIndustry").value, province:$("#cProvince").value, town:$("#cTown").value.trim(),
-    website:$("#cWeb").value.trim(), ebit:$("#cEbit").value, turnover:$("#cTurnover").value.trim(), employees:$("#cEmp").value.trim(),
+    website:$("#cWeb").value.trim(), ebit:ebitEstVal("cEbit"), turnover:$("#cTurnover").value.trim(), employees:$("#cEmp").value.trim(),
     owners, language: owners.length? (new Set(owners.map(o=>o.language)).size>1?"both":owners[0].language) : "",
     source, partner:$("#cPartner").value, status, followUpMonths:Number($("#cCad").value), nextCheckIn:$("#cNext").value||"",
     notes:$("#cNotes").value.trim(), lastContact: prev?.lastContact||"", log: prev?.log? [...prev.log] : [],
@@ -565,7 +565,7 @@ function showOut(title, text){
 }
 function dealRows(list){
   const head=["Company","Trading as","Sector","Industry","Province","Town","Stage","Lead partner","Source","Referred by","EBIT","Turnover","Next check-in","Last contact","Cadence (months)","Owner 1","Owner 1 cell","Owner 1 email","Owner 1 language","Owner 2","Owner 2 cell","Owner 2 email","Owner 3","Owner 3 cell","Owner 3 email","Notes"];
-  return [head, ...list.map(c=>{ const o=c.owners||[]; const k=c.source?.contactId?S.contacts.get(c.source.contactId):null; return [c.name,c.tradingAs,sectorOf(c),industryShort(c),c.province,c.town,STAGE[c.status]?.label,c.partner,CHANNEL[c.source?.channel]?.label,k?k.name:(c.source?.partner||""),c.ebit,c.turnover,c.nextCheckIn,c.lastContact,c.followUpMonths,o[0]?.name,o[0]?.cell,o[0]?.email,LANGS[o[0]?.language]||"",o[1]?.name,o[1]?.cell,o[1]?.email,o[2]?.name,o[2]?.cell,o[2]?.email,c.notes]; })];
+  return [head, ...list.map(c=>{ const o=c.owners||[]; const k=c.source?.contactId?S.contacts.get(c.source.contactId):null; return [c.name,c.tradingAs,sectorOf(c),industryShort(c),c.province,c.town,STAGE[c.status]?.label,c.partner,CHANNEL[c.source?.channel]?.label,k?k.name:(c.source?.partner||""),ebitEstTxt(c),c.turnover,c.nextCheckIn,c.lastContact,c.followUpMonths,o[0]?.name,o[0]?.cell,o[0]?.email,LANGS[o[0]?.language]||"",o[1]?.name,o[1]?.cell,o[1]?.email,o[2]?.name,o[2]?.cell,o[2]?.email,c.notes]; })];
 }
 function contactRows(){ return [["Tag","Name","Firm","Type","Whose network","Cell","Email","Language","Province","Town","Businesses introduced","Notes"], ...contacts().map(k=>[`${tierOf(k)} – ${TIERS[tierOf(k)].label}`,k.name,k.firm,k.type,k.partner,k.cell,k.email,LANGS[k.language]||"",k.province,k.town,dealsFrom(k.id).length,k.notes])]; }
 

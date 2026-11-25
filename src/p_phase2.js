@@ -21,7 +21,7 @@ function influenceScore(k){ const kn=knowers(k); return (Number(k.influence)||0)
 function stars(n){ n=Number(n)||0; return n? `<span class="stars" title="Influence ${n} of 5">${"★".repeat(n)}</span>` : ""; }
 function fitPct(c){ const f=c.fit||{}; const v=FITDIMS.map(([d])=>Number(f[d])||0).filter(Boolean); return v.length? Math.round(v.reduce((a,b)=>a+b,0)/(v.length*5)*100) : null; }
 function fitPill(c){ const p=fitPct(c); if(p===null) return ""; return `<span class="pill ${p>=70?"won":p>=45?"nurture":"closed"}">Fit ${p}%</span>`; }
-function sizeTxt(c){ if(c.ebitConfirmed!=null && c.ebitConfirmed!=="") return `EBIT R${c.ebitConfirmed}m (confirmed${c.financialsYear?`, ${c.financialsYear}`:""})`; return c.ebit&&c.ebit!=="Unknown"? `EBIT ${c.ebit} (estimate)` : "Not known yet"; }
+function sizeTxt(c){ if(c.ebitConfirmed!=null && c.ebitConfirmed!=="") return `EBIT R${c.ebitConfirmed}m (confirmed${c.financialsYear?`, ${c.financialsYear}`:""})`; return ebitEstTxt(c)? `EBIT ${ebitEstTxt(c)} (estimate)` : "Not known yet"; }
 function completeness(k){
   const ch=[[k.name,"name"],[k.cell,"cell"],[k.email,"email"],[k.companyId||k.firm,"company"],[k.companyRole||k.title||k.type,"role or title"],[k.industry,"industry"],[k.expertise,"what they can help with"],[k.town||k.province,"location"],[knowers(k).some(x=>x.relation),"how you know them"]];
   const missing=ch.filter(c=>!c[0]).map(c=>c[1]); return {pct:Math.round((ch.length-missing.length)/ch.length*100), missing};
@@ -311,7 +311,7 @@ function dealForm(id, preset){
   <details class="more" ${id?"open":""}><summary>${ic("plus",18)} Size, fit and more details</summary>
    <div class="fsec">How big is it?</div>
    <div class="fields">
-    <div class="fld"><label for="cEbit">EBIT – our estimate</label><select id="cEbit">${opts(EBIT,c.ebit)}</select></div>
+    ${ebitEstInput("cEbit",c)}
     <div class="fld"><label for="cTurnover">Turnover – our estimate</label><input id="cTurnover" value="${esc(c.turnover)}" placeholder="e.g. R180m"></div>
     <div class="fld"><label for="cEbitC">EBIT – confirmed (R million)</label><input id="cEbitC" inputmode="decimal" value="${esc(c.ebitConfirmed??"")}" placeholder="Once we've seen the numbers"></div>
     <div class="fld"><label for="cTurnC">Turnover – confirmed (R million)</label><input id="cTurnC" inputmode="decimal" value="${esc(c.turnoverConfirmed??"")}"></div>
@@ -354,7 +354,7 @@ async function submitDeal(){
   const status=$("#cStage").value; const fit={}; FITDIMS.forEach(([d])=>{ const v=Number($("#fit_"+d).value); if(v) fit[d]=v; });
   const data={
     name, tradingAs:$("#cTrading").value.trim(), industry:$("#cIndustry").value, province:$("#cProvince").value, town:$("#cTown").value.trim(),
-    website:$("#cWeb").value.trim(), ebit:$("#cEbit").value, turnover:$("#cTurnover").value.trim(), employees:$("#cEmp").value.trim(),
+    website:$("#cWeb").value.trim(), ebit:ebitEstVal("cEbit"), turnover:$("#cTurnover").value.trim(), employees:$("#cEmp").value.trim(),
     hqCountry:$("#cHq").value, footprint:$("#cFoot").value, countries:$("#cCountries").value.trim(), regNo:$("#cReg").value.trim(),
     ebitConfirmed:numOrNull($("#cEbitC").value), turnoverConfirmed:numOrNull($("#cTurnC").value), financialsYear:$("#cFy").value.trim(), fit,
     owners, language: owners.length? (new Set(owners.map(o=>o.language)).size>1?"both":owners[0].language) : "",

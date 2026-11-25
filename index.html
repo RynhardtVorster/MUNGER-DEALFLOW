@@ -580,7 +580,7 @@ html.netdark .netsearch{position:relative;z-index:5}
 <script src="supabase.js"></script>
 <script>
 "use strict";
-const APP_V="v77";
+const APP_V="v78";
 /* ---------------- Reference data ---------------- */
 const STAGES = [
   {id:"network", label:"Prospect – we'd look at it", group:"network"},
@@ -651,6 +651,11 @@ const INDUSTRIES = {
 const SECTORS = Object.keys(INDUSTRIES);
 const PROVINCES = ["Western Cape","Eastern Cape","Northern Cape","Free State","KwaZulu-Natal","North West","Gauteng","Mpumalanga","Limpopo","Namibia","Eswatini","Botswana","Other"];
 const EBIT = ["Unknown","< R10m","R10–30m","R30–50m","R50m+"];
+/* EBIT estimate is now typed as a figure in R million (stored as text, e.g. "28"); old bands still show */
+function ebitEstNum(c){ const v=String(c?.ebit??"").trim(); return /^-?\d+([.,]\d+)?$/.test(v)? parseFloat(v.replace(",",".")) : null; }
+function ebitEstTxt(c){ const v=String(c?.ebit??"").trim(); if(!v||v==="Unknown") return ""; const n=ebitEstNum(c); return n!=null? `R${Math.round(n*10)/10}m` : v; }
+function ebitEstInput(id,c,label){ const n=ebitEstNum(c); const old=n==null&&c?.ebit&&c.ebit!=="Unknown"? c.ebit : ""; return `<div class="fld"><label for="${id}">${label||"EBIT – our estimate (R million)"}</label><input id="${id}" inputmode="decimal" value="${n!=null?n:""}" placeholder="${old?`Was ${old} – type our best guess, e.g. 28`:"Our best guess, e.g. 28"}" data-old="${old}"></div>`; }
+function ebitEstVal(id){ const el=document.getElementById(id); if(!el) return undefined; const v=el.value.trim().replace(/\s/g,"").replace(/^R/i,"").replace(/m$/i,"").replace(",","."); if(!v) return el.dataset.old||"Unknown"; const n=parseFloat(v); return isFinite(n)? String(n) : (el.dataset.old||"Unknown"); }
 const LANGS = {af:"Afrikaans", en:"English", both:"Both"};
 const CADENCE = [{m:0,l:"No scheduled check-in"},{m:1,l:"Every month"},{m:3,l:"Every 3 months"},{m:6,l:"Every 6 months"},{m:12,l:"Every 12 months"}];
 
@@ -1106,7 +1111,7 @@ function renderSheet(){
     const ownerK=contacts().find(k=>k.ownsCompanyId===c.id);
     const ro=S.readOnly;
     el.innerHTML=`${ovHead(c.name,null,ro?"":`<button class="hbtn" data-act="edit-deal" data-id="${esc(c.id)}">Edit</button>`)}<div class="ovb">
-    <div class="hero">${avatarB(c,true)}<h2>${esc(c.name)}</h2><div class="sub">${esc([industryShort(c)!=="—"?industryShort(c):"",[c.town,c.province].filter(Boolean).join(", ")].filter(Boolean).join(" · ")||"No details yet")}</div><div class="pills">${stagePill(c.status)}${c.partner?`<span class="pill">${esc(c.partner)}</span>`:""}${c.ebit&&c.ebit!=="Unknown"?`<span class="pill">EBIT ${esc(c.ebit)}</span>`:""}</div></div>
+    <div class="hero">${avatarB(c,true)}<h2>${esc(c.name)}</h2><div class="sub">${esc([industryShort(c)!=="—"?industryShort(c):"",[c.town,c.province].filter(Boolean).join(", ")].filter(Boolean).join(" · ")||"No details yet")}</div><div class="pills">${stagePill(c.status)}${c.partner?`<span class="pill">${esc(c.partner)}</span>`:""}${ebitEstTxt(c)?`<span class="pill">EBIT ${esc(ebitEstTxt(c))}</span>`:""}</div></div>
     <div class="bigacts">
       <a class="bigact" ${o?.cell?`href="${esc(telHref(o.cell))}"`:'aria-disabled="true"'}>${ic("phone",22)}Call</a>
       <a class="bigact" ${o?.cell?`href="${esc(waHref(o.cell))}" target="_blank" rel="noopener"`:'aria-disabled="true"'}>${ic("wa",22)}WhatsApp</a>
@@ -1193,7 +1198,7 @@ function dealForm(id, preset){
    <div class="fields">
     <div class="fld"><label for="cTrading">Trading as</label><input id="cTrading" value="${esc(c.tradingAs)}"></div>
     <div class="fld"><label for="cProvince">Province</label><select id="cProvince">${opts(PROVINCES,c.province,"Choose…")}</select></div>
-    <div class="fld"><label for="cEbit">EBIT estimate</label><select id="cEbit">${opts(EBIT,c.ebit)}</select></div>
+    ${ebitEstInput("cEbit",c)}
     <div class="fld"><label for="cTurnover">Turnover estimate</label><input id="cTurnover" value="${esc(c.turnover)}" placeholder="e.g. R180m"></div>
     <div class="fld"><label for="cEmp">Employees</label><input id="cEmp" inputmode="numeric" value="${esc(c.employees)}"></div>
     <div class="fld"><label for="cWeb">Website</label><input id="cWeb" inputmode="url" autocapitalize="off" value="${esc(c.website)}"></div>
@@ -1259,7 +1264,7 @@ async function submitDeal(){
   const status=$("#cStage").value;
   const data={
     name, tradingAs:$("#cTrading").value.trim(), industry:$("#cIndustry").value, province:$("#cProvince").value, town:$("#cTown").value.trim(),
-    website:$("#cWeb").value.trim(), ebit:$("#cEbit").value, turnover:$("#cTurnover").value.trim(), employees:$("#cEmp").value.trim(),
+    website:$("#cWeb").value.trim(), ebit:ebitEstVal("cEbit"), turnover:$("#cTurnover").value.trim(), employees:$("#cEmp").value.trim(),
     owners, language: owners.length? (new Set(owners.map(o=>o.language)).size>1?"both":owners[0].language) : "",
     source, partner:$("#cPartner").value, status, followUpMonths:Number($("#cCad").value), nextCheckIn:$("#cNext").value||"",
     notes:$("#cNotes").value.trim(), lastContact: prev?.lastContact||"", log: prev?.log? [...prev.log] : [],
@@ -1386,7 +1391,7 @@ function showOut(title, text){
 }
 function dealRows(list){
   const head=["Company","Trading as","Sector","Industry","Province","Town","Stage","Lead partner","Source","Referred by","EBIT","Turnover","Next check-in","Last contact","Cadence (months)","Owner 1","Owner 1 cell","Owner 1 email","Owner 1 language","Owner 2","Owner 2 cell","Owner 2 email","Owner 3","Owner 3 cell","Owner 3 email","Notes"];
-  return [head, ...list.map(c=>{ const o=c.owners||[]; const k=c.source?.contactId?S.contacts.get(c.source.contactId):null; return [c.name,c.tradingAs,sectorOf(c),industryShort(c),c.province,c.town,STAGE[c.status]?.label,c.partner,CHANNEL[c.source?.channel]?.label,k?k.name:(c.source?.partner||""),c.ebit,c.turnover,c.nextCheckIn,c.lastContact,c.followUpMonths,o[0]?.name,o[0]?.cell,o[0]?.email,LANGS[o[0]?.language]||"",o[1]?.name,o[1]?.cell,o[1]?.email,o[2]?.name,o[2]?.cell,o[2]?.email,c.notes]; })];
+  return [head, ...list.map(c=>{ const o=c.owners||[]; const k=c.source?.contactId?S.contacts.get(c.source.contactId):null; return [c.name,c.tradingAs,sectorOf(c),industryShort(c),c.province,c.town,STAGE[c.status]?.label,c.partner,CHANNEL[c.source?.channel]?.label,k?k.name:(c.source?.partner||""),ebitEstTxt(c),c.turnover,c.nextCheckIn,c.lastContact,c.followUpMonths,o[0]?.name,o[0]?.cell,o[0]?.email,LANGS[o[0]?.language]||"",o[1]?.name,o[1]?.cell,o[1]?.email,o[2]?.name,o[2]?.cell,o[2]?.email,c.notes]; })];
 }
 function contactRows(){ return [["Tag","Name","Firm","Type","Whose network","Cell","Email","Language","Province","Town","Businesses introduced","Notes"], ...contacts().map(k=>[`${tierOf(k)} – ${TIERS[tierOf(k)].label}`,k.name,k.firm,k.type,k.partner,k.cell,k.email,LANGS[k.language]||"",k.province,k.town,dealsFrom(k.id).length,k.notes])]; }
 
@@ -1693,7 +1698,7 @@ function influenceScore(k){ const kn=knowers(k); return (Number(k.influence)||0)
 function stars(n){ n=Number(n)||0; return n? `<span class="stars" title="Influence ${n} of 5">${"★".repeat(n)}</span>` : ""; }
 function fitPct(c){ const f=c.fit||{}; const v=FITDIMS.map(([d])=>Number(f[d])||0).filter(Boolean); return v.length? Math.round(v.reduce((a,b)=>a+b,0)/(v.length*5)*100) : null; }
 function fitPill(c){ const p=fitPct(c); if(p===null) return ""; return `<span class="pill ${p>=70?"won":p>=45?"nurture":"closed"}">Fit ${p}%</span>`; }
-function sizeTxt(c){ if(c.ebitConfirmed!=null && c.ebitConfirmed!=="") return `EBIT R${c.ebitConfirmed}m (confirmed${c.financialsYear?`, ${c.financialsYear}`:""})`; return c.ebit&&c.ebit!=="Unknown"? `EBIT ${c.ebit} (estimate)` : "Not known yet"; }
+function sizeTxt(c){ if(c.ebitConfirmed!=null && c.ebitConfirmed!=="") return `EBIT R${c.ebitConfirmed}m (confirmed${c.financialsYear?`, ${c.financialsYear}`:""})`; return ebitEstTxt(c)? `EBIT ${ebitEstTxt(c)} (estimate)` : "Not known yet"; }
 function completeness(k){
   const ch=[[k.name,"name"],[k.cell,"cell"],[k.email,"email"],[k.companyId||k.firm,"company"],[k.companyRole||k.title||k.type,"role or title"],[k.industry,"industry"],[k.expertise,"what they can help with"],[k.town||k.province,"location"],[knowers(k).some(x=>x.relation),"how you know them"]];
   const missing=ch.filter(c=>!c[0]).map(c=>c[1]); return {pct:Math.round((ch.length-missing.length)/ch.length*100), missing};
@@ -1983,7 +1988,7 @@ function dealForm(id, preset){
   <details class="more" ${id?"open":""}><summary>${ic("plus",18)} Size, fit and more details</summary>
    <div class="fsec">How big is it?</div>
    <div class="fields">
-    <div class="fld"><label for="cEbit">EBIT – our estimate</label><select id="cEbit">${opts(EBIT,c.ebit)}</select></div>
+    ${ebitEstInput("cEbit",c)}
     <div class="fld"><label for="cTurnover">Turnover – our estimate</label><input id="cTurnover" value="${esc(c.turnover)}" placeholder="e.g. R180m"></div>
     <div class="fld"><label for="cEbitC">EBIT – confirmed (R million)</label><input id="cEbitC" inputmode="decimal" value="${esc(c.ebitConfirmed??"")}" placeholder="Once we've seen the numbers"></div>
     <div class="fld"><label for="cTurnC">Turnover – confirmed (R million)</label><input id="cTurnC" inputmode="decimal" value="${esc(c.turnoverConfirmed??"")}"></div>
@@ -2026,7 +2031,7 @@ async function submitDeal(){
   const status=$("#cStage").value; const fit={}; FITDIMS.forEach(([d])=>{ const v=Number($("#fit_"+d).value); if(v) fit[d]=v; });
   const data={
     name, tradingAs:$("#cTrading").value.trim(), industry:$("#cIndustry").value, province:$("#cProvince").value, town:$("#cTown").value.trim(),
-    website:$("#cWeb").value.trim(), ebit:$("#cEbit").value, turnover:$("#cTurnover").value.trim(), employees:$("#cEmp").value.trim(),
+    website:$("#cWeb").value.trim(), ebit:ebitEstVal("cEbit"), turnover:$("#cTurnover").value.trim(), employees:$("#cEmp").value.trim(),
     hqCountry:$("#cHq").value, footprint:$("#cFoot").value, countries:$("#cCountries").value.trim(), regNo:$("#cReg").value.trim(),
     ebitConfirmed:numOrNull($("#cEbitC").value), turnoverConfirmed:numOrNull($("#cTurnC").value), financialsYear:$("#cFy").value.trim(), fit,
     owners, language: owners.length? (new Set(owners.map(o=>o.language)).size>1?"both":owners[0].language) : "",
@@ -2854,7 +2859,7 @@ function dealForm(id, preset){
    <p class="tag" style="margin:0 2px 8px">Tick what you know. Two or more puts it on the Likely sellers list.</p><div class="checklist">${SIGNALS.map(([s,l])=>`<label><input type="checkbox" name="cSig" value="${s}" ${sig[s]?"checked":""}><span class="box" aria-hidden="true"></span><span class="txt">${esc(l)}</span></label>`).join("")}</div>
    <div class="fsec">How big is it?</div>
    <div class="fields">
-    <div class="fld"><label for="cEbit">EBIT – our estimate</label><select id="cEbit">${opts(EBIT,c.ebit)}</select></div>
+    ${ebitEstInput("cEbit",c)}
     <div class="fld"><label for="cTurnover">Turnover – our estimate</label><input id="cTurnover" value="${esc(c.turnover)}" placeholder="e.g. R180m"></div>
     <div class="fld"><label for="cEbitC">EBIT – confirmed (R million)</label><input id="cEbitC" inputmode="decimal" value="${esc(c.ebitConfirmed??"")}" placeholder="Once we've seen the numbers"></div>
     <div class="fld"><label for="cTurnC">Turnover – confirmed (R million)</label><input id="cTurnC" inputmode="decimal" value="${esc(c.turnoverConfirmed??"")}"></div>
@@ -2900,7 +2905,7 @@ async function submitDeal(){
   const town=$("#cTown").value.trim(); const g=gazFind(town); const cad=fin||["target","active"].includes(stageOf(status).group);
   const data={
     name, kind, kindNote:kind==="other"?($("#cKindNote")?.value.trim()||""):"", tradingAs:$("#cTrading").value.trim(), industry:fin? (PIND[kind]||"") : $("#cIndustry").value, province:autoProvince(town,$("#cProvince").value), town:g?g.name:town,
-    website:$("#cWeb").value.trim(), ebit:$("#cEbit").value, turnover:$("#cTurnover").value.trim(), employees:$("#cEmp").value.trim(),
+    website:$("#cWeb").value.trim(), ebit:ebitEstVal("cEbit"), turnover:$("#cTurnover").value.trim(), employees:$("#cEmp").value.trim(),
     hqCountry:$("#cHq").value, footprint:fin?"":$("#cFoot").value, countries:$("#cCountries").value.trim(), regNo:$("#cReg").value.trim(), ...groupRead(),
     ebitConfirmed:numOrNull($("#cEbitC").value), turnoverConfirmed:numOrNull($("#cTurnC").value), financialsYear:$("#cFy").value.trim(), fit, signals,
     owners, language: owners.length? (new Set(owners.map(o=>o.language)).size>1?"both":owners[0].language) : "",
@@ -5332,11 +5337,11 @@ document.addEventListener("click",async ev=>{ const t=ev.target.closest('[data-a
 const EBIT_MID={"< R10m":5,"R10–30m":20,"R30–50m":40,"R50m+":60};
 const num22=v=>{ if(v==null||v==="") return null; const x=parseFloat(String(v).replace(/\s/g,"").replace(",",".").replace(/[^\d.\-]/g,"")); return isFinite(x)?x:null; };
 const rm=x=>`R${(Math.round(x*10)/10).toLocaleString("en-ZA")}m`;
-function kn(c){ const d=c.deal||{}; const ebit=num22(c.ebitConfirmed); const est=c.ebit&&c.ebit!=="Unknown"?c.ebit:""; const turn=num22(c.turnoverConfirmed);
+function kn(c){ const d=c.deal||{}; const ebit=num22(c.ebitConfirmed); const est=ebitEstTxt(c); const estN=ebitEstNum(c); const turn=num22(c.turnoverConfirmed);
   let price=num22(d.price), mult=num22(d.multiple), multCalc=false, priceCalc=false;
   if(mult==null && price!=null && ebit) { mult=price/ebit; multCalc=true; }
   if(price==null && mult!=null && ebit) { price=mult*ebit; priceCalc=true; }
-  return {ebit,est,turn,price,mult,multCalc,priceCalc,margin: ebit&&turn? ebit/turn*100 : null, d}; }
+  return {ebit,est,estN,turn,price,mult,multCalc,priceCalc,margin: ebit&&turn? ebit/turn*100 : null, d}; }
 function knShort(c){ const k=kn(c); const p=[]; if(k.ebit!=null) p.push(`EBIT ${rm(k.ebit)}`); else if(k.est) p.push(`EBIT ~${k.est}`); if(k.mult!=null) p.push(`${(Math.round(k.mult*10)/10)}× EBIT`); if(k.price!=null) p.push(`Price ${rm(k.price)}`); return p.join(" · "); }
 function knAge(at){ const d=Math.floor((Date.now()-new Date(at))/864e5); if(d<1) return "today"; if(d===1) return "yesterday"; if(d<31) return `${d} days ago`; const m=Math.round(d/30.4); if(m<12) return `${m} month${m>1?"s":""} ago`; const y=Math.round(d/365*10)/10; return `${y} year${y>1?"s":""} ago`; }
 function knStamp(ts){ if(!ts?.at) return ""; const old=(Date.now()-new Date(ts.at))/864e5>90; return `<span class="kn22ts ${old?"old":""}">${ic("clock",13)} ${esc(fmtD(ts.at.slice(0,10)))}${ts.by?` · ${esc(ts.by.split(" ")[0])}`:""} · ${knAge(ts.at)}${old?" – time to update":""}</span>`; }
@@ -5357,7 +5362,7 @@ function knModal(id){ const c=S.companies.get(id); if(!c) return; const d=c.deal
   showModal(`${ovHead("Key numbers",`<button class="hbtn" data-act="close-modal">Cancel</button>`)}<div class="ovb"><p style="margin:0 2px 10px"><b>${esc(c.name)}</b></p>
    <div class="fields">
     <div class="fld" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><label for="knE">EBIT (R million)${knLbl(d,"ebit")}</label><input id="knE" inputmode="decimal" value="${esc(c.ebitConfirmed??"")}" placeholder="e.g. 12"></div><div><label for="knFy">Financial year</label><input id="knFy" value="${esc(c.financialsYear||"")}" placeholder="e.g. FY2025"></div></div>
-    <div class="fld"><label for="knEst">Not confirmed yet? Our EBIT estimate</label><select id="knEst">${opts(EBIT,c.ebit||"Unknown")}</select></div>
+    ${ebitEstInput("knEst",c,"Not confirmed yet? Our EBIT estimate (R million)")}
     <div class="fld"><label for="knT">Turnover (R million)${knLbl(d,"turn")}</label><input id="knT" inputmode="decimal" value="${esc(c.turnoverConfirmed??"")}" placeholder="e.g. 85"></div>
     <div class="fld" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><label for="knP">Price discussed (R million)${knLbl(d,"price")}</label><input id="knP" inputmode="decimal" value="${esc(d.price??"")}" placeholder="e.g. 66"></div><div><label for="knM">Multiple (× EBIT)${knLbl(d,"mult")}</label><input id="knM" inputmode="decimal" value="${esc(d.multiple??"")}" placeholder="e.g. 5.5"></div></div>
     <div class="tag" id="knCalc" style="margin:-2px 4px 4px"></div>
@@ -5373,7 +5378,7 @@ document.addEventListener("click",async ev=>{ const t=ev.target.closest('[data-a
   const c=S.companies.get(id); if(!c) return; const by=await myName();
   const now=new Date().toISOString(); const od=c.deal||{}; const ts={...(od.ts||{})};
   const deal={price:num22($("#knP").value), multiple:num22($("#knM").value), note:$("#knN").value.trim(), by, at:now};
-  const nE=num22($("#knE").value), nT=num22($("#knT").value), nEst=$("#knEst").value, nFy=$("#knFy").value.trim();
+  const nE=num22($("#knE").value), nT=num22($("#knT").value), nEst=ebitEstVal("knEst"), nFy=$("#knFy").value.trim();
   const chg=(f,was,is)=>{ if(String(was??"")!==String(is??"")) ts[f]= is==null||is===""||is==="Unknown" ? undefined : {at:now,by}; };
   chg("ebit", `${num22(c.ebitConfirmed)??""}|${c.ebit||""}|${c.financialsYear||""}`, (nE==null&&(!nEst||nEst==="Unknown"))?null:`${nE??""}|${nEst||""}|${nFy}`);
   chg("turn", num22(c.turnoverConfirmed), nT); chg("price", num22(od.price), deal.price); chg("mult", num22(od.multiple), deal.multiple);
@@ -5383,7 +5388,7 @@ document.addEventListener("click",async ev=>{ const t=ev.target.closest('[data-a
   t.disabled=true; const ok=await dbUpdate("companies/"+id,patch); t.disabled=false; if(ok){ closeModal(); toast("Numbers saved"); queueRender(); try{ renderSheet(); }catch(_){} } },true);
 /* lists: the numbers under every business, and sort by them */
 { const base=bizRow; bizRow=function(c){ const h=base(c); if(!isAcq(c)) return h; const s=knShort(c); const line=`<span class="t2 kn22l" style="display:block">${s?esc(s):`<span class="kn22none">No numbers yet</span>`}</span>`; const i=h.indexOf('</span><span class="trail">'); return i<0? h : h.slice(0,i)+line+h.slice(i); }; }
-const knSortVal={ebit:c=>{ const k=kn(c); return k.ebit!=null?k.ebit:EBIT_MID[k.est]??null; }, mult:c=>kn(c).mult, score:c=>{ const s=c.scorecard; return s&&s.inputs&&Object.keys(s.inputs).length? s.total : null; }};
+const knSortVal={ebit:c=>{ const k=kn(c); return k.ebit!=null?k.ebit:k.estN!=null?k.estN:EBIT_MID[c.ebit]??null; }, mult:c=>kn(c).mult, score:c=>{ const s=c.scorecard; return s&&s.inputs&&Object.keys(s.inputs).length? s.total : null; }};
 { const base=filteredDeals; filteredDeals=function(){ const arr=base(); const k=S.f?.sort; const f=knSortVal[k]; if(!f) return arr; const dir=k==="mult"?1:-1;
   return [...arr].sort((a,b)=>{ const x=f(a), y=f(b); if(x==null&&y==null) return 0; if(x==null) return 1; if(y==null) return -1; return (x-y)*dir; }); }; }
 { const base=vBusinesses; vBusinesses=function(){ const h=base(); if(S.view==="funders") return h; const k=S.f?.sort||"";
